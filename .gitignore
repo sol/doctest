@@ -1,0 +1,5 @@
+*.swp
+*.hi
+*.o
+/main
+Session.vim
