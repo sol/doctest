@@ -1,4 +1,4 @@
-module FibTest where
+module Fibtest where
 import Test.HUnit
 import Fib
 
