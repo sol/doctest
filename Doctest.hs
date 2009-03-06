@@ -1,5 +1,5 @@
 -- Copyright (c) 2009 Simon Hengel <simon.hengel@web.de>
---module Doctest where
+module Doctest where
 
 import Control.Exception
 import Test.HUnit
@@ -34,7 +34,7 @@ makeTest (DocTest source _ expression result) = "docTest = TestCase (assertEqual
 
 data DocTest = DocTest {
 	  source		:: String
-	, mod			:: String
+	, _module		:: String
 	, expression	:: String
 	, result		:: String
 	}
