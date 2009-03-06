@@ -1,5 +1,5 @@
 -- Copyright (c) 2009 Simon Hengel <simon.hengel@web.de>
-module Doctest where
+module Test.DocTest where
 
 import Control.Exception
 import Test.HUnit

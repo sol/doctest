@@ -1,12 +1,13 @@
-module Main where
+module Test.DocTest.Parser where
 
 import System.IO
 import Data.List
-import Language.Haskell.Parser
+import Language.Haskell.Parser hiding (parseModule)
 import Language.Haskell.Syntax
 import Text.ParserCombinators.Parsec
-import Doctest
+import Test.DocTest
 
+-- error handling
 data Error = Error {
 	  location	:: SrcLoc
 	, message	:: String
@@ -18,12 +19,31 @@ instance Show Error where
 reportError :: Error -> a
 reportError e = error (show e)
 
-run :: Parser a -> String -> IO a
-run p input
-        = case (parse p "" input) of
+-- parse functions
+
+parseModule :: FilePath -> IO [DocTest]
+parseModule fileName = do
+	moduleSource <- readFile fileName
+
+	let moduleName =
+		case (parseModuleWithMode (ParseMode fileName) moduleSource) of
+			ParseFailed l m								-> reportError (Error l m)
+			ParseOk (HsModule _ (Module name) _ _ _)	-> name
+
+	docTests <-
+		case (parse manyTestsParser fileName moduleSource) of
 			--Left err -> do{ putStr "parse error at " ; print err }
 			Left err -> fail (show err)
 			Right x  -> return x
+
+	return
+		(
+			map
+			(\(expression, result) -> DocTest fileName moduleName expression result)
+			docTests
+		)
+
+-- Parser
 
 tillEndOfLine :: Parser String
 tillEndOfLine = manyTill anyChar newline
@@ -40,8 +60,8 @@ commentLines = many1 commentLine
 
 docTestStart = string "-- > "
 
-docParse :: Parser (String, String) 
-docParse = do
+singelTestParser :: Parser (String, String) 
+singelTestParser = do
 	{
 		  manyTill anyChar (try docTestStart)
 		; expression	<- tillEndOfLine
@@ -49,18 +69,4 @@ docParse = do
 		; return (expression, (unlines result))
 	}
 
-moduleParser = (many (try docParse))
-
-myparse :: FilePath -> IO [DocTest]
-myparse file = do
-	m <- readFile file
-	let n = moduleName file m
-	l <- run moduleParser m
-	return (map (tupleToDocTest file n) l)
-	where
-		tupleToDocTest file _module (expression, result) = DocTest file _module expression result
-
-moduleName file m =
-	case (parseModuleWithMode (ParseMode file) m) of
-		ParseFailed srcLoc msg				-> reportError (Error srcLoc msg)
-		ParseOk (HsModule _ (Module name) _ _ _)	-> name
+manyTestsParser = (many (try singelTestParser))
