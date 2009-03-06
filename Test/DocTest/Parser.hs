@@ -1,25 +1,11 @@
 module Test.DocTest.Parser where
 
 import System.IO
-import Data.List
 import Language.Haskell.Parser hiding (parseModule)
 import Language.Haskell.Syntax
 import Text.ParserCombinators.Parsec
 import Test.DocTest
-
--- error handling
-data Error = Error {
-	  location	:: SrcLoc
-	, message	:: String
-	}
-
-instance Show Error where
-	show (Error (SrcLoc filename line column) message) = intercalate ":" [filename, show line, show column, message]
-
-reportError :: Error -> a
-reportError e = error (show e)
-
--- parse functions
+import Test.DocTest.Error
 
 parseModule :: FilePath -> IO [DocTest]
 parseModule fileName = do
@@ -32,9 +18,9 @@ parseModule fileName = do
 
 	docTests <-
 		case (parse manyTestsParser fileName moduleSource) of
-			--Left err -> do{ putStr "parse error at " ; print err }
-			Left err -> fail (show err)
-			Right x  -> return x
+			--Left  e -> error ("parse error at " ++ show e)
+			Left  e	-> reportError (toError e)
+			Right x	-> return x
 
 	return
 		(
