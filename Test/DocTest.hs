@@ -6,6 +6,7 @@ import Test.HUnit
 import System.Plugins
 import System.IO
 import System.FilePath
+import System.Directory
 import Test.DocTest.Util
 
 
@@ -17,8 +18,8 @@ loadTest file dir = do
 		LoadSuccess _ v -> return v
 
 
-compileModule filename = do
-	status <- makeAll filename []
+compileModule filename dir = do
+	status <- makeAll filename ["-i" ++ dir]
 	case status of
 		 MakeFailure errors -> fail (concat errors)
 		 MakeSuccess _ file -> return file
@@ -62,10 +63,21 @@ doTest directory test = do
 	(filename, handle) <- openTempFile directory (moduleBaseName ++ ".hs")
 
 	putStrLn filename
-	let moduleName = takeBaseName filename
+	let testModuleName = takeBaseName filename
 
-	--withFile filename WriteMode (writeModule test moduleName)
-	writeModule test moduleName handle
+	--withFile filename WriteMode (writeModule test testModuleName)
+	writeModule test testModuleName handle
 	hClose handle
-	obj_file <- compileModule filename
+
+
+	canonicalModulePath <- canonicalizePath $ source test
+	putStrLn canonicalModulePath
+
+	let baseDir = packageBaseDir canonicalModulePath (_module test)
+	putStrLn baseDir
+
+	obj_file <- compileModule filename baseDir
 	loadTest obj_file directory
+
+packageBaseDir :: FilePath -> String -> FilePath
+packageBaseDir moduleSrcFile moduleName = stripPostfix (dropExtension moduleSrcFile) (replace "." [pathSeparator] moduleName)

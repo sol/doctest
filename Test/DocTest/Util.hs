@@ -14,3 +14,11 @@ replace old new xs@(y:ys) =
 	case stripPrefix old xs of
 		Nothing -> y : replace old new ys
 		Just ys' -> new ++ replace old new ys' 
+
+
+--removePost :: [a] -> [a] -> [a]
+
+stripPostfix [] ys = undefined
+stripPostfix (x:xs) ys
+	| xs == ys	= [x]
+	| otherwise	= x : (stripPostfix xs ys)
