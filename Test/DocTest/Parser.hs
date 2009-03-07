@@ -1,4 +1,4 @@
-module Test.DocTest.Parser where
+module Test.DocTest.Parser (parseModule) where
 
 import System.IO
 import Language.Haskell.Parser hiding (parseModule)
@@ -6,6 +6,7 @@ import Language.Haskell.Syntax
 import Text.ParserCombinators.Parsec
 import Test.DocTest
 import Test.DocTest.Error
+import Data.List
 
 parseModule :: FilePath -> IO [DocTest]
 parseModule fileName = do
@@ -52,7 +53,7 @@ singelTestParser = do
 		  manyTill anyChar (try docTestStart)
 		; expression	<- tillEndOfLine
 		; result		<- commentLines
-		; return (expression, (unlines result))
+		; return (expression, (intercalate "\n" result))
 	}
 
 manyTestsParser = (many (try singelTestParser))
