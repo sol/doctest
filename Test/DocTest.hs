@@ -6,11 +6,12 @@ import Test.HUnit
 import System.Plugins
 import System.IO
 import System.FilePath
+import Test.DocTest.Util
 
 
-loadTest :: String -> IO Test
-loadTest file = do
-	mv <- load file ["/home/sol/projects/Doctest"] [] "docTest"
+loadTest :: FilePath -> FilePath -> IO Test
+loadTest file dir = do
+	mv <- load file [dir] [] "docTest"
 	case mv of
 		LoadFailure msg -> fail ("error while loading " ++ file ++ ": " ++ (concat msg))
 		LoadSuccess _ v -> return v
@@ -25,10 +26,18 @@ compileModule filename = do
 
 -- Example:
 --
--- > makeTest "Fib.hs - line 6: " "fib 10" "55"
+-- > makeTest (DocTest "Fib.hs - line 6: " "Fib" "fib 10" "55")
 -- "docTest = TestCase (assertEqual \"Fib.hs - line 6: \" (show (fib 10)) \"55\")"
 
-makeTest (DocTest source _ expression result) = "docTest = TestCase (assertEqual \"" ++ source ++ "\" " ++ "(show (" ++ expression ++ "))" ++ " \"" ++ result ++ "\")"
+makeTest (DocTest source _ expression result) = (
+		"docTest = TestCase (assertEqual \"" ++
+		source ++ "\" " ++
+		"(show (" ++ expression ++ "))" ++ " \"" ++
+		(escape result) ++ "\")"
+	)
+
+escape :: String -> String
+escape str = replace "\"" "\\\"" $ replace "\\" "\\\\" str
 
 
 data DocTest = DocTest {
@@ -40,17 +49,23 @@ data DocTest = DocTest {
 	deriving (Show)
 
 
-writeModule test moduleName h = do
-	hPutStrLn h ("module " ++ moduleName ++ " where")
-	hPutStrLn h "import Test.HUnit"
-	hPutStrLn h "import Fib\n"
-	hPutStrLn h (makeTest test)
+writeModule test moduleName handle = do
+	hPutStrLn handle ("module " ++ moduleName ++ " where")
+	hPutStrLn handle "import Test.HUnit"
+	hPutStrLn handle ("import " ++ (_module test))
+	hPutStrLn handle (makeTest test)
 
 
 doTest :: FilePath -> DocTest -> IO Test
 doTest directory test = do
-	let moduleName = (_module test) ++ "DocTest"
-	let filename = combine directory (moduleName ++ ".hs")
-	withFile filename WriteMode (writeModule test moduleName)
+	let moduleBaseName = replace "." "_" (_module test)
+	(filename, handle) <- openTempFile directory (moduleBaseName ++ ".hs")
+
+	putStrLn filename
+	let moduleName = takeBaseName filename
+
+	--withFile filename WriteMode (writeModule test moduleName)
+	writeModule test moduleName handle
+	hClose handle
 	obj_file <- compileModule filename
-	loadTest obj_file
+	loadTest obj_file directory

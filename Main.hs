@@ -22,6 +22,7 @@ withTempDir :: FilePath -> (FilePath -> IO a) -> IO a
 withTempDir name action = do
 	tmpdir <- catch getTemporaryDirectory (\_ -> return ".")
 	let path = combine tmpdir name
-	createDirectory path
-	finally (action path) (removeDirectoryRecursive path)
-	--action path
+	--createDirectory path
+	--finally (action path) (removeDirectoryRecursive path)
+	createDirectoryIfMissing False path
+	action path
