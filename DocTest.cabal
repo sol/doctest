@@ -1,8 +1,8 @@
-name:                doctest
+name:                DocTest
 version:             0.0.0
 stability:           experimental
 synopsis:            Test interactive Haskell examples
-description:         Doctest checks examples in source code comments.
+description:         DocTest checks examples in source code comments.
                      It is modeled after doctest for Python
                      (<http://docs.python.org/library/doctest.html>).
 category:            Testing
