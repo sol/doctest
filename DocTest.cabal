@@ -1,11 +1,12 @@
 name:                DocTest
-version:             0.0.0
+version:             0.0.1
 stability:           experimental
 synopsis:            Test interactive Haskell examples
 description:         DocTest checks examples in source code comments.
                      It is modeled after doctest for Python
                      (<http://docs.python.org/library/doctest.html>).
 category:            Testing
+homepage:            http://code.haskell.org/~sih/code/DocTest.git/
 license:             BSD3
 license-file:        LICENSE
 author:              Simon Hengel
