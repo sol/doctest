@@ -1,5 +1,5 @@
 name:                DocTest
-version:             0.0.2
+version:             0.0.3
 stability:           experimental
 synopsis:            Test interactive Haskell examples
 description:         DocTest checks examples in source code comments.
@@ -18,7 +18,7 @@ build-depends:
                      , haskell-src
                      , directory
                      , filepath
-					 , process
+                     , process
 build-type:          Simple
 
 extra-source-files:

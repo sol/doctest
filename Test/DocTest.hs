@@ -23,16 +23,15 @@ _testModule (DocTest source _module expression result) =
 	"main = do\n" ++
 	"    putStr (show (" ++ expression ++ "))\n"
 
-runDocTest test baseDir = do
+docTestToTestCase :: DocTest -> IO Test
+docTestToTestCase test = do
+	canonicalModulePath <- canonicalizePath $ source test
+	let baseDir = packageBaseDir canonicalModulePath (_module test)
+
 	ret <- readProcess "runhaskell" ["-i" ++ baseDir] (_testModule test)
 	return (TestCase (assertEqual (source test) (result test) ret))
 
 
-doTest :: FilePath -> DocTest -> IO Test
-doTest directory test = do
-	canonicalModulePath <- canonicalizePath $ source test
-	let baseDir = packageBaseDir canonicalModulePath (_module test)
-	runDocTest test baseDir
 
 -- Maps a given source file and a corresponding module name to the base
 -- directory of the package.
