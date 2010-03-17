@@ -36,3 +36,4 @@ executable doctest
                      , directory
                      , filepath
                      , process
+                     , haddock >= 2.8.0 && < 2.9.0
