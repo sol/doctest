@@ -3,11 +3,12 @@ module Test.DocTest.Util where
 import Data.List
 
 
--- Source: Posted from Chaddaï Fouché to Haskell-Cafe mailing list.
---
+-- |
 -- Example:
--- > replace "." "/" "Foo.Bar.Baz"
+-- ghci> replace "." "/" "Foo.Bar.Baz"
 -- "Foo/Bar/Baz"
+--
+-- Source: Posted from Chaddaï Fouché to Haskell-Cafe mailing list.
 replace :: (Eq a) => [a] -> [a] -> [a] -> [a]
 replace _ _ [] = []
 replace old new xs@(y:ys) =
@@ -15,10 +16,21 @@ replace old new xs@(y:ys) =
 		Nothing -> y : replace old new ys
 		Just ys' -> new ++ replace old new ys' 
 
-
---removePost :: [a] -> [a] -> [a]
-
-stripPostfix [] ys = undefined
-stripPostfix (x:xs) ys
-	| xs == ys	= [x]
-	| otherwise	= x : (stripPostfix xs ys)
+-- | Strip given postfix from given list.
+--
+-- Examples:
+--
+-- ghci> stripPostfix "\n" "foobar\n"
+-- "foobar"
+--
+-- ghci> stripPostfix "baz" "foobarbaz"
+-- "foobar"
+--
+-- ghci> stripPostfix "\n" "foobar"
+-- "foobar*** Exception: Prelude.undefined
+--
+stripPostfix :: (Eq a) => [a] -> [a] -> [a]
+stripPostfix postfix [] = undefined
+stripPostfix postfix (x:xs)
+	| xs == postfix	= [x]
+	| otherwise	= x : (stripPostfix postfix xs)

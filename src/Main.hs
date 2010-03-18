@@ -13,10 +13,6 @@ import Documentation.Haddock.DocTest  (
                             , Example(..)
                             , getTestAssets
                             )
-import Data.Char
-
--- | Remove all leading and trailing whitespace
-strip = reverse . dropWhile isSpace . reverse . dropWhile isSpace
 
 docTestFromAsset :: DocTestAsset -> [DocTest]
 docTestFromAsset asset = map tranform (testList asset)
@@ -26,7 +22,7 @@ docTestFromAsset asset = map tranform (testList asset)
             { source = sourceFile asset
             , _module = moduleName asset
             , expression = e
-            , result = strip $ unlines r
+            , result = unlines r
             }
 
 internalParse args = do
