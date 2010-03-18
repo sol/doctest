@@ -21,6 +21,7 @@ source-repository head
     location:        http://code.haskell.org/~sih/code/DocTest.git/
 
 executable doctest
+    hs-source-dirs:  src
     main-is:         Main.hs
     other-modules:
                        Test.DocTest
