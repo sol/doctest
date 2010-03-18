@@ -1,7 +1,6 @@
 module Main where
 
 import System.Environment   ( getArgs )
-import Test.DocTest.Parser  ( parseModule )
 import Test.DocTest         ( DocTest(..)
                             , docTestToTestCase
                             )
@@ -24,10 +23,6 @@ docTestFromAsset asset = map tranform (testList asset)
             , expression = e
             , result = unlines r
             }
-
-internalParse args = do
-  docTests <- mapM parseModule args
-  return $ concat docTests
 
 haddockParse args = do
   testAssets <- getTestAssets args
