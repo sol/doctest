@@ -1,4 +1,4 @@
-module Test.DocTest.Util where
+module DocTest.Util where
 
 import Data.List
 

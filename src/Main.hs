@@ -1,7 +1,7 @@
 module Main where
 
 import System.Environment   ( getArgs )
-import Test.DocTest         ( DocTest(..)
+import DocTest.DocTest      ( DocTest(..)
                             , docTestToTestCase
                             )
 import Test.HUnit           ( runTestTT

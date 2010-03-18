@@ -24,8 +24,8 @@ executable doctest
     hs-source-dirs:  src
     main-is:         Main.hs
     other-modules:
-                       Test.DocTest
-                     , Test.DocTest.Util
+                       DocTest.DocTest
+                     , DocTest.Util
 
     build-depends:
                        base >= 3 && < 5

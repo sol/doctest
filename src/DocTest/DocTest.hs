@@ -1,9 +1,9 @@
-module Test.DocTest where
+module DocTest.DocTest where
 
 import Test.HUnit
 import System.FilePath
 import System.Directory
-import Test.DocTest.Util
+import DocTest.Util
 import System.Process
 
 data DocTest = DocTest {
