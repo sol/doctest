@@ -8,12 +8,11 @@ import System.Process
 import GHC.Paths ( ghc )
 
 data DocTest = DocTest {
-	  source		:: String
-	, _module		:: String
-	, expression	:: String
-	, result		:: String
-	}
-	deriving (Show)
+  source      :: String
+, _module     :: String
+, expression  :: String
+, result      :: String
+} deriving (Show)
 
 docTestToTestCase :: DocTest -> IO Test
 docTestToTestCase test = do

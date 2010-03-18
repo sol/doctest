@@ -12,9 +12,9 @@ import Data.List
 replace :: (Eq a) => [a] -> [a] -> [a] -> [a]
 replace _ _ [] = []
 replace old new xs@(y:ys) =
-	case stripPrefix old xs of
-		Nothing -> y : replace old new ys
-		Just ys' -> new ++ replace old new ys' 
+  case stripPrefix old xs of
+    Nothing -> y : replace old new ys
+    Just ys' -> new ++ replace old new ys'
 
 -- | Strip given postfix from given list.
 --
@@ -32,5 +32,5 @@ replace old new xs@(y:ys) =
 stripPostfix :: (Eq a) => [a] -> [a] -> [a]
 stripPostfix postfix [] = undefined
 stripPostfix postfix (x:xs)
-	| xs == postfix	= [x]
-	| otherwise	= x : (stripPostfix postfix xs)
+  | xs == postfix = [x]
+  | otherwise     = x : (stripPostfix postfix xs)
