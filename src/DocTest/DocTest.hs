@@ -5,6 +5,7 @@ import System.FilePath
 import System.Directory
 import DocTest.Util
 import System.Process
+import GHC.Paths ( ghc )
 
 data DocTest = DocTest {
 	  source		:: String
@@ -16,11 +17,28 @@ data DocTest = DocTest {
 
 docTestToTestCase :: DocTest -> IO Test
 docTestToTestCase test = do
-	canonicalModulePath <- canonicalizePath $ source test
-	let baseDir = packageBaseDir canonicalModulePath (_module test)
+  canonicalModulePath <- canonicalizePath $ source test
+  let baseDir = packageBaseDir canonicalModulePath (_module test)
+  result' <- runInterpreter ["-i" ++ baseDir, source test] $ expression test
+  return (TestCase $ assertEqual (source test)
+    (strip' $ result test)
+    (strip' result')
+    )
+  where
+    strip' = stripPostfix "\n"
 
-	ret <- readProcess "ghci" ["-v0", "-i" ++ baseDir, source test] $ expression test
-	return (TestCase (assertEqual (source test) (stripPostfix "\n" $ result test) (stripPostfix "\n" ret)))
+-- | Evaluate given expression with ghci.
+--
+-- Examples:
+-- ghci> runInterpreter [] "putStrLn \"foobar\""
+-- "foobar\n"
+-- ghci> runInterpreter [] "23 + 42"
+-- "65\n"
+runInterpreter :: [String] -> String -> IO String
+runInterpreter flags expression = do
+  readProcess ghc myFlags expression
+  where
+    myFlags = ["-v0", "--interactive"] ++ flags
 
 -- | Map a given source file and a corresponding module name to the base
 -- directory of the package.
