@@ -9,9 +9,9 @@ import Test.HUnit           ( runTestTT
                             )
 import Documentation.Haddock.DocTest  (
                               DocTestAsset
-                            , moduleName
-                            , sourceFile
-                            , testList
+                            , assetModuleName
+                            , assetSourceFile
+                            , assetTestList
                             , Example
                             , exampleExpression
                             , exampleResult
@@ -19,12 +19,12 @@ import Documentation.Haddock.DocTest  (
                             )
 
 docTestFromAsset :: DocTestAsset -> [DocTest]
-docTestFromAsset asset = map tranform (testList asset)
+docTestFromAsset asset = map tranform (assetTestList asset)
   where
     tranform :: Example -> DocTest
     tranform example = DocTest
-            { source = sourceFile asset
-            , _module = moduleName asset
+            { source = assetSourceFile asset
+            , _module = assetModuleName asset
             , expression = exampleExpression example
             , result = unlines $ exampleResult example
             }
