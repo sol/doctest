@@ -37,7 +37,7 @@ runInterpreter :: [String] -> String -> IO String
 runInterpreter flags expression = do
   readProcess ghc myFlags expression
   where
-    myFlags = ["-v0", "--interactive"] ++ flags
+    myFlags = ["-v0", "--interactive", "-ignore-dot-ghci"] ++ flags
 
 -- | Map a given source file and a corresponding module name to the base
 -- directory of the package.
