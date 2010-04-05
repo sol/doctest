@@ -29,12 +29,15 @@ docTestFromAsset asset = map tranform (assetTestList asset)
             , result = unlines $ exampleResult example
             }
 
+haddockParse :: [String] -> IO [DocTest]
 haddockParse args = do
   testAssets <- getTestAssets args
   return $ concat $ map docTestFromAsset testAssets
 
+main :: IO ()
 main = do
   args <- getArgs
   docTests <- haddockParse args
   tests <- mapM docTestToTestCase docTests
-  runTestTT (TestList tests)
+  _ <- runTestTT (TestList tests)
+  return ()

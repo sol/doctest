@@ -30,7 +30,7 @@ replace old new xs@(y:ys) =
 -- "foobar*** Exception: Prelude.undefined
 --
 stripPostfix :: (Eq a) => [a] -> [a] -> [a]
-stripPostfix postfix [] = undefined
+stripPostfix _ [] = undefined
 stripPostfix postfix (x:xs)
   | xs == postfix = [x]
   | otherwise     = x : (stripPostfix postfix xs)

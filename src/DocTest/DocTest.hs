@@ -1,6 +1,6 @@
 module DocTest.DocTest where
 
-import Test.HUnit
+import Test.HUnit (Test(..), assertEqual)
 import System.FilePath
 import System.Directory
 import DocTest.Util
@@ -34,8 +34,8 @@ docTestToTestCase test = do
 -- ghci> runInterpreter [] "23 + 42"
 -- "65\n"
 runInterpreter :: [String] -> String -> IO String
-runInterpreter flags expression = do
-  readProcess ghc myFlags expression
+runInterpreter flags expr = do
+  readProcess ghc myFlags expr
   where
     myFlags = ["-v0", "--interactive", "-ignore-dot-ghci"] ++ flags
 
