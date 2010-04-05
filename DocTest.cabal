@@ -29,12 +29,10 @@ executable doctest
                      , DocTest.Util
 
     build-depends:
-                       base >= 3 && < 5
-                     , HUnit
-                     , parsec
-                     , haskell-src
-                     , directory
-                     , filepath
-                     , process
-                     , haddock >= 2.8.0 && < 2.9.0
-                     , ghc-paths
+                       base      >= 4.0.0.0 && < 4.3.0.0
+                     , HUnit     == 1.2.*
+                     , directory == 1.0.*
+                     , filepath  == 1.1.*
+                     , process   == 1.0.*
+                     , haddock   == 2.8.*
+                     , ghc-paths == 0.1.*
