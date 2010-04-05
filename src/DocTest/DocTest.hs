@@ -1,10 +1,10 @@
 module DocTest.DocTest where
 
 import Test.HUnit (Test(..), assertEqual)
-import System.FilePath
-import System.Directory
-import DocTest.Util
-import System.Process
+import System.FilePath (pathSeparator, dropExtension)
+import System.Directory (canonicalizePath)
+import DocTest.Util (stripPostfix, replace)
+import System.Process (readProcess)
 import GHC.Paths ( ghc )
 
 data DocTest = DocTest {
