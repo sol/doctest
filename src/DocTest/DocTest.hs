@@ -6,21 +6,15 @@ import System.Directory (canonicalizePath)
 import DocTest.Util (stripPostfix, replace)
 import System.Process (readProcess)
 import GHC.Paths ( ghc )
-
-data DocTest = DocTest {
-  source      :: String
-, _module     :: String
-, expression  :: String
-, result      :: String
-} deriving (Show)
+import Documentation.Haddock.DocTest (DocTest(..))
 
 docTestToTestCase :: DocTest -> IO Test
 docTestToTestCase test = do
   canonicalModulePath <- canonicalizePath $ source test
-  let baseDir = packageBaseDir canonicalModulePath (_module test)
+  let baseDir = packageBaseDir canonicalModulePath (module_ test)
   result' <- runInterpreter ["-i" ++ baseDir, source test] $ expression test
   return (TestCase $ assertEqual (source test)
-    (strip' $ result test)
+    (strip' $ unlines $ result test)
     (strip' result')
     )
   where
