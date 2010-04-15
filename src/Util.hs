@@ -1,4 +1,4 @@
-module DocTest.Util where
+module Util where
 
 import Data.List (stripPrefix)
 

@@ -1,24 +1,35 @@
-module DocTest.DocTest where
+module DocTest (getTest) where
 
-import Test.HUnit (Test(..), assertEqual)
+import Test.HUnit (Test(..), assertEqual, Assertion)
 import System.FilePath (pathSeparator, dropExtension)
 import System.Directory (canonicalizePath)
-import DocTest.Util (stripPostfix, replace)
+import Util (stripPostfix, replace)
 import System.Process (readProcess)
 import GHC.Paths ( ghc )
-import Documentation.Haddock.DocTest (DocTest(..))
+import Documentation.Haddock.DocTest (DocTest(..), getDocTests)
 
-docTestToTestCase :: DocTest -> IO Test
-docTestToTestCase test = do
-  canonicalModulePath <- canonicalizePath $ source test
-  let baseDir = packageBaseDir canonicalModulePath (_module test)
-  result' <- runInterpreter ["-i" ++ baseDir, source test] $ expression test
-  return (TestCase $ assertEqual (source test)
-    (strip' $ unlines $ result test)
-    (strip' result')
-    )
+getTest :: [String] -> IO Test
+getTest args = do
+  docTests <- getDocTests args
+  return $ TestList $ map toTestCase docTests
+
+toTestCase :: DocTest -> Test
+toTestCase test = TestCase $ toAssertion test
+
+toAssertion :: DocTest -> Assertion
+toAssertion test = do
+  modulePath <- canonicalizePath $ sourceFile
+  let baseDir = packageBaseDir modulePath moduleName
+  result' <- runInterpreter ["-i" ++ baseDir, sourceFile] $ exampleExpression
+  assertEqual sourceFile
+    (exampleResult)
+    (lines result')
   where
-    strip' = stripPostfix "\n"
+    sourceFile        = source test
+    moduleName        = module_ test
+    exampleExpression = expression test
+    exampleResult     = result test
+
 
 -- | Evaluate given expression with ghci.
 --

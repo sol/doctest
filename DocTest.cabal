@@ -16,6 +16,23 @@ maintainer:          simon.hengel@wiktory.org
 build-type:          Simple
 cabal-version:       >= 1.6
 
+extra-source-files:
+    DocTest.cabal
+    LICENSE
+    Setup.lhs
+    tests/runtests.sh
+    tests/selftest.sh
+    tests/Main.hs
+    tests/TestUtil.hs
+    tests/bugfixWorkingDirectory/Fib.hs
+    tests/bugfixWorkingDirectory/examples/Fib.hs
+    tests/bugImportHierarchical/ModuleA.hs
+    tests/bugImportHierarchical/ModuleB.hs
+    tests/bugMultipleStatements/Fib.hs
+    tests/testCommentLocation/Foo.hs
+    tests/testImport/ModuleA.hs
+    tests/testImport/ModuleB.hs
+
 source-repository head
     type:            git
     location:        http://code.haskell.org/~sih/code/DocTest.git/
@@ -25,8 +42,8 @@ executable doctest
     hs-source-dirs:  src
     main-is:         Main.hs
     other-modules:
-                       DocTest.DocTest
-                     , DocTest.Util
+                       DocTest
+                     , Util
 
     build-depends:
                        base      >= 4.0.0.0 && < 4.3.0.0

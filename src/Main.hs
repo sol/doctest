@@ -1,16 +1,12 @@
 module Main where
 
-import System.Environment   ( getArgs )
-import DocTest.DocTest (docTestToTestCase)
-import Test.HUnit           ( runTestTT
-                            , Test(..)
-                            )
-import Documentation.Haddock.DocTest (getDocTests)
+import System.Environment (getArgs)
+import Test.HUnit (runTestTT)
+import DocTest (getTest)
 
 main :: IO ()
 main = do
-  args <- getArgs
-  docTests <- getDocTests args
-  tests <- mapM docTestToTestCase docTests
-  _ <- runTestTT (TestList tests)
+  args  <- getArgs
+  test  <- getTest args
+  _     <- runTestTT test
   return ()
