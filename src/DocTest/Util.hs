@@ -5,6 +5,7 @@ import Data.List (stripPrefix)
 
 -- |
 -- Example:
+--
 -- ghci> replace "." "/" "Foo.Bar.Baz"
 -- "Foo/Bar/Baz"
 --

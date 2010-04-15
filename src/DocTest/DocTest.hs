@@ -11,7 +11,7 @@ import Documentation.Haddock.DocTest (DocTest(..))
 docTestToTestCase :: DocTest -> IO Test
 docTestToTestCase test = do
   canonicalModulePath <- canonicalizePath $ source test
-  let baseDir = packageBaseDir canonicalModulePath (module_ test)
+  let baseDir = packageBaseDir canonicalModulePath (_module test)
   result' <- runInterpreter ["-i" ++ baseDir, source test] $ expression test
   return (TestCase $ assertEqual (source test)
     (strip' $ unlines $ result test)
@@ -23,8 +23,10 @@ docTestToTestCase test = do
 -- | Evaluate given expression with ghci.
 --
 -- Examples:
+--
 -- ghci> runInterpreter [] "putStrLn \"foobar\""
 -- "foobar\n"
+--
 -- ghci> runInterpreter [] "23 + 42"
 -- "65\n"
 runInterpreter :: [String] -> String -> IO String
@@ -37,8 +39,10 @@ runInterpreter flags expr = do
 -- directory of the package.
 --
 -- Example:
+--
 -- ghci> packageBaseDir "/foo/bar/MyPackage/MyModule.hs" "MyPackage.MyModule"
 -- "/foo/bar/"
+--
 -- ghci> packageBaseDir "foo" "bar"
 -- "foo*** Exception: Prelude.undefined
 packageBaseDir :: FilePath -> String -> FilePath
