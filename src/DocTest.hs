@@ -6,7 +6,7 @@ import System.Directory (canonicalizePath)
 import Util (stripPostfix, replace)
 import System.Process (readProcess)
 import GHC.Paths ( ghc )
-import Documentation.Haddock.DocTest (DocTest(..), getDocTests)
+import HaddockBackend.Api (DocTest(..), getDocTests)
 
 getTest :: [String] -> IO Test
 getTest args = do

@@ -47,9 +47,11 @@ executable doctest
 
     build-depends:
                        base      >= 4.0.0.0 && < 4.3.0.0
+                     , containers == 0.3.*
                      , HUnit     == 1.2.*
                      , directory == 1.0.*
                      , filepath  == 1.1.*
                      , process   == 1.0.*
                      , haddock   == 2.8.*
                      , ghc-paths == 0.1.*
+                     , ghc       == 6.12.*
