@@ -30,6 +30,10 @@ main = do
       , doctest "." ["testCommentLocation/Foo.hs"]
         (cases 11)
 
+    -- * testPutStr
+      , doctest "testPutStr" ["Fib.hs"]
+        (cases 3)
+
     -- Bugfix Tests
     -- ============
 
@@ -48,5 +52,9 @@ main = do
 
     -- * bugMultipleStatements
       , doctest "bugMultipleStatements" ["Fib.hs"]
+        (cases 2) {failures = 1}
+
+    -- * bugOutputToStdErr
+      , doctest "bugOutputToStdErr" ["Fib.hs"]
         (cases 2) {failures = 1}
       ]
