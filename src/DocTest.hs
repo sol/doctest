@@ -4,9 +4,8 @@ import Test.HUnit (Test(..), assertEqual, Assertion)
 import System.FilePath (pathSeparator, dropExtension)
 import System.Directory (canonicalizePath)
 import Util (stripPostfix, replace)
-import System.Process (readProcess)
-import GHC.Paths ( ghc )
 import HaddockBackend.Api (DocTest(..), getDocTests)
+import qualified Interpreter
 
 getTest :: [String] -> IO Test
 getTest args = do
@@ -41,10 +40,9 @@ toAssertion test = do
 -- ghci> runInterpreter [] "23 + 42"
 -- "65\n"
 runInterpreter :: [String] -> String -> IO String
-runInterpreter flags expr = do
-  readProcess ghc myFlags expr
-  where
-    myFlags = ["-v0", "--interactive", "-ignore-dot-ghci"] ++ flags
+runInterpreter flags expr =  Interpreter.withInterpreter flags $ \repl -> do
+  Interpreter.eval repl expr
+
 
 -- | Map a given source file and a corresponding module name to the base
 -- directory of the package.
