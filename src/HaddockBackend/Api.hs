@@ -1,5 +1,6 @@
 module HaddockBackend.Api (
   DocTest(..)
+, Interaction(..)
 , getDocTests
 ) where
 
@@ -15,9 +16,14 @@ import Documentation.Haddock(
 
 
 data DocTest = DocExample {
-    source     :: String    -- ^ source file
-  , module_    :: String    -- ^ originating module
-  , expression :: String    -- ^ example expression
+    source        :: String -- ^ source file
+  , module_       :: String -- ^ originating module
+  , interactions  :: [Interaction]
+} deriving Show
+
+
+data Interaction = Interaction {
+    expression :: String    -- ^ example expression
   , result     :: [String]  -- ^ expected result
 } deriving Show
 
@@ -27,7 +33,7 @@ getDocTests :: [String]     -- ^ list of Haddock command-line flags
             -> IO [DocTest] -- ^ extracted 'DocTest's
 getDocTests args = do
   interfaces <- createInterfaces' args
-  return $ concat $ map docTestsFromInterafe interfaces
+  return $ concat $ map docTestsFromInterface interfaces
 
 
 -- | Get name of the module, that is  associated with given 'Interface'
@@ -36,11 +42,14 @@ moduleNameFromInterface = moduleNameString . moduleName . ifaceMod
 
 
 -- | Get 'DocTest's from 'Interface'.
-docTestsFromInterafe :: Interface -> [DocTest]
-docTestsFromInterafe interface = map docTestFromExample examples
+docTestsFromInterface :: Interface -> [DocTest]
+docTestsFromInterface interface = map docTestFromExamples listOfExamples
   where
-    examples    = examplesFromInterface interface
+    listOfExamples    = examplesFromInterface interface
     moduleName' = moduleNameFromInterface interface
     fileName    = ifaceOrigFilename interface
-    docTestFromExample e =
-      DocExample fileName moduleName' (exampleExpression e) (exampleResult e)
+    docTestFromExamples examples =
+      DocExample fileName moduleName' $ map interactionFromExample examples
+      where
+        interactionFromExample e =
+          Interaction (exampleExpression e) (exampleResult e)

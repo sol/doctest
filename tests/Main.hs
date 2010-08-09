@@ -22,9 +22,9 @@ main = do
 
     --  * testImport
       , doctest "testImport" ["ModuleA.hs"]
-        (cases 3)
+        (cases 2)
       , doctest ".." ["--optghc=-itests/testImport", "tests/testImport/ModuleA.hs"]
-        (cases 3)
+        (cases 2)
 
     --  * testCommentLocation
       , doctest "." ["testCommentLocation/Foo.hs"]
@@ -32,7 +32,7 @@ main = do
 
     -- * testPutStr
       , doctest "testPutStr" ["Fib.hs"]
-        (cases 3)
+        (cases 2)
 
     -- Bugfix Tests
     -- ============
@@ -43,18 +43,18 @@ main = do
       , doctest "bugfixWorkingDirectory" ["examples/Fib.hs"]
         (cases 2)
 
+    -- * bugfixOutputToStdErr
+      , doctest "bugfixOutputToStdErr" ["Fib.hs"]
+        (cases 1)
+
+    -- * bugfixMultipleStatements
+      , doctest "bugfixMultipleStatements" ["Fib.hs"]
+        (cases 1)
+
     -- open bugs
     -- =========
 
     -- * bugImportHierarchical
       , doctest "bugImportHierarchical" ["ModuleA.hs", "ModuleB.hs"]
-        (cases 3) {errors = 2, failures = 1}
-
-    -- * bugMultipleStatements
-      , doctest "bugMultipleStatements" ["Fib.hs"]
-        (cases 2) {failures = 1}
-
-    -- * bugOutputToStdErr
-      , doctest "bugOutputToStdErr" ["Fib.hs"]
-        (cases 2) {failures = 1}
+        (cases 2) {errors = 1, failures = 1}
       ]

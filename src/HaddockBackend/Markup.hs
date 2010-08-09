@@ -15,7 +15,7 @@ import Documentation.Haddock (
   )
 
 -- | Extract all 'Example's from given 'Interface'.
-examplesFromInterface :: Interface -> [Example]
+examplesFromInterface :: Interface -> [[Example]]
 examplesFromInterface interface =
   fromModuleHeader ++ fromExportItems ++ fromDeclarations
   where
@@ -29,27 +29,27 @@ examplesFromInterface interface =
         extractFromExportItem _ = []
     fromDeclarations = fromDeclMap $ ifaceRnDocMap interface
 
-fromDeclMap :: Map Name (DocForDecl DocName) -> [Example]
+fromDeclMap :: Map Name (DocForDecl DocName) -> [[Example]]
 fromDeclMap docMap = concatMap docForDeclName $ Map.elems docMap
 
-docForDeclName :: DocForDecl name -> [Example]
+docForDeclName :: DocForDecl name -> [[Example]]
 docForDeclName (declDoc, argsDoc)  = declExamples ++ argsExamples
   where
     declExamples = extractFromMap argsDoc
     argsExamples = extractFromMaybe declDoc
 
-extractFromMaybe :: Maybe (Doc name) -> [Example]
+extractFromMaybe :: Maybe (Doc name) -> [[Example]]
 extractFromMaybe (Just doc) = extract doc
 extractFromMaybe Nothing    = []
 
-extractFromMap :: Map key (Doc name) -> [Example]
+extractFromMap :: Map key (Doc name) -> [[Example]]
 extractFromMap m = concatMap extract $ Map.elems m
 
 -- | Extract all 'Example's from given 'Doc' node.
-extract :: Doc name -> [Example]
+extract :: Doc name -> [[Example]]
 extract = markup exampleMarkup
   where
-    exampleMarkup :: DocMarkup name [Example]
+    exampleMarkup :: DocMarkup name [[Example]]
     exampleMarkup = Markup {
       markupEmpty         = [],
       markupString        = const [],
@@ -66,7 +66,7 @@ extract = markup exampleMarkup
       markupURL           = const [],
       markupAName         = const [],
       markupPic           = const [],
-      markupExample       = id
+      markupExample       = return
       }
       where
         combineTuple = uncurry (++)

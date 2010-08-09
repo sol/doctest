@@ -8,6 +8,7 @@ import System
 -- foo
 -- ghci> putStr "bar"
 -- bar
+--
 -- ghci> putStrLn "baz"
 -- baz
 fib :: (Num t, Num t1) => t -> t1

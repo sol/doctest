@@ -4,7 +4,7 @@ import Test.HUnit (Test(..), assertEqual, Assertion)
 import System.FilePath (pathSeparator, dropExtension)
 import System.Directory (canonicalizePath)
 import Util (stripPostfix, replace)
-import HaddockBackend.Api (DocTest(..), getDocTests)
+import HaddockBackend.Api
 import qualified Interpreter
 
 getTest :: [String] -> IO Test
@@ -13,35 +13,25 @@ getTest args = do
   return $ TestList $ map toTestCase docTests
 
 toTestCase :: DocTest -> Test
-toTestCase test = TestCase $ toAssertion test
-
-toAssertion :: DocTest -> Assertion
-toAssertion test = do
+toTestCase test = TestCase $ do
+  let moduleName = module_ test
   modulePath <- canonicalizePath $ sourceFile
   let baseDir = packageBaseDir modulePath moduleName
-  result' <- runInterpreter ["-i" ++ baseDir, sourceFile] $ exampleExpression
-  assertEqual sourceFile
-    (exampleResult)
-    (lines result')
+  Interpreter.withInterpreter ["-i" ++ baseDir, sourceFile] $ interactionsToAssertion $ interactions test
   where
     sourceFile        = source test
-    moduleName        = module_ test
-    exampleExpression = expression test
-    exampleResult     = result test
 
-
--- | Evaluate given expression with ghci.
---
--- Examples:
---
--- ghci> runInterpreter [] "putStrLn \"foobar\""
--- "foobar\n"
---
--- ghci> runInterpreter [] "23 + 42"
--- "65\n"
-runInterpreter :: [String] -> String -> IO String
-runInterpreter flags expr =  Interpreter.withInterpreter flags $ \repl -> do
-  Interpreter.eval repl expr
+    interactionsToAssertion :: [Interaction] -> Interpreter.Interpreter -> Assertion
+    interactionsToAssertion []     _    = return ()
+    interactionsToAssertion (x:xs) repl = do
+      result' <- Interpreter.eval repl exampleExpression
+      assertEqual sourceFile
+        (exampleResult)
+        (lines result')
+      interactionsToAssertion xs repl
+      where
+        exampleExpression = expression x
+        exampleResult     = result x
 
 
 -- | Map a given source file and a corresponding module name to the base
