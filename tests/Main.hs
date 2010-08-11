@@ -55,10 +55,17 @@ main = do
       , doctest "bugfixImportHierarchical" ["ModuleA.hs", "ModuleB.hs"]
         (cases 2)
 
+    -- * bugfixMultipleModules
+      , doctest "bugfixMultipleModules" ["ModuleA.hs"]
+        (cases 3)
+
     -- Open bugs
     -- =========
 
-    -- * bugMultipleModules
-      , doctest "bugMultipleModules" ["ModuleA.hs"]
+    {-
+    -- * bugFoo
+      , doctest "bugFoo" ["Foo.hs"]
         (cases 3) {errors = 0, failures = 1}
+        -- expected: (cases 3)
+    -}
       ]

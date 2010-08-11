@@ -16,9 +16,13 @@ getTest options files = do
 
 toTestCase :: [String] -> DocTest -> Test
 toTestCase ghciArgs test = TestCase $ do
-  Interpreter.withInterpreter ghciArgs $ interactionsToAssertion $ interactions test
+  Interpreter.withInterpreter ghciArgs $ \repl -> do
+    -- bring module into scope before running tests..
+    _ <- Interpreter.eval repl $ ":m *" ++ moduleName
+    interactionsToAssertion (interactions test) repl
   where
-    sourceFile        = source test
+    moduleName = module_ test
+    sourceFile = source test
 
     interactionsToAssertion :: [Interaction] -> Interpreter.Interpreter -> Assertion
     interactionsToAssertion []     _    = return ()
