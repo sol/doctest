@@ -40,6 +40,11 @@ newInterpreter flags = do
 
 
 -- | Run an interpreter session.
+--
+-- Example:
+--
+-- ghci> withInterpreter [] $ \i -> eval i "23 + 42"
+-- "65\n"
 withInterpreter
   :: [String]               -- ^ List of flags, passed to GHC
   -> (Interpreter -> IO a)  -- ^ Action to run

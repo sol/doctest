@@ -34,7 +34,7 @@ main = do
       , doctest "testPutStr" ["Fib.hs"]
         (cases 2)
 
-    -- Bugfix Tests
+    -- Bugfix tests
     -- ============
 
     --  * bugfixWorkingDirectory
@@ -51,10 +51,14 @@ main = do
       , doctest "bugfixMultipleStatements" ["Fib.hs"]
         (cases 1)
 
-    -- open bugs
+    -- * bugfixImportHierarchical
+      , doctest "bugfixImportHierarchical" ["ModuleA.hs", "ModuleB.hs"]
+        (cases 2)
+
+    -- Open bugs
     -- =========
 
-    -- * bugImportHierarchical
-      , doctest "bugImportHierarchical" ["ModuleA.hs", "ModuleB.hs"]
-        (cases 2) {errors = 1, failures = 1}
+    -- * bugMultipleModules
+      , doctest "bugMultipleModules" ["ModuleA.hs"]
+        (cases 3) {errors = 0, failures = 1}
       ]
