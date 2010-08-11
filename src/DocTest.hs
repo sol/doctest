@@ -6,18 +6,23 @@ import System.Directory (canonicalizePath)
 import Util (stripPostfix, replace)
 import HaddockBackend.Api
 import qualified Interpreter
+import Options
 
-getTest :: [String] -> IO Test
-getTest args = do
-  docTests <- getDocTests args
-  return $ TestList $ map toTestCase docTests
+getTest :: [Option] -> [String] -> IO Test
+getTest options files = do
+  docTests <- getDocTests haddockArgs
+  return $ TestList $ map (toTestCase $ ghcOptions options) docTests
+  where
+    haddockArgs = (haddockOptions options) ++ files
 
-toTestCase :: DocTest -> Test
-toTestCase test = TestCase $ do
+
+toTestCase :: [String] -> DocTest -> Test
+toTestCase ghcFlags test = TestCase $ do
   let moduleName = module_ test
   modulePath <- canonicalizePath $ sourceFile
   let baseDir = packageBaseDir modulePath moduleName
-  Interpreter.withInterpreter ["-i" ++ baseDir, sourceFile] $ interactionsToAssertion $ interactions test
+  let ghcArgs = ghcFlags ++ ["-i" ++ baseDir, sourceFile]
+  Interpreter.withInterpreter ghcArgs $ interactionsToAssertion $ interactions test
   where
     sourceFile        = source test
 
