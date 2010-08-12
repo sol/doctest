@@ -3,7 +3,7 @@ module Main where
 import System.Directory (canonicalizePath)
 import System.Environment (getArgs)
 import Test.HUnit (Test(TestList), runTestTT)
-import TestUtil
+import Util
 
 main :: IO ()
 main = do

@@ -1,6 +1,6 @@
-module TestUtil (
+module Util (
     doctestTestCase
-  , TestUtil.cases
+  , Util.cases
   , errors
   , failures
   ) where
@@ -23,19 +23,19 @@ cases n = Counts {
 
 
 -- | Construct a doctest specific 'TestCase'.
-doctestTestCase :: FilePath -- | absolute path to `doctest` binary
-                -> FilePath -- | current directory of forked `doctest` process
-                -> [String] -- | args, given to doctest
-                -> Counts   -- | expected test result
+doctestTestCase :: FilePath -- ^ absolute path to `doctest` binary
+                -> FilePath -- ^ current directory of forked `doctest` process
+                -> [String] -- ^ args, given to doctest
+                -> Counts   -- ^ expected test result
                 -> Test
 doctestTestCase doctest dir args counts = TestCase $ doctestAssert doctest dir args counts
 
 
 -- | Construct a doctest specific 'Assertion'.
-doctestAssert :: FilePath   -- | absolute path to `doctest` binary
-              -> FilePath   -- | current directory of forked `doctest` process
-              -> [String]   -- | args, given to `doctest`
-              -> Counts     -- | expected test result
+doctestAssert :: FilePath   -- ^ absolute path to `doctest` binary
+              -> FilePath   -- ^ current directory of forked `doctest` process
+              -> [String]   -- ^ args, given to `doctest`
+              -> Counts     -- ^ expected test result
               -> Assertion
 doctestAssert doctest workingDir args counts = do
   out <- runDoctest doctest workingDir args
@@ -44,11 +44,11 @@ doctestAssert doctest workingDir args counts = do
     label = workingDir ++ " " ++ show args
 
 
--- | For and run a `doctest` process.
-runDoctest :: FilePath      -- | absolute path to `doctest` binary
-           -> FilePath      -- | current directory of forked `doctest` process
-           -> [String]      -- | args, given to `doctest`
-           -> IO String     -- | final result, as printed by `doctest`
+-- | Fork and run a `doctest` process.
+runDoctest :: FilePath      -- ^ absolute path to `doctest` binary
+           -> FilePath      -- ^ current directory of forked `doctest` process
+           -> [String]      -- ^ args, given to `doctest`
+           -> IO String     -- ^ final result, as printed by `doctest`
 runDoctest doctest workingDir args = do
   cwd <- getCurrentDirectory
   setCurrentDirectory workingDir
