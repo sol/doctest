@@ -36,6 +36,14 @@ main = do
       , doctest "testFailOnMultiline" ["Fib.hs"]
         (cases 2) {errors = 2}
 
+    -- * testNotInScope
+      , doctest "testNotInScope" ["Fib.hs"]
+        (cases 1)
+
+    -- * testBlankline
+      , doctest "testBlankline" ["Fib.hs"]
+        (cases 1)
+
     -- Bugfix tests
     -- ============
 

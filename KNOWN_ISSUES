@@ -1,0 +1,19 @@
+(1) Result lines that only contain the string "<BLANKLINE>" are interpreted as
+    empty lines.  Consequently we can not test expressions that evaluates to
+    "<BLANKLINE>".  Let me know if you really need this feature, and we will
+    work something out.
+
+(2) Lines that start with ">>>" introduce a new expression.  Consequently we
+    can not test expressions that evaluate to something that starts with ">>>".
+    Again, let me know if you really need this, and we will probably work
+    something out.
+ 
+(3) Currently we do not care whether the output produced by an expression is
+    terminated with a newline or not.  So both of the following examples will
+    pass:
+
+    ghci> putStr "foo"
+    "foo"
+
+    ghci> putStrLn "foo"
+    "foo"

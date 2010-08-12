@@ -42,4 +42,9 @@ toTestCase repl test = TestLabel sourceFile $ TestCase $ do
         exampleResult $ lines result'
       where
         exampleExpression = expression x
-        exampleResult     = result x
+        exampleResult     = map subBlankLines $ result x
+
+        -- interpret lines that only contain the string "<BLANKLINE>" as an
+        -- empty line
+        subBlankLines "<BLANKLINE>" = ""
+        subBlankLines line          = line

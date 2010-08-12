@@ -1,5 +1,5 @@
 name:                DocTest
-version:             0.1.1
+version:             0.2.0
 stability:           experimental
 synopsis:            Test interactive Haskell examples
 description:         DocTest checks examples in source code comments.
@@ -15,34 +15,6 @@ author:              Simon Hengel
 maintainer:          simon.hengel@wiktory.org
 build-type:          Simple
 cabal-version:       >= 1.6
-
-extra-source-files:
-    README.markdown
-    DocTest.cabal
-    LICENSE
-    Setup.lhs
-    tests/run.sh
-    tests/TestInterpreter.hs
-    tests/runtests.sh
-    tests/Main.hs
-    tests/bugfixMultipleStatements/Fib.hs
-    tests/testImport/ModuleB.hs
-    tests/testImport/ModuleA.hs
-    tests/run_interpreter_tests.sh
-    tests/bugfixMultipleModules/ModuleB.hs
-    tests/bugfixMultipleModules/ModuleA.hs
-    tests/selftest.sh
-    tests/testCommentLocation/Foo.hs
-    tests/runtests.bat
-    tests/bugfixOutputToStdErr/Fib.hs
-    tests/testFailOnMultiline/Fib.hs
-    tests/testPutStr/Fib.hs
-    tests/bugfixWorkingDirectory/examples/Fib.hs
-    tests/bugfixWorkingDirectory/description
-    tests/bugfixWorkingDirectory/Fib.hs
-    tests/bugfixImportHierarchical/ModuleB.hs
-    tests/bugfixImportHierarchical/ModuleA.hs
-    tests/Util.hs
 
 source-repository head
     type:            git
