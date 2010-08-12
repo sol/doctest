@@ -11,7 +11,7 @@ import System.Process (readProcessWithExitCode)
 import qualified Test.HUnit as HU
 import Test.HUnit (assertEqual, Counts(..), Test(TestCase), Assertion,
                    showCounts)
-import Data.String.Utils (strip, split)
+import Data.Char (isSpace)
 
 cases :: Int -> Counts
 cases n = Counts {
@@ -61,4 +61,13 @@ runDoctest doctest workingDir args = do
       where
         mayCat x y = if null y then "" else unlines ["", x, y]
   where
-    lastLine = strip . last . split "\r"
+    lastLine = reverse . takeWhile (/= '\r') . reverse
+
+-- | Remove leading and trailing whitespace from given string.
+--
+-- Example:
+--
+-- ghci> strip "   \tfoo\nbar  \t\n "
+-- "foo\nbar"
+strip :: String -> String
+strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse

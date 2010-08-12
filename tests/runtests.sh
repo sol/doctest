@@ -7,7 +7,6 @@ DOCTEST="${1:-"../dist/build/doctest/doctest"}"
 if [ -x "$DOCTEST" ]; then
     runhaskell -hide-all-packages \
                -packagebase \
-               -packageMissingH \
                -packageHUnit \
                -packageprocess \
                -packagedirectory \
