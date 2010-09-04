@@ -67,7 +67,7 @@ runDoctest doctest workingDir args = do
 --
 -- Example:
 --
--- ghci> strip "   \tfoo\nbar  \t\n "
+-- >>> strip "   \tfoo\nbar  \t\n "
 -- "foo\nbar"
 strip :: String -> String
 strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse

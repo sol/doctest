@@ -38,7 +38,7 @@ usage = usageInfo header options
 --
 -- Example:
 --
--- ghci> ghcOptions [HaddockOption "-foo", GhcOption "-bar", HaddockOption "-baz"]
+-- >>> ghcOptions [HaddockOption "-foo", GhcOption "-bar", HaddockOption "-baz"]
 -- ["-bar"]
 ghcOptions :: [Option] -> [String]
 ghcOptions opts = filter (not . null) $ map extract opts

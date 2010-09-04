@@ -5,10 +5,10 @@ module Fib where
 --
 -- Examples:
 --
---    ghci> fib 10
+--    >>> fib 10
 --    55
 --
---    ghci> fib 5
+--    >>> fib 5
 --    5
 fib :: (Num t, Num t1) => t -> t1
 fib 0 = 0

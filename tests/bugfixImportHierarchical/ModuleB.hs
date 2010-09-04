@@ -2,9 +2,9 @@ module Foo.ModuleB (fib) where
 
 
 -- |
--- ghci> fib 10
+-- >>> fib 10
 -- 55
--- ghci> fib 5
+-- >>> fib 5
 -- 5
 fib :: Integer -> Integer
 fib 0 = 0

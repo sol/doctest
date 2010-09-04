@@ -2,17 +2,17 @@ module ModuleB (fib) where
 
 
 -- |
--- ghci> fib 10
+-- >>> fib 10
 -- 55
--- ghci> fib 5
+-- >>> fib 5
 -- 5
 fib :: Integer -> Integer
 fib = foo
 
 -- |
--- ghci> foo 10
+-- >>> foo 10
 -- 55
--- ghci> foo 5
+-- >>> foo 5
 -- 5
 foo :: Integer -> Integer
 foo 0 = 0

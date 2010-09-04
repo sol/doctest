@@ -1,5 +1,5 @@
 -- |
--- ghci> fib 10
+-- >>> fib 10
 -- 55
 module ModuleA where
 
