@@ -23,6 +23,7 @@ data Option = Help
 optionDescriptions :: [OptDescr Option]
 optionDescriptions = [
     Option []     ["help"]        (NoArg Help)                    "display this help and exit"
+  , Option ['v']  ["verbose"]     (NoArg Verbose)                 "explain what is being done, enable Haddock warnings"
   , Option []     ["optghc"]      (ReqArg GhcOption "OPTION")     "option to be forwarded to GHC"
   ]
 
@@ -64,4 +65,7 @@ ghcOptions opts = [ option | GhcOption option <- opts ]
 
 -- | Format given list of options for Haddock.
 haddockOptions :: [Option] -> [Haddock.Flag]
-haddockOptions opts = map Haddock.Flag_OptGhc $ ghcOptions opts
+haddockOptions opts = verbosity : ghcOpts
+  where
+    verbosity = if (Verbose `elem` opts) then Haddock.Flag_Verbosity "3" else Haddock.Flag_NoWarnings
+    ghcOpts = map Haddock.Flag_OptGhc $ ghcOptions opts
