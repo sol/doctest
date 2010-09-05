@@ -14,14 +14,12 @@ main = do
   return ();
   where
     tests doctest = TestList [
-    -- dummy
-        doctest "." [] (cases 0)
 
     -- Tests
     -- =====
 
     --  * testImport
-      , doctest "testImport" ["ModuleA.hs"]
+        doctest "testImport" ["ModuleA.hs"]
         (cases 2)
       , doctest ".." ["--optghc=-itests/testImport", "tests/testImport/ModuleA.hs"]
         (cases 2)

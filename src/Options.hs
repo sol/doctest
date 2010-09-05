@@ -1,10 +1,13 @@
 module Options (
   Option(..)
-, parseOptions
+, getOptions
 , ghcOptions
 , haddockOptions
-, usage
 ) where
+
+import Control.Monad (when)
+import System.Environment (getArgs)
+import System.Exit
 
 import System.Console.GetOpt
 
@@ -17,25 +20,36 @@ data Option = Help
             deriving (Show, Eq)
 
 
-options :: [OptDescr Option]
-options = [
+optionDescriptions :: [OptDescr Option]
+optionDescriptions = [
     Option []     ["help"]        (NoArg Help)                    "display this help and exit"
   , Option []     ["optghc"]      (ReqArg GhcOption "OPTION")     "option to be forwarded to GHC"
   ]
 
 
-parseOptions :: [String] -> Either String ([Option], [String])
-parseOptions args =
-   case getOpt Permute options args of
-      (opts, files, []) -> Right $ (opts, files)
-      (_, _, (firstError : _))    -> Left $ "doctest: " ++ firstError ++ "Try `doctest --help' for more information."
+getOptions :: IO ([Option], [String])
+getOptions = do
+  args  <- getArgs
+  let (options, modules, errors) = getOpt Permute optionDescriptions args
 
+  when (Help `elem` options)
+    (printAndExit usage)
 
-usage :: String
-usage = usageInfo header options
+  when ((not . null) errors)
+    (tryHelp $ head errors)
+
+  when (null modules)
+    (tryHelp "no input files\n")
+
+  return (options, modules)
   where
-    header :: String
-    header = "Usage: doctest [OPTION]... MODULE...\n"
+    printAndExit :: String -> IO a
+    printAndExit s = putStr s >> exitWith ExitSuccess
+
+    usage = usageInfo "Usage: doctest [OPTION]... MODULE...\n" optionDescriptions
+
+    tryHelp message = printAndExit $ "doctest: " ++ message
+      ++ "Try `doctest --help' for more information.\n"
 
 
 -- | Extract all ghc options from given list of options.
