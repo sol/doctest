@@ -10,8 +10,12 @@ main = do
   args  <- getArgs
   case parseOptions args of
     Right (options, files) -> do
-      test <- getTest options files
-      _    <- runTestTT test
-      return ()
-    Left usage -> do
-      putStrLn usage
+      if (Help `elem` options)
+        then do
+          putStr usage
+        else do
+          test <- getTest options files
+          _    <- runTestTT test
+          return ()
+    Left message -> do
+      putStrLn message
