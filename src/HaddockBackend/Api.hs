@@ -11,7 +11,8 @@ import Documentation.Haddock(
     Interface(ifaceMod, ifaceOrigFilename)
   , exampleExpression
   , exampleResult
-  , createInterfaces'
+  , createInterfaces
+  , Flag
   )
 
 
@@ -29,10 +30,11 @@ data Interaction = Interaction {
 
 
 -- | Extract 'DocTest's
-getDocTests :: [String]     -- ^ list of Haddock command-line flags
+getDocTests :: [Flag]       -- ^ list of Haddock command-line flags
+            -> [String]     -- ^ file or module names
             -> IO [DocTest] -- ^ extracted 'DocTest's
-getDocTests args = do
-  interfaces <- createInterfaces' args
+getDocTests flags modules = do
+  interfaces <- createInterfaces flags modules
   return $ concat $ map docTestsFromInterface interfaces
 
 

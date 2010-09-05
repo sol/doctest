@@ -7,16 +7,18 @@ module Options (
 
 import System.Console.GetOpt
 
+import qualified Documentation.Haddock as Haddock
 
-data Option = HaddockOption String
+
+data Option = Help
+            | Verbose
             | GhcOption String
             deriving (Show)
 
 
 options :: [OptDescr Option]
 options = [
-    Option []     ["opthaddock"]  (ReqArg HaddockOption "OPTION") "option to be forwarded to Haddock"
-  , Option []     ["optghc"]      (ReqArg GhcOption "OPTION")     "option to be forwarded to GHC"
+    Option []     ["optghc"]      (ReqArg GhcOption "OPTION")     "option to be forwarded to GHC"
   ]
 
 
@@ -38,18 +40,12 @@ usage = usageInfo header options
 --
 -- Example:
 --
--- >>> ghcOptions [HaddockOption "-foo", GhcOption "-bar", HaddockOption "-baz"]
--- ["-bar"]
+-- >>> ghcOptions [Help, GhcOption "-foo", Verbose, GhcOption "-bar"]
+-- ["-foo","-bar"]
 ghcOptions :: [Option] -> [String]
-ghcOptions opts = filter (not . null) $ map extract opts
-  where
-    extract (GhcOption x) = x
-    extract _             = []
+ghcOptions opts = [ option | GhcOption option <- opts ]
 
 
 -- | Format given list of options for Haddock.
-haddockOptions :: [Option] -> [String]
-haddockOptions opts = (map formatOption opts)
-  where
-    formatOption (HaddockOption x) = x
-    formatOption (GhcOption x)     = "--optghc=" ++ x
+haddockOptions :: [Option] -> [Haddock.Flag]
+haddockOptions opts = map Haddock.Flag_OptGhc $ ghcOptions opts

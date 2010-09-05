@@ -7,11 +7,11 @@ import Options
 
 getTest :: [Option] -> [String] -> IO Test
 getTest options files = do
-  docTests <- getDocTests haddockArgs
+  docTests <- getDocTests haddockFlags files
   return $ TestList $ map (toTestCase ghciArgs) docTests
   where
     ghciArgs = ghcOptions options ++ files
-    haddockArgs = haddockOptions options ++ files
+    haddockFlags = haddockOptions options
 
 
 toTestCase :: [String] -> DocTest -> Test
