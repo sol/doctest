@@ -23,20 +23,18 @@ main = do
     return ()
 
 toTestCase :: Interpreter.Interpreter -> DocTest -> Test
-toTestCase repl test = TestCase $ do
+toTestCase repl test = TestLabel sourceFile $ TestCase $ do
   -- bring module into scope before running tests..
   _ <- Interpreter.eval repl $ ":m *" ++ moduleName
   _ <- Interpreter.eval repl $ ":reload"
-  mapM_ interactionToAssertion (interactions test)
+  mapM_ interactionToAssertion $ interactions test
   where
     moduleName = module_ test
     sourceFile = source test
-
     interactionToAssertion x = do
       result' <- Interpreter.eval repl exampleExpression
-      assertEqual sourceFile
-        (exampleResult)
-        (lines result')
+      assertEqual ("expression `" ++ exampleExpression ++ "'")
+        exampleResult $ lines result'
       where
         exampleExpression = expression x
         exampleResult     = result x
