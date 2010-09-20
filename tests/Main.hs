@@ -32,6 +32,10 @@ main = do
       , doctest "testPutStr" ["Fib.hs"]
         (cases 2)
 
+    -- * testFailOnMultiline
+      , doctest "testFailOnMultiline" ["Fib.hs"]
+        (cases 2) {errors = 2}
+
     -- Bugfix tests
     -- ============
 

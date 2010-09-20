@@ -7,6 +7,7 @@ module Interpreter (
 import System.IO
 import System.Process
 import Control.Exception (bracket)
+import Data.Char
 import Data.List
 
 import GHC.Paths (ghc)
@@ -43,7 +44,7 @@ newInterpreter flags = do
 --
 -- Example:
 --
--- ghci> withInterpreter [] $ \i -> eval i "23 + 42"
+-- >>> withInterpreter [] $ \i -> eval i "23 + 42"
 -- "65\n"
 withInterpreter
   :: [String]               -- ^ List of flags, passed to GHC
@@ -60,12 +61,48 @@ closeInterpreter repl = do
 
 putExpression :: Interpreter -> String -> IO ()
 putExpression repl e = do
-  hPutStrLn stdin_ e
+  hPutStrLn stdin_ $ filterExpression e
   hPutStrLn stdin_ marker
   hFlush stdin_
   return ()
   where
     stdin_ = hIn repl
+
+
+-- | Fail on unterminated multiline commands.
+--
+-- Examples:
+--
+-- >>> filterExpression ""
+-- ""
+--
+-- >>> filterExpression "foobar"
+-- "foobar"
+--
+-- >>> filterExpression ":{"
+-- "*** Exception: unterminated multiline command
+--
+-- >>> filterExpression "  :{  "
+-- "*** Exception: unterminated multiline command
+--
+-- >>> filterExpression "  :{  \nfoobar"
+-- "*** Exception: unterminated multiline command
+--
+-- >>> filterExpression "  :{  \nfoobar \n  :}  "
+-- "  :{  \nfoobar \n  :}  "
+--
+filterExpression :: String -> String
+filterExpression e =
+  case lines e of
+    [] -> e
+    l  -> if firstLine == ":{" && lastLine /= ":}" then fail_ else e
+      where
+        firstLine = strip $ head l
+        lastLine  = strip $ last l
+        fail_ = error "unterminated multiline command"
+  where
+    strip :: String -> String
+    strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
 
 
 getResult :: Interpreter -> IO String
