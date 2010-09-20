@@ -1,12 +1,42 @@
 module Main where
 
-import Test.HUnit (runTestTT)
-import DocTest (getTest)
-import Options (getOptions)
+import Test.HUnit (runTestTT, Test(..), assertEqual)
+
+import HaddockBackend.Api
+import Options
+
+import qualified Interpreter
 
 main :: IO ()
 main = do
-  (options, modules) <- getOptions
-  test <- getTest options modules
-  _    <- runTestTT test
-  return ()
+  (options, files) <- getOptions
+  let ghciArgs = ghcOptions options ++ files
+  Interpreter.withInterpreter ghciArgs $ \repl -> do
+
+    -- get examples from Haddock comments
+    let haddockFlags = haddockOptions options
+    docTests <- getDocTests haddockFlags files
+
+    -- map to unit tests
+    let tests = TestList $ map (toTestCase repl) docTests
+    _ <- runTestTT tests
+    return ()
+
+toTestCase :: Interpreter.Interpreter -> DocTest -> Test
+toTestCase repl test = TestCase $ do
+  -- bring module into scope before running tests..
+  _ <- Interpreter.eval repl $ ":m *" ++ moduleName
+  _ <- Interpreter.eval repl $ ":reload"
+  mapM_ interactionToAssertion (interactions test)
+  where
+    moduleName = module_ test
+    sourceFile = source test
+
+    interactionToAssertion x = do
+      result' <- Interpreter.eval repl exampleExpression
+      assertEqual sourceFile
+        (exampleResult)
+        (lines result')
+      where
+        exampleExpression = expression x
+        exampleResult     = result x

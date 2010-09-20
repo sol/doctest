@@ -42,8 +42,7 @@ executable doctest
     hs-source-dirs:  src
     main-is:         Main.hs
     other-modules:
-                      DocTest
-                    , Interpreter
+                      Interpreter
                     , Options
                     , HaddockBackend.Api
                     , HaddockBackend.Markup
