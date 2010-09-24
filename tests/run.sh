@@ -5,6 +5,6 @@ set -o errexit
 
 cd "`dirname $0`"
 
-./run_interpreter_tests.sh
-./runtests.sh
+./hunit/runtests.sh
+./integration/runtests.sh
 ./selftest.sh

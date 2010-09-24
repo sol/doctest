@@ -2,7 +2,7 @@
 
 cd "`dirname $0`"
 
-DOCTEST="${1:-"../dist/build/doctest/doctest"}"
+DOCTEST="${1:-"../../dist/build/doctest/doctest"}"
 
 if [ -x "$DOCTEST" ]; then
     runhaskell -hide-all-packages \

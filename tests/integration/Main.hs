@@ -21,7 +21,7 @@ main = do
     --  * testImport
         doctest "testImport" ["ModuleA.hs"]
         (cases 2)
-      , doctest ".." ["--optghc=-itests/testImport", "tests/testImport/ModuleA.hs"]
+      , doctest ".." ["--optghc=-iintegration/testImport", "integration/testImport/ModuleA.hs"]
         (cases 2)
 
     --  * testCommentLocation

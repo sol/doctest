@@ -1,4 +1,4 @@
-module Main where
+module TestInterpreter (tests) where
 
 import Test.HUnit
 import Interpreter
@@ -15,8 +15,8 @@ data Interaction =
 
 ghci = Interaction
 
-tests :: [InterpreterTest]
-tests = [
+tests_ :: [InterpreterTest]
+tests_ = [
     InterpreterTest "testLocalDeclaration" [
       ghci "let x = 10"
       []
@@ -73,10 +73,7 @@ tests = [
   ]
   ]
 
-main :: IO ()
-main = do
-  _ <- runTestTT $ TestList $ map testFromInterpreterTest tests
-  return ();
+tests = TestLabel "TestInterpreter" $ TestList $ map testFromInterpreterTest tests_
 
 testFromInterpreterTest :: InterpreterTest -> Test
 testFromInterpreterTest (InterpreterTest name expressions) =
