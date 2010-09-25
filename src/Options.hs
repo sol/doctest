@@ -17,21 +17,27 @@ import qualified Documentation.Haddock as Haddock
 data Option = Help
             | Verbose
             | GhcOption String
+            | DumpOnly
             deriving (Show, Eq)
 
 
-optionDescriptions :: [OptDescr Option]
-optionDescriptions = [
+documentedOptions :: [OptDescr Option]
+documentedOptions = [
     Option []     ["help"]        (NoArg Help)                    "display this help and exit"
   , Option ['v']  ["verbose"]     (NoArg Verbose)                 "explain what is being done, enable Haddock warnings"
   , Option []     ["optghc"]      (ReqArg GhcOption "OPTION")     "option to be forwarded to GHC"
+  ]
+
+undocumentedOptions :: [OptDescr Option]
+undocumentedOptions = [
+    Option []     ["dump-only"]   (NoArg DumpOnly)                "dump extracted test cases to stdout"
   ]
 
 
 getOptions :: IO ([Option], [String])
 getOptions = do
   args  <- getArgs
-  let (options, modules, errors) = getOpt Permute optionDescriptions args
+  let (options, modules, errors) = getOpt Permute (documentedOptions ++ undocumentedOptions) args
 
   when (Help `elem` options)
     (printAndExit usage)
@@ -47,7 +53,7 @@ getOptions = do
     printAndExit :: String -> IO a
     printAndExit s = putStr s >> exitWith ExitSuccess
 
-    usage = usageInfo "Usage: doctest [OPTION]... MODULE...\n" optionDescriptions
+    usage = usageInfo "Usage: doctest [OPTION]... MODULE...\n" documentedOptions
 
     tryHelp message = printAndExit $ "doctest: " ++ message
       ++ "Try `doctest --help' for more information.\n"
