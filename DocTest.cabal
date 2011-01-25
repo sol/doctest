@@ -1,5 +1,5 @@
 name:                DocTest
-version:             0.1.0
+version:             0.1.1
 stability:           experimental
 synopsis:            Test interactive Haskell examples
 description:         DocTest checks examples in source code comments.
