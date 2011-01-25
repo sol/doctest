@@ -58,10 +58,10 @@ executable doctest
                     , HaddockBackend.Markup
 
     build-depends:
-                       base      >= 4.0.0.0 && < 4.3.0.0
-                     , containers == 0.3.*
-                     , HUnit     == 1.2.*
-                     , process   == 1.0.*
-                     , haddock   == 2.8.*
-                     , ghc-paths == 0.1.*
-                     , ghc       == 6.12.*
+                       base       >= 4.0  && < 4.4
+                     , containers >= 0.3  && < 0.5
+                     , haddock    >= 2.8  && < 2.10
+                     , ghc        >= 6.12 && < 7.2
+                     , ghc-paths  == 0.1.*
+                     , HUnit      == 1.2.*
+                     , process    == 1.0.*
