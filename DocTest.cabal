@@ -45,7 +45,7 @@ extra-source-files:
 
 source-repository head
     type:            git
-    location:        http://code.haskell.org/~sih/code/DocTest.git/
+    location:        git://github.com/sol/doctest-haskell.git
 
 executable doctest
     ghc-options:     -Wall
