@@ -17,6 +17,7 @@ build-type:          Simple
 cabal-version:       >= 1.6
 
 extra-source-files:
+    README.markdown
     DocTest.cabal
     LICENSE
     Setup.lhs
