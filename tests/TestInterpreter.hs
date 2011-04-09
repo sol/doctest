@@ -39,7 +39,7 @@ tests = [
   , InterpreterTest "testNotInScope" [
       ghci "foo"
       "\n\
-      \<interactive>:1:0: Not in scope: `foo'\n"
+      \<interactive>:1:1: Not in scope: `foo'\n"
   ]
   , InterpreterTest "testStdOutErr" [
       ghci "import System.IO"
