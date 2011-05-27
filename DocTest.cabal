@@ -11,6 +11,7 @@ category:            Testing
 homepage:            http://haskell.org/haskellwiki/DocTest
 license:             MIT
 license-file:        LICENSE
+copyright:           (c) 2009-2011 Simon Hengel
 author:              Simon Hengel
 maintainer:          simon.hengel@wiktory.org
 build-type:          Simple
