@@ -38,7 +38,7 @@ main = do
 
     -- * testNotInScope
       , doctest "testNotInScope" ["Fib.hs"]
-        (cases 1)
+        (cases 1) {failures = 1}
 
     -- * testBlankline
       , doctest "testBlankline" ["Fib.hs"]
