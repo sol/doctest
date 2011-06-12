@@ -16,14 +16,13 @@ import Documentation.Haddock (
 
 -- | Extract all 'Example's from given 'Interface'.
 examplesFromInterface :: Interface -> [[Example]]
-examplesFromInterface interface =
-  fromModuleHeader ++ fromExportItems ++ fromDeclarations
+examplesFromInterface interface = filter (not . null) $ [fromModuleHeader] ++ fromExportItems ++ fromDeclarations
   where
     fromModuleHeader = case ifaceRnDoc interface of
       Just doc  -> extract doc
       Nothing   -> []
     fromExportItems =
-      concatMap extractFromExportItem . ifaceRnExportItems $ interface
+      map extractFromExportItem . ifaceRnExportItems $ interface
       where
         extractFromExportItem (ExportDoc doc) = extract doc
         extractFromExportItem _ = []
@@ -33,23 +32,23 @@ fromDeclMap :: Map Name (DocForDecl DocName) -> [[Example]]
 fromDeclMap docMap = concatMap docForDeclName $ Map.elems docMap
 
 docForDeclName :: DocForDecl name -> [[Example]]
-docForDeclName (declDoc, argsDoc)  = declExamples ++ argsExamples
+docForDeclName (declDoc, argsDoc)  = argsExamples:declExamples
   where
     declExamples = extractFromMap argsDoc
     argsExamples = extractFromMaybe declDoc
 
-extractFromMaybe :: Maybe (Doc name) -> [[Example]]
+extractFromMaybe :: Maybe (Doc name) -> [Example]
 extractFromMaybe (Just doc) = extract doc
 extractFromMaybe Nothing    = []
 
 extractFromMap :: Map key (Doc name) -> [[Example]]
-extractFromMap m = concatMap extract $ Map.elems m
+extractFromMap m = map extract $ Map.elems m
 
 -- | Extract all 'Example's from given 'Doc' node.
-extract :: Doc name -> [[Example]]
+extract :: Doc name -> [Example]
 extract = markup exampleMarkup
   where
-    exampleMarkup :: DocMarkup name [[Example]]
+    exampleMarkup :: DocMarkup name [Example]
     exampleMarkup = Markup {
       markupEmpty         = [],
       markupString        = const [],
@@ -66,7 +65,7 @@ extract = markup exampleMarkup
       markupURL           = const [],
       markupAName         = const [],
       markupPic           = const [],
-      markupExample       = return
+      markupExample       = id
       }
       where
         combineTuple = uncurry (++)
