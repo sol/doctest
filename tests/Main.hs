@@ -26,19 +26,19 @@ main = do
 
     --  * testCommentLocation
       , doctest "." ["testCommentLocation/Foo.hs"]
-        (cases 11)
+        (cases 8)
 
     -- * testPutStr
       , doctest "testPutStr" ["Fib.hs"]
-        (cases 2)
+        (cases 1)
 
     -- * testFailOnMultiline
       , doctest "testFailOnMultiline" ["Fib.hs"]
-        (cases 2) {errors = 2}
+        (cases 1) {errors = 1}
 
     -- * testNotInScope
       , doctest "testNotInScope" ["Fib.hs"]
-        (cases 1)
+        (cases 1) {failures = 1}
 
     -- * testBlankline
       , doctest "testBlankline" ["Fib.hs"]
@@ -51,7 +51,7 @@ main = do
       , doctest "bugfixWorkingDirectory" ["Fib.hs"]
         (cases 1)
       , doctest "bugfixWorkingDirectory" ["examples/Fib.hs"]
-        (cases 2)
+        (cases 1)
 
     -- * bugfixOutputToStdErr
       , doctest "bugfixOutputToStdErr" ["Fib.hs"]
