@@ -71,7 +71,7 @@ ghcOptions opts = [ option | GhcOption option <- opts ]
 
 -- | Format given list of options for Haddock.
 haddockOptions :: [Option] -> [Haddock.Flag]
-haddockOptions opts = verbosity : ghcOpts
+haddockOptions opts = verbosity ++ ghcOpts
   where
-    verbosity = if (Verbose `elem` opts) then Haddock.Flag_Verbosity "3" else Haddock.Flag_NoWarnings
+    verbosity = if (Verbose `elem` opts) then [Haddock.Flag_Verbosity "3"] else [Haddock.Flag_Verbosity "0", Haddock.Flag_NoWarnings]
     ghcOpts = map Haddock.Flag_OptGhc $ ghcOptions opts

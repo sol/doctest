@@ -20,13 +20,13 @@ data DocTest = DocExample {
     source        :: String -- ^ source file
   , module_       :: String -- ^ originating module
   , interactions  :: [Interaction]
-} deriving Show
+} deriving (Eq, Show, Read)
 
 
 data Interaction = Interaction {
     expression :: String    -- ^ example expression
   , result     :: [String]  -- ^ expected result
-} deriving Show
+} deriving (Eq, Show, Read)
 
 
 -- | Extract 'DocTest's
