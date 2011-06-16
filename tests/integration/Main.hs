@@ -44,6 +44,10 @@ main = do
       , doctest "testBlankline" ["Fib.hs"]
         (cases 1)
 
+    -- * testCombinedExample
+      , doctest "testCombinedExample" ["Fib.hs"]
+        (cases 1)
+
     -- Bugfix tests
     -- ============
 
