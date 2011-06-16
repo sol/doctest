@@ -51,7 +51,7 @@ main = do
       , doctest "bugfixWorkingDirectory" ["Fib.hs"]
         (cases 1)
       , doctest "bugfixWorkingDirectory" ["examples/Fib.hs"]
-        (cases 1)
+        (cases 2)
 
     -- * bugfixOutputToStdErr
       , doctest "bugfixOutputToStdErr" ["Fib.hs"]
