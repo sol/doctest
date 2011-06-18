@@ -4,8 +4,9 @@ Use 'getDocTests' to extract the 'DocTest' examples from the Haddock
 comments. To verify that the examples work turn the 'DocTest' examples
 into 'Test.HUnit.Test' test cases with the help of
 'Interpreter.withInterpreter' and 'toTestCase'. After this just wrap
-the newly minted 'Test.HUnit.Test' cases into something
-suitable for your favorite test framework.
+the newly minted 'Test.HUnit.Test' cases into something suitable for
+your favorite test framework. If you need a plain
+'Test.HUnit.Assertion' use 'toAssertion'.
 
 -}
 
@@ -14,6 +15,7 @@ module DocTest (
   , DocTest(..)
   , Interaction(..)
   , toTestCase
+  , toAssertion
   , Interpreter.withInterpreter
   , Interpreter.Interpreter
   ) where
