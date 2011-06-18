@@ -32,9 +32,10 @@ interference.
 -}
 
 toTestCase :: Interpreter.Interpreter -> DocTest -> Test
-toTestCase repl test = TestLabel sourceFile $ TestCase $ toAssertion repl test
+toTestCase repl test = TestLabel (sourceFile ++ " : " ++ firstLine) $ TestCase $ toAssertion repl test
   where
     sourceFile = source test
+    firstLine = expression $ head $ interactions test
 
 toAssertion :: Interpreter.Interpreter -> DocTest -> Assertion
 toAssertion repl test = do
