@@ -29,7 +29,10 @@ data Interaction = Interaction {
 } deriving (Eq, Show, Read)
 
 
--- | Extract 'DocTest's
+-- | Extract 'DocTest' from modules and all modules included by the given modules
+--
+-- Note that this function can be called only once during the process lifetime
+-- so use it wisely
 getDocTests :: [Flag]       -- ^ list of Haddock command-line flags
             -> [String]     -- ^ file or module names
             -> IO [DocTest] -- ^ extracted 'DocTest's
