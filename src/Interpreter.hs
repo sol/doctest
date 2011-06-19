@@ -6,6 +6,8 @@ module Interpreter (
 
 import System.IO
 import System.Process
+import System.Exit
+import Control.Monad(when)
 import Control.Exception (bracket)
 import Data.Char
 import Data.List
@@ -58,8 +60,8 @@ closeInterpreter :: Interpreter -> IO ()
 closeInterpreter repl = do
   hClose $ hIn repl
   hClose $ hOut repl
-
-  _ <- waitForProcess $ process repl
+  e <- waitForProcess $ process repl
+  when (e /= ExitSuccess) $ error $ "Interpreter exited with an error: " ++ show e 
   return ()
 
 putExpression :: Interpreter -> String -> IO ()
