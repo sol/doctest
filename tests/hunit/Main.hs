@@ -1,10 +1,7 @@
-module Main where
+module Main (main) where
 
-import Test.HUnit
+import Test.Framework (defaultMain)
 
 import qualified TestInterpreter
 
-main :: IO ()
-main = do
-  _ <- runTestTT $ TestInterpreter.tests
-  return ();
+main = defaultMain [TestInterpreter.tests]
