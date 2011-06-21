@@ -59,8 +59,15 @@ withInterpreter flags = bracket (newInterpreter flags) closeInterpreter
 closeInterpreter :: Interpreter -> IO ()
 closeInterpreter repl = do
   hClose $ hIn repl
-  hClose $ hOut repl
+
+  -- It is crucial not to close `hOut` before calling `waitForProcess`,
+  -- otherwise ghci may not cleanly terminate on SIGINT (ctrl-c) and hang
+  -- around consuming 100% CPU.  This happens when ghci tries to print
+  -- something to stdout in its signal handler (e.g. when it is blocked in
+  -- threadDelay it writes "Interrupted." on SIGINT).
   e <- waitForProcess $ process repl
+  hClose $ hOut repl
+
   when (e /= ExitSuccess) $ error $ "Interpreter exited with an error: " ++ show e 
   return ()
 
