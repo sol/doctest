@@ -24,13 +24,14 @@ source-repository head
 library
     ghc-options:     -Wall
     hs-source-dirs:  src
+    exposed-modules: Test.DocTest
     other-modules:
                       Interpreter
                     , Options
                     , HaddockBackend.Api
                     , HaddockBackend.Markup
-    exposed-modules:
-                     DocTest
+                    , DocTest
+
     build-depends:
                        base       >= 4.0  && < 4.4
                      , containers >= 0.3  && < 0.5
@@ -49,6 +50,7 @@ executable doctest
                     , Options
                     , HaddockBackend.Api
                     , HaddockBackend.Markup
+                    , DocTest
 
     build-depends:
                        base       >= 4.0  && < 4.4
