@@ -1,7 +1,7 @@
-What is DocTest
+What is `doctest`
 ===============
 
-DocTest is a small program, that checks
+`doctest` is a small program, that checks
 [examples in Haddock comments](http://www.haskell.org/haddock/doc/html/ch03s08.html#id566093).
 It is modeled after
 [doctest for Python](http://docs.python.org/library/doctest.html).
@@ -11,8 +11,8 @@ It is modeled after
 Installation
 ============
 
-DocTest is available from
-[Hackage](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/DocTest).
+`doctest` is available from
+[Hackage](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/doctest).
 Install it, by typing:
 
     cabal install doctest
@@ -47,7 +47,7 @@ Result is defined by what an
 [REPL](http://en.wikipedia.org/wiki/Read-eval-print_loop) (e.g. ghci)
 prints to `stdout` and `stderr` when evaluating that expression.)
 
-With DocTest you may check whether the implementation satisfies the given examples, by typing:
+With `doctest` you may check whether the implementation satisfies the given examples, by typing:
 
     doctest Fib.hs
 
@@ -59,8 +59,7 @@ You may produce Haddock documentation for that module with:
 Hacking
 =======
 
-DocTest is still experimental.
-Patches are gladly welcome!
+`doctest` is still experimental.  Patches are gladly welcome!
 
 
 Contributors (in order of appearance)
