@@ -41,7 +41,7 @@ library
                      , process    == 1.0.*
 
 executable doctest
-    ghc-options:     -Wall
+    ghc-options:     -Wall -threaded
     hs-source-dirs:  src
     main-is:         Main.hs
     other-modules:
