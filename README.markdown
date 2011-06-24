@@ -61,3 +61,11 @@ Hacking
 
 DocTest is still experimental.
 Patches are gladly welcome!
+
+
+Contributors (in order of appearance)
+=====================================
+
+Simon Hengel \<simon.hengel@wiktory.org\>
+
+Sakari Jokinen \<sakariij@gmail.com\>

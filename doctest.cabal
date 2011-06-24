@@ -6,9 +6,9 @@ description:         The doctest program checks examples in source code comments
                      It is modeled after doctest for Python
                      (<http://docs.python.org/library/doctest.html>).
                      .
-                     Documentation is at <http://haskell.org/haskellwiki/DocTest>.
+                     Documentation is at <https://github.com/sol/doctest-haskell#readme>.
 category:            Testing
-homepage:            http://haskell.org/haskellwiki/DocTest
+homepage:            https://github.com/sol/doctest-haskell#readme
 license:             MIT
 license-file:        LICENSE
 copyright:           (c) 2009-2011 Simon Hengel
