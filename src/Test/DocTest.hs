@@ -9,7 +9,7 @@ suitable for your favorite test framework.
 
 -}
 
-module DocTest (
+module Test.DocTest (
   getDocTests
   , DocTest(..)
   , Interaction(..)

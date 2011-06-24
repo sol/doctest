@@ -4,7 +4,7 @@ import Test.HUnit (runTestTT, Test(..))
 
 import HaddockBackend.Api
 import Options
-import DocTest
+import Test.DocTest
 
 import qualified Interpreter
 
