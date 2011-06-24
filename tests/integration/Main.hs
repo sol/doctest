@@ -73,6 +73,12 @@ main = do
       , doctest "bugfixMultipleModules" ["ModuleA.hs"]
         (cases 3)
 
+    -- * testCPP
+      , doctest "testCPP" ["--optghc=-cpp", "Foo.hs"]
+        (cases 1) {failures = 1}
+      , doctest "testCPP" ["--optghc=-cpp", "--optghc=-DFOO", "Foo.hs"]
+        (cases 1)
+
     -- Open bugs
     -- =========
 
