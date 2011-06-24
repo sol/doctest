@@ -18,8 +18,12 @@ main = do
     -- Tests
     -- =====
 
+    --  * testFail
+        doctest "." ["testFail/Foo.hs"]
+        (cases 1) {failures = 1}
+
     --  * testImport
-        doctest "testImport" ["ModuleA.hs"]
+      , doctest "testImport" ["ModuleA.hs"]
         (cases 2)
       , doctest ".." ["--optghc=-iintegration/testImport", "integration/testImport/ModuleA.hs"]
         (cases 2)
