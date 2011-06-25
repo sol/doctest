@@ -1,9 +1,10 @@
 module Main where
 
-import Test.HUnit (runTestTT, Test(..), assertEqual)
+import Test.HUnit (runTestTT, Test(..))
 
 import HaddockBackend.Api
 import Options
+import Test.DocTest
 
 import qualified Interpreter
 
@@ -26,25 +27,3 @@ main = do
         let tests = TestList $ map (toTestCase repl) docTests
         _ <- runTestTT tests
         return ()
-
-toTestCase :: Interpreter.Interpreter -> DocTest -> Test
-toTestCase repl test = TestLabel sourceFile $ TestCase $ do
-  -- bring module into scope before running tests..
-  _ <- Interpreter.eval repl $ ":m *" ++ moduleName
-  _ <- Interpreter.eval repl $ ":reload"
-  mapM_ interactionToAssertion $ interactions test
-  where
-    moduleName = module_ test
-    sourceFile = source test
-    interactionToAssertion x = do
-      result' <- Interpreter.eval repl exampleExpression
-      assertEqual ("expression `" ++ exampleExpression ++ "'")
-        exampleResult $ lines result'
-      where
-        exampleExpression = expression x
-        exampleResult     = map subBlankLines $ result x
-
-        -- interpret lines that only contain the string "<BLANKLINE>" as an
-        -- empty line
-        subBlankLines "<BLANKLINE>" = ""
-        subBlankLines line          = line
