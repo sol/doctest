@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# put into /etc/bash_completion.d/
+#
 _doctest() 
 {
     local cur prev opts
@@ -20,7 +23,7 @@ _doctest()
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
     else
-       _filedir
+        _filedir
     fi
 }
 complete -F _doctest doctest
