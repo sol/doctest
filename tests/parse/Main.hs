@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, StandaloneDeriving #-}
 module Main where
 
 import Test.Framework.TH
@@ -46,6 +46,11 @@ case_parseTestSimple = parseTest "parseTestSimple"  ["Fib.hs"]
       ]
     ]
   ]
+
+deriving instance Read Interaction
+deriving instance Read DocTest
+deriving instance Eq Interaction
+deriving instance Eq DocTest
 
 parseTest workingDir sourceFiles expectedResult = do
 
