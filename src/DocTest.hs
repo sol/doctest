@@ -16,8 +16,6 @@ module DocTest (
   , Interaction(..)
   , toTestCase
   , toAssertion
-  , Interpreter.withInterpreter
-  , Interpreter.Interpreter
   ) where
 
 import Test.HUnit (Test(..), assertEqual, Assertion)
