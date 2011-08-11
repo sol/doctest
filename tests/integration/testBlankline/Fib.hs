@@ -1,7 +1,5 @@
 module Fib where
 
-import System
-
 -- | Calculate Fibonacci number of given 'Num'.
 --
 -- >>> putStrLn "foo\n\nbar"
