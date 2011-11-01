@@ -35,7 +35,7 @@ library
     build-depends:
                        base       >= 4.0  && < 4.4
                      , containers >= 0.3  && < 0.5
-                     , haddock    >= 2.8  && < 2.10
+                     , haddock    >= 2.8  && <= 2.9.2
                      , ghc        >= 6.12 && < 7.2
                      , ghc-paths  == 0.1.*
                      , HUnit      == 1.2.*
@@ -55,7 +55,7 @@ executable doctest
     build-depends:
                        base       >= 4.0  && < 4.4
                      , containers >= 0.3  && < 0.5
-                     , haddock    >= 2.8  && < 2.10
+                     , haddock    >= 2.8  && <= 2.9.2
                      , ghc        >= 6.12 && < 7.2
                      , ghc-paths  == 0.1.*
                      , HUnit      == 1.2.*
