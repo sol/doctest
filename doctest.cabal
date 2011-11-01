@@ -33,13 +33,13 @@ library
                     , DocTest
 
     build-depends:
-                       base       >= 4.0  && < 4.5
+                       base       >= 4.0  && < 4.4
                      , containers >= 0.3  && < 0.5
                      , haddock    >= 2.8  && < 2.10
-                     , ghc        >= 6.12 && < 7.4
+                     , ghc        >= 6.12 && < 7.2
                      , ghc-paths  == 0.1.*
                      , HUnit      == 1.2.*
-                     , process    >= 1.0 &&  < 1.2
+                     , process    == 1.0.*
 
 executable doctest
     ghc-options:     -Wall -threaded
@@ -53,10 +53,10 @@ executable doctest
                     , DocTest
 
     build-depends:
-                       base       >= 4.0  && < 4.5
+                       base       >= 4.0  && < 4.4
                      , containers >= 0.3  && < 0.5
                      , haddock    >= 2.8  && < 2.10
-                     , ghc        >= 6.12 && < 7.4
+                     , ghc        >= 6.12 && < 7.2
                      , ghc-paths  == 0.1.*
                      , HUnit      == 1.2.*
-                     , process    >= 1.0 &&  < 1.2
+                     , process    == 1.0.*
