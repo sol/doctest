@@ -7,6 +7,7 @@ module Interpreter (
 import System.IO
 import System.Process
 import System.Exit
+import System.Directory (getPermissions, executable)
 import Control.Monad(when)
 import Control.Exception (bracket)
 import Data.Char
@@ -30,6 +31,13 @@ data Interpreter = Interpreter {
 
 newInterpreter :: [String] -> IO Interpreter
 newInterpreter flags = do
+
+  -- in a perfect world this permission check should never fail, but I know of
+  -- at least one case where it did..
+  x <- getPermissions ghc
+  when (not $ executable x) $ do
+    fail $ ghc ++ " is not executable!"
+
   (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc ghc myFlags) {std_in = CreatePipe, std_out = CreatePipe, std_err = UseHandle stdout}
   setMode stdin_
   setMode stdout_
