@@ -12,8 +12,8 @@
     terminated with a newline or not.  So both of the following examples will
     pass:
 
-    ghci> putStr "foo"
+    >>> putStr "foo"
     "foo"
 
-    ghci> putStrLn "foo"
+    >>> putStrLn "foo"
     "foo"
