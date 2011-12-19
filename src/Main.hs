@@ -1,6 +1,7 @@
 module Main where
 
-import Test.HUnit (runTestTT, Test(..))
+import Test.HUnit (runTestTT, Test(..), Counts(..))
+import System.Exit (exitSuccess, exitFailure)
 
 import HaddockBackend.Api
 import Options
@@ -25,5 +26,7 @@ main = do
       else do
         -- map to unit tests
         let tests = TestList $ map (toTestCase repl) docTests
-        _ <- runTestTT tests
-        return ()
+        Counts _ _ e f <- runTestTT tests
+        if e == 0 && f == 0
+          then exitSuccess
+          else exitFailure

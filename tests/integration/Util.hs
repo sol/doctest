@@ -54,20 +54,6 @@ runDoctest doctest workingDir args = do
   setCurrentDirectory workingDir
   (exit, out, err) <- readProcessWithExitCode doctest args ""
   setCurrentDirectory cwd
-  case exit of
-    ExitSuccess -> return $ lastLine err
-    _           ->
-      error $ mayCat "STDERR:" (strip err) ++ mayCat "STDOUT:" (strip out)
-      where
-        mayCat x y = if null y then "" else unlines ["", x, y]
+  return $ lastLine err
   where
     lastLine = reverse . takeWhile (/= '\r') . reverse
-
--- | Remove leading and trailing whitespace from given string.
---
--- Example:
---
--- >>> strip "   \tfoo\nbar  \t\n "
--- "foo\nbar"
-strip :: String -> String
-strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
