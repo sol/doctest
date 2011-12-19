@@ -26,7 +26,7 @@ main = do
       else do
         -- map to unit tests
         let tests = TestList $ map (toTestCase repl) docTests
-        Counts _ _ e f <- runTestTT tests
-        if e == 0 && f == 0
+        Counts _ _ errCount failCount <- runTestTT tests
+        if errCount == 0 && failCount == 0
           then exitSuccess
           else exitFailure
