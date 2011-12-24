@@ -19,6 +19,9 @@ main = do
     let haddockFlags = haddockOptions options
     docTests <- getDocTests haddockFlags files
 
+    let (tCount, iCount) = (length docTests, length (concatMap interactions docTests))
+    putStrLn $ "There are " ++ show tCount ++ " tests, with " ++ show iCount ++ " total interactions."
+
     if DumpOnly `elem` options
       then do
         -- dump to stdout
