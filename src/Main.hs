@@ -2,6 +2,7 @@ module Main where
 
 import Test.HUnit (runTestTT, Test(..), Counts(..))
 import System.Exit (exitSuccess, exitFailure)
+import System.IO
 
 import HaddockBackend.Api
 import Options
@@ -20,7 +21,7 @@ main = do
     docTests <- getDocTests haddockFlags files
 
     let (tCount, iCount) = (length docTests, length (concatMap interactions docTests))
-    putStrLn $ "There are " ++ show tCount ++ " tests, with " ++ show iCount ++ " total interactions."
+    hPutStrLn stderr $ "There are " ++ show tCount ++ " tests, with " ++ show iCount ++ " total interactions."
 
     if DumpOnly `elem` options
       then do
