@@ -36,8 +36,9 @@ toAssertion repl test = do
         exampleResult $ lines result'
       where
         exampleExpression = expression x
-        exampleResult     = map subBlankLines $ result x
-
+        exampleResult     = case map subBlankLines $ result x of
+            [] -> ["True"]
+            xs -> xs
         -- interpret lines that only contain the string "<BLANKLINE>" as an
         -- empty line
         subBlankLines "<BLANKLINE>" = ""
