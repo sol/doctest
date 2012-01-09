@@ -11,15 +11,15 @@ category:            Testing
 homepage:            https://github.com/sol/doctest-haskell#readme
 license:             MIT
 license-file:        LICENSE
-copyright:           (c) 2009-2011 Simon Hengel
-author:              Simon Hengel
-maintainer:          simon.hengel@wiktory.org
+copyright:           (c) 2009-2012 Simon Hengel
+author:              Simon Hengel <sol@typeful.net>
+maintainer:          Simon Hengel <sol@typeful.net>
 build-type:          Simple
 cabal-version:       >= 1.6
 
 source-repository head
     type:            git
-    location:        git://github.com/sol/doctest-haskell.git
+    location:        https://github.com/sol/doctest-haskell
 
 library
     ghc-options:     -Wall

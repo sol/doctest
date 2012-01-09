@@ -65,6 +65,6 @@ Hacking
 Contributors (in order of appearance)
 =====================================
 
-Simon Hengel \<simon.hengel@wiktory.org\>
+Simon Hengel \<sol@typeful.net\>
 
 Sakari Jokinen \<sakariij@gmail.com\>
