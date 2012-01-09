@@ -62,9 +62,7 @@ Hacking
 `doctest` is still experimental.  Patches are gladly welcome!
 
 
-Contributors (in order of appearance)
-=====================================
+Contributors
+============
 
-Simon Hengel \<sol@typeful.net\>
-
-Sakari Jokinen \<sakariij@gmail.com\>
+[List of contributors](https://github.com/sol/doctest-haskell/contributors).
