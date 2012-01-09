@@ -59,10 +59,13 @@ You may produce Haddock documentation for that module with:
 Hacking
 =======
 
-`doctest` is still experimental.  Patches are gladly welcome!
+Submit pull request on GitHub.  Add tests for new features.  Make sure that the
+test suite passes with your changes, before submitting any pull requests:
+
+    cabal clean && cabal install && ./tests/runtests.sh
 
 
 Contributors
 ============
 
-[List of contributors](https://github.com/sol/doctest-haskell/contributors).
+See the [list of contributors](https://github.com/sol/doctest-haskell/contributors).
