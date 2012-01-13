@@ -1,5 +1,5 @@
 name:                doctest
-version:             0.4.2
+version:             0.5.0
 synopsis:            Test interactive Haskell examples
 description:         The doctest program checks examples in source code comments.
                      It is modeled after doctest for Python
@@ -7,6 +7,7 @@ description:         The doctest program checks examples in source code comments
                      .
                      Documentation is at <https://github.com/sol/doctest-haskell#readme>.
 category:            Testing
+bug-reports:         https://github.com/sol/doctest-haskell/issues
 homepage:            https://github.com/sol/doctest-haskell#readme
 license:             MIT
 license-file:        LICENSE

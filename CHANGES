@@ -1,0 +1,5 @@
+Changes in 0.5.0
+  * Print number of interactions to stderr before running tests
+  * Exit with exitFailure on failed tests
+  * Improve documentation
+  * Give a useful error message if ghc is not executable
