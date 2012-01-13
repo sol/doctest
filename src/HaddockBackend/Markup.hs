@@ -35,11 +35,7 @@ docForDeclName :: DocForDecl name -> [[Example]]
 docForDeclName (declDoc, argsDoc)  = argsExamples:declExamples
   where
     declExamples = extractFromMap argsDoc
-    argsExamples = extractFromMaybe declDoc
-
-extractFromMaybe :: Maybe (Doc name) -> [Example]
-extractFromMaybe (Just doc) = extract doc
-extractFromMaybe Nothing    = []
+    argsExamples = maybe [] extract declDoc
 
 extractFromMap :: Map key (Doc name) -> [[Example]]
 extractFromMap m = map extract $ Map.elems m
@@ -60,7 +56,7 @@ extract = markup exampleMarkup
       markupMonospaced    = id,
       markupUnorderedList = concat,
       markupOrderedList   = concat,
-      markupDefList       = concat . map combineTuple,
+      markupDefList       = concatMap combineTuple,
       markupCodeBlock     = id,
       markupURL           = const [],
       markupAName         = const [],
