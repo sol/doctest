@@ -52,6 +52,10 @@ main = do
       , doctest "testCombinedExample" ["Fib.hs"]
         (cases 1)
 
+    -- * testDocumentationForArguments
+      , doctest "testDocumentationForArguments" ["Fib.hs"]
+        (cases 1)
+
     -- Bugfix tests
     -- ============
 
