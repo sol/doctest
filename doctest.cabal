@@ -1,64 +1,75 @@
-name:                doctest
-version:             0.5.0
-synopsis:            Test interactive Haskell examples
-description:         The doctest program checks examples in source code comments.
-                     It is modeled after doctest for Python
-                     (<http://docs.python.org/library/doctest.html>).
-                     .
-                     Documentation is at <https://github.com/sol/doctest-haskell#readme>.
-category:            Testing
-bug-reports:         https://github.com/sol/doctest-haskell/issues
-homepage:            https://github.com/sol/doctest-haskell#readme
-license:             MIT
-license-file:        LICENSE
-copyright:           (c) 2009-2012 Simon Hengel
-author:              Simon Hengel <sol@typeful.net>
-maintainer:          Simon Hengel <sol@typeful.net>
-build-type:          Simple
-cabal-version:       >= 1.6
+name:             doctest
+version:          0.5.0
+synopsis:         Test interactive Haskell examples
+description:      The doctest program checks examples in source code comments.
+                  It is modeled after doctest for Python
+                  (<http://docs.python.org/library/doctest.html>).
+                  .
+                  Documentation is at
+                  <https://github.com/sol/doctest-haskell#readme>.
+category:         Testing
+bug-reports:      https://github.com/sol/doctest-haskell/issues
+homepage:         https://github.com/sol/doctest-haskell#readme
+license:          MIT
+license-file:     LICENSE
+copyright:        (c) 2009-2012 Simon Hengel
+author:           Simon Hengel <sol@typeful.net>
+maintainer:       Simon Hengel <sol@typeful.net>
+build-type:       Simple
+cabal-version:    >= 1.6
 
 source-repository head
-    type:            git
-    location:        https://github.com/sol/doctest-haskell
+  type: git
+  location: https://github.com/sol/doctest-haskell
 
 library
-    ghc-options:     -Wall
-    hs-source-dirs:  src
-    exposed-modules: Test.DocTest
-    other-modules:
-                      Interpreter
-                    , Options
-                    , HaddockBackend.Api
-                    , HaddockBackend.Markup
-                    , DocTest
-
-    build-depends:
-                       base       >= 4.0  && < 4.4
-                     , containers >= 0.3  && < 0.5
-                     , haddock    >= 2.8  && <= 2.9.2
-                     , ghc        >= 6.12 && < 7.2
-                     , ghc-paths  == 0.1.*
-                     , HUnit      == 1.2.*
-                     , process    == 1.0.*
-                     , directory
+  exposed-modules:
+      Test.DocTest
+  ghc-options:
+      -Wall
+  hs-source-dirs:
+      src
+  other-modules:
+      Interpreter
+    , Options
+    , HaddockBackend.Api
+    , HaddockBackend.Markup
+    , DocTest
+  build-depends:
+      base        >= 4.0  && < 4.5
+    , ghc         >= 6.12 && < 7.4
+    , directory
+    , containers
+    , process
+    , ghc-paths   == 0.1.*
+    , HUnit       == 1.2.*
+  if impl(ghc >= 7.2)
+    build-depends: haddock >= 2.9.4 && < 2.10
+  else
+    build-depends: haddock >= 2.8 && <= 2.9.2
 
 executable doctest
-    ghc-options:     -Wall -threaded
-    hs-source-dirs:  src
-    main-is:         Main.hs
-    other-modules:
-                      Interpreter
-                    , Options
-                    , HaddockBackend.Api
-                    , HaddockBackend.Markup
-                    , DocTest
-
-    build-depends:
-                       base       >= 4.0  && < 4.4
-                     , containers >= 0.3  && < 0.5
-                     , haddock    >= 2.8  && <= 2.9.2
-                     , ghc        >= 6.12 && < 7.2
-                     , ghc-paths  == 0.1.*
-                     , HUnit      == 1.2.*
-                     , process    == 1.0.*
-                     , directory
+  main-is:
+      Main.hs
+  ghc-options:
+      -Wall -threaded
+  hs-source-dirs:
+      src
+  other-modules:
+      Interpreter
+    , Options
+    , HaddockBackend.Api
+    , HaddockBackend.Markup
+    , DocTest
+  build-depends:
+      base        >= 4.0  && < 4.5
+    , ghc         >= 6.12 && < 7.4
+    , directory
+    , containers
+    , process
+    , ghc-paths   == 0.1.*
+    , HUnit       == 1.2.*
+  if impl(ghc >= 7.2)
+    build-depends: haddock >= 2.9.4 && < 2.10
+  else
+    build-depends: haddock >= 2.8 && <= 2.9.2
