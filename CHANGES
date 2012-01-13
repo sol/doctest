@@ -1,3 +1,6 @@
+Changes in 0.5.1
+  * Adapted for ghc-7.2
+
 Changes in 0.5.0
   * Print number of interactions to stderr before running tests
   * Exit with exitFailure on failed tests
