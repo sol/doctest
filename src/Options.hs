@@ -7,7 +7,8 @@ module Options (
 
 import Control.Monad (when)
 import System.Environment (getArgs)
-import System.Exit
+import System.Exit (exitSuccess, exitFailure)
+import System.IO (hPutStr, stderr)
 
 import System.Console.GetOpt
 
@@ -39,24 +40,23 @@ getOptions = do
   args  <- getArgs
   let (options, modules, errors) = getOpt Permute (documentedOptions ++ undocumentedOptions) args
 
-  when (Help `elem` options)
-    (printAndExit usage)
+  when (Help `elem` options) $ do
+    putStr usage
+    exitSuccess
 
-  when ((not . null) errors)
-    (tryHelp $ head errors)
+  when ((not . null) errors) $ do
+    tryHelp $ head errors
 
-  when (null modules)
-    (tryHelp "no input files\n")
+  when (null modules) $ do
+    tryHelp "no input files\n"
 
   return (options, modules)
   where
-    printAndExit :: String -> IO a
-    printAndExit s = putStr s >> exitWith ExitSuccess
-
     usage = usageInfo "Usage: doctest [OPTION]... MODULE...\n" documentedOptions
 
-    tryHelp message = printAndExit $ "doctest: " ++ message
-      ++ "Try `doctest --help' for more information.\n"
+    tryHelp message = do
+      hPutStr stderr $ "doctest: " ++ message ++ "Try `doctest --help' for more information.\n"
+      exitFailure
 
 
 -- | Extract all ghc options from given list of options.
