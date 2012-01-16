@@ -21,7 +21,7 @@ main = do
     docTests <- getDocTests haddockFlags files
 
     let (tCount, iCount) = (length docTests, length (concatMap interactions docTests))
-    hPutStrLn stderr $ "There are " ++ show tCount ++ " tests, with " ++ show iCount ++ " total interactions."
+    hPutStrLn stderr (formatTestAndInteractionCount tCount iCount)
 
     if DumpOnly `elem` options
       then do
@@ -34,3 +34,9 @@ main = do
         if errCount == 0 && failCount == 0
           then exitSuccess
           else exitFailure
+
+
+formatTestAndInteractionCount :: Int -> Int -> String
+formatTestAndInteractionCount 1 1           = "There is one test, with one single interaction."
+formatTestAndInteractionCount 1 iCount      = "There is one test, with " ++ show iCount ++ " interactions."
+formatTestAndInteractionCount tCount iCount = "There are " ++ show tCount ++ " tests, with " ++ show iCount ++ " total interactions."
