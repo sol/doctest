@@ -1,3 +1,7 @@
+Changes in 0.5.2
+  * Proper handling of singular/plural when printing stats
+  * Improve handling of invalid command line options
+
 Changes in 0.5.1
   * Adapted for ghc-7.2
 
