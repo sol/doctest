@@ -19,11 +19,11 @@ Install it, by typing:
 
 Make sure that Cabal's `bindir` is on your `PATH`.
 
-Linux:
+On Linux:
 
     export PATH="$HOME/.cabal/bin:$PATH"
 
-Mac OS X:
+On Mac OS X:
 
     export PATH="$HOME/Library/Haskell/bin:$PATH"
 
