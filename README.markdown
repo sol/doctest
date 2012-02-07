@@ -17,6 +17,9 @@ Install it, by typing:
 
     cabal install doctest
 
+On Mac OS X, you may wish to place `~/Library/Haskell/bin` on your `PATH`:
+    
+    export PATH="$HOME/Library/Haskell/bin:$PATH"
 
 Usage
 =====
