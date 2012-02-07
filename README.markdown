@@ -17,9 +17,20 @@ Install it, by typing:
 
     cabal install doctest
 
-On Mac OS X, you may wish to place `~/Library/Haskell/bin` on your `PATH`:
-    
+Make sure that Cabal's `bindir` is on your `PATH`.
+
+Linux:
+
+    export PATH="$HOME/.cabal/bin:$PATH"
+
+Mac OS X:
+
     export PATH="$HOME/Library/Haskell/bin:$PATH"
+
+On Windows it's `C:\Documents And Settings\user\Application Data\cabal\bin`.
+
+Fore more information, see the [section on paths in the Cabal User Guide]
+(http://www.haskell.org/cabal/users-guide/#paths-in-the-simple-build-system).
 
 Usage
 =====
