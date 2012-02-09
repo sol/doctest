@@ -44,25 +44,23 @@ extractFromMap m = map extract $ Map.elems m
 -- | Extract all 'Example's from given 'Doc' node.
 extract :: Doc name -> [Example]
 extract = markup exampleMarkup
-  where
-    exampleMarkup :: DocMarkup name [Example]
-    exampleMarkup = Markup {
-      markupEmpty         = mempty,
-      markupString        = const mempty,
-      markupParagraph     = id,
-      markupAppend        = mappend,
-      markupIdentifier    = const mempty,
-      markupModule        = const mempty,
-      markupEmphasis      = id,
-      markupMonospaced    = id,
-      markupUnorderedList = concat,
-      markupOrderedList   = concat,
-      markupDefList       = concatMap combineTuple,
-      markupCodeBlock     = id,
-      markupURL           = const mempty,
-      markupAName         = const mempty,
-      markupPic           = const mempty,
-      markupExample       = id
-      }
-      where
-        combineTuple = uncurry (++)
+
+exampleMarkup :: DocMarkup name [Example]
+exampleMarkup = Markup {
+  markupEmpty               = mempty
+, markupString              = const mempty
+, markupParagraph           = id
+, markupAppend              = mappend
+, markupIdentifier          = const mempty
+, markupModule              = const mempty
+, markupEmphasis            = id
+, markupMonospaced          = id
+, markupUnorderedList       = concat
+, markupOrderedList         = concat
+, markupDefList             = concatMap $ uncurry (++)
+, markupCodeBlock           = id
+, markupURL                 = const mempty
+, markupAName               = const mempty
+, markupPic                 = const mempty
+, markupExample             = id
+}
