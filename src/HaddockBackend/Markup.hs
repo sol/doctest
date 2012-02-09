@@ -3,6 +3,7 @@ module HaddockBackend.Markup (examplesFromInterface) where
 import Name (Name)
 import qualified Data.Map as Map
 import Data.Map (Map)
+import Data.Monoid
 import Documentation.Haddock (
     markup
   , DocMarkup(..)
@@ -46,21 +47,21 @@ extract = markup exampleMarkup
   where
     exampleMarkup :: DocMarkup name [Example]
     exampleMarkup = Markup {
-      markupEmpty         = [],
-      markupString        = const [],
+      markupEmpty         = mempty,
+      markupString        = const mempty,
       markupParagraph     = id,
-      markupAppend        = (++),
-      markupIdentifier    = const [],
-      markupModule        = const [],
+      markupAppend        = mappend,
+      markupIdentifier    = const mempty,
+      markupModule        = const mempty,
       markupEmphasis      = id,
       markupMonospaced    = id,
       markupUnorderedList = concat,
       markupOrderedList   = concat,
       markupDefList       = concatMap combineTuple,
       markupCodeBlock     = id,
-      markupURL           = const [],
-      markupAName         = const [],
-      markupPic           = const [],
+      markupURL           = const mempty,
+      markupAName         = const mempty,
+      markupPic           = const mempty,
       markupExample       = id
       }
       where
