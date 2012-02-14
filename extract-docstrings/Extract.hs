@@ -7,22 +7,22 @@ import FastString
 import DynFlags
 
 
-parse :: String -> IO ParsedModule
-parse file = runGhc (Just libdir) $ do
+parse :: [String] -> IO [ParsedModule]
+parse modules = runGhc (Just libdir) $ do
   dynflags  <- getSessionDynFlags
   _ <- setSessionDynFlags (dopt_set dynflags Opt_Haddock) {
           hscTarget = HscNothing
         , ghcMode   = CompManager
         , ghcLink   = NoLink
         }
-  target <- guessTarget file Nothing
-  setTargets [target]
+
+  mapM (flip guessTarget Nothing) modules >>= setTargets
+  modSums <- depanal [] False
   Succeeded <- load LoadAllTargets
-  modSum <- getModSummary $ mkModuleName "Foo"
-  parseModule modSum
+  mapM parseModule modSums
 
 extract :: FilePath -> IO [String]
-extract file = (map unLoc . docStringsFromModule) `fmap` parse file
+extract file = (map unLoc . concatMap docStringsFromModule) `fmap` parse [file]
 
 docStringsFromModule :: ParsedMod m => m -> [Located String]
 docStringsFromModule mod = foldr f [] decls
