@@ -19,3 +19,6 @@ spec = do
   describe "extract" $ do
     it "extracts documentation for a top-level declaration" $ do
       extract "test/Foo.hs" `shouldBeM` [" Some documentation"]
+
+    it "extracts documentation from the module header" $ do
+      extract "test/ModuleHeader.hs" `shouldBeM` [" Some documentation"]

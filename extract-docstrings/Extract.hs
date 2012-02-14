@@ -24,13 +24,14 @@ extract :: FilePath -> IO [String]
 extract file = (map unLoc . concatMap docStringsFromModule) `fmap` parse [file]
 
 docStringsFromModule :: ParsedMod m => m -> [Located String]
-docStringsFromModule mod = foldr f [] decls
+docStringsFromModule mod = maybeAddHeader $ foldr f [] decls
   where
     f (L loc (DocD x)) xs = L loc (unpackDocString . docDeclDoc $ x) : xs
     f _ xs = xs
 
     source = (unLoc . parsedSource) mod
     decls = hsmodDecls source
+    maybeAddHeader = maybe id ((:) . fmap unpackDocString) (hsmodHaddockModHeader source)
 
 unpackDocString :: HsDocString -> String
 unpackDocString (HsDocString s) = unpackFS s
