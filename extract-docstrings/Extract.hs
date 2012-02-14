@@ -18,7 +18,6 @@ parse modules = runGhc (Just libdir) $ do
 
   mapM (flip guessTarget Nothing) modules >>= setTargets
   modSums <- depanal [] False
-  Succeeded <- load LoadAllTargets
   mapM parseModule modSums
 
 extract :: FilePath -> IO [String]
