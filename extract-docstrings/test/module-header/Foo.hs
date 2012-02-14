@@ -1,5 +1,5 @@
 -- | Some documentation
-module ModuleHeader where
+module Foo where
 
 foo :: Int
 foo = 23
