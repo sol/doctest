@@ -1,27 +1,23 @@
 module Extract (extract) where
 
 import Prelude hiding (mod)
-import GHC.Paths (libdir)
-import GHC
-import FastString
-import DynFlags
+import GHC hiding (flags)
+import FastString (unpackFS)
+
+import GhcUtil (withGhc)
 
 
-parse :: [String] -> IO [ParsedModule]
-parse modules = runGhc (Just libdir) $ do
-  dynflags  <- getSessionDynFlags
-  _ <- setSessionDynFlags (dopt_set dynflags Opt_Haddock) {
-          hscTarget = HscNothing
-        , ghcMode   = CompManager
-        , ghcLink   = NoLink
-        }
-
+parse :: [String] -- ^ flags
+      -> [String] -- ^ files/modules
+      -> IO [ParsedModule]
+parse flags modules = withGhc flags $ do
   mapM (flip guessTarget Nothing) modules >>= setTargets
-  modSums <- depanal [] False
-  mapM parseModule modSums
+  depanal [] False >>= mapM parseModule
 
-extract :: FilePath -> IO [String]
-extract file = (map unLoc . concatMap docStringsFromModule) `fmap` parse [file]
+extract :: [String] -- ^ flags
+        -> [String] -- ^ files/modules
+        -> IO [String]
+extract flags modules = (map unLoc . concatMap docStringsFromModule) `fmap` parse flags modules
 
 docStringsFromModule :: ParsedMod m => m -> [Located String]
 docStringsFromModule mod = maybeAddHeader $ foldr f [] decls

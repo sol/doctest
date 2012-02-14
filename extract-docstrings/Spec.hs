@@ -18,7 +18,13 @@ spec = do
 
   describe "extract" $ do
     it "extracts documentation for a top-level declaration" $ do
-      extract "test/Foo.hs" `shouldBeM` [" Some documentation"]
+      extract [] ["test/Foo.hs"] `shouldBeM` [" Some documentation"]
 
     it "extracts documentation from the module header" $ do
-      extract "test/ModuleHeader.hs" `shouldBeM` [" Some documentation"]
+      extract [] ["test/ModuleHeader.hs"] `shouldBeM` [" Some documentation"]
+
+    it "extracts documentation from imported modules" $ do
+      extract ["-itest"] ["test/Bar.hs"] `shouldBeM` [" documentation for bar", " documentation for baz"]
+
+    it "fails on invalid flags" $ do
+      extract ["--foobar"] ["test/Foo.hs"] `shouldThrow` errorCall "Unrecognized GHC option: --foobar"
