@@ -25,8 +25,8 @@ toTestCase repl test = TestLabel sourceFile $ TestCase $ toAssertion repl test
 -- 'Interpreter.Interpreter' for several calls to `toAssertion`.
 toAssertion :: Interpreter.Interpreter -> DocTest -> Assertion
 toAssertion repl test = do
-  _ <- Interpreter.eval repl $ ":m *" ++ moduleName
   _ <- Interpreter.eval repl $ ":reload"
+  _ <- Interpreter.eval repl $ ":m *" ++ moduleName
   mapM_ interactionToAssertion $ interactions test
   where
     moduleName = module_ test
