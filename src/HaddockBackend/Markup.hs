@@ -8,10 +8,10 @@ import Documentation.Haddock (
     markup
   , DocMarkup(..)
   , Interface(ifaceRnDocMap, ifaceRnExportItems, ifaceRnDoc)
-  , Example
   , DocForDecl
-  , Doc
   , DocName
+  , Example
+  , Doc
   , ExportItem(ExportDoc)
   )
 
@@ -29,14 +29,14 @@ examplesFromInterface interface = filter (not . null) $ [fromModuleHeader] ++ fr
         extractFromExportItem _ = []
     fromDeclarations = fromDeclMap $ ifaceRnDocMap interface
 
-fromDeclMap :: Map Name (DocForDecl DocName) -> [[Example]]
-fromDeclMap docMap = concatMap docForDeclName $ Map.elems docMap
+    fromDeclMap :: Map Name (DocForDecl DocName) -> [[Example]]
+    fromDeclMap docMap = concatMap docForDeclName $ Map.elems docMap
 
-docForDeclName :: DocForDecl name -> [[Example]]
-docForDeclName (declDoc, argsDoc)  = argsExamples:declExamples
-  where
-    declExamples = extractFromMap argsDoc
-    argsExamples = maybe [] extract declDoc
+    docForDeclName :: DocForDecl name -> [[Example]]
+    docForDeclName (declDoc, argsDoc)  = argsExamples:declExamples
+      where
+        declExamples = extractFromMap argsDoc
+        argsExamples = maybe [] extract declDoc
 
 extractFromMap :: Map key (Doc name) -> [[Example]]
 extractFromMap m = map extract $ Map.elems m
