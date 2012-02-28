@@ -18,8 +18,12 @@ main = do
     -- Tests
     -- =====
 
+    --  * testSimple
+        doctest "." ["testSimple/Fib.hs"]
+        (cases 1)
+
     --  * testFail
-        doctest "." ["testFail/Foo.hs"]
+      , doctest "." ["testFail/Foo.hs"]
         (cases 1) {failures = 1}
 
     --  * testImport
