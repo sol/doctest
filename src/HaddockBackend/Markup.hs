@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module HaddockBackend.Markup (examplesFromInterface) where
 
 import Name (Name)
@@ -7,9 +8,13 @@ import Data.Monoid
 import Documentation.Haddock (
     markup
   , DocMarkup(..)
+#if MIN_VERSION_haddock(2,10,0)
+  , Interface(ifaceRnDocMap, ifaceRnArgMap, ifaceRnExportItems, ifaceRnDoc)
+#else
   , Interface(ifaceRnDocMap, ifaceRnExportItems, ifaceRnDoc)
   , DocForDecl
   , DocName
+#endif
   , Example
   , Doc
   , ExportItem(ExportDoc)
@@ -27,6 +32,12 @@ examplesFromInterface interface = filter (not . null) $ [fromModuleHeader] ++ fr
       where
         extractFromExportItem (ExportDoc doc) = extract doc
         extractFromExportItem _ = []
+#if MIN_VERSION_haddock(2,10,0)
+    fromDeclarations = extractFromMap (ifaceRnDocMap interface) ++ extractFromArgMap (ifaceRnArgMap interface)
+
+    extractFromArgMap :: Map Name (Map Int (Doc a)) -> [[Example]]
+    extractFromArgMap m = map extract $ concatMap (Map.elems) (Map.elems m) -- Map Name (Map Int (Doc a))
+#else
     fromDeclarations = fromDeclMap $ ifaceRnDocMap interface
 
     fromDeclMap :: Map Name (DocForDecl DocName) -> [[Example]]
@@ -37,6 +48,7 @@ examplesFromInterface interface = filter (not . null) $ [fromModuleHeader] ++ fr
       where
         declExamples = extractFromMap argsDoc
         argsExamples = maybe [] extract declDoc
+#endif
 
 extractFromMap :: Map key (Doc name) -> [[Example]]
 extractFromMap m = map extract $ Map.elems m
@@ -52,6 +64,9 @@ exampleMarkup = Markup {
 , markupParagraph           = id
 , markupAppend              = mappend
 , markupIdentifier          = const mempty
+#if MIN_VERSION_haddock(2,10,0)
+, markupIdentifierUnchecked = const mempty
+#endif
 , markupModule              = const mempty
 , markupEmphasis            = id
 , markupMonospaced          = id

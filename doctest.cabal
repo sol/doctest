@@ -36,17 +36,20 @@ library
     , HaddockBackend.Markup
     , DocTest
   build-depends:
-      base        >= 4.0  && < 4.5
-    , ghc         >= 6.12 && < 7.4
+      base        >= 4.0  && < 4.6
+    , ghc         >= 6.12 && < 7.6
     , directory
     , containers
     , process
     , ghc-paths   == 0.1.*
     , HUnit       == 1.2.*
-  if impl(ghc >= 7.2)
-    build-depends: haddock >= 2.9.4 && < 2.10
+  if impl(ghc >= 7.4)
+    build-depends: haddock == 2.10.*
   else
-    build-depends: haddock >= 2.8 && <= 2.9.2
+    if impl(ghc >= 7.2)
+      build-depends: haddock >= 2.9.4 && < 2.10
+    else
+      build-depends: haddock >= 2.8 && <= 2.9.2
 
 executable doctest
   main-is:
@@ -62,14 +65,17 @@ executable doctest
     , HaddockBackend.Markup
     , DocTest
   build-depends:
-      base        >= 4.0  && < 4.5
-    , ghc         >= 6.12 && < 7.4
+      base        >= 4.0  && < 4.6
+    , ghc         >= 6.12 && < 7.6
     , directory
     , containers
     , process
     , ghc-paths   == 0.1.*
     , HUnit       == 1.2.*
-  if impl(ghc >= 7.2)
-    build-depends: haddock >= 2.9.4 && < 2.10
+  if impl(ghc >= 7.4)
+    build-depends: haddock == 2.10.*
   else
-    build-depends: haddock >= 2.8 && <= 2.9.2
+    if impl(ghc >= 7.2)
+      build-depends: haddock >= 2.9.4 && < 2.10
+    else
+      build-depends: haddock >= 2.8 && <= 2.9.2

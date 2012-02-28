@@ -17,6 +17,7 @@ if [ -x "$DOCTEST" ]; then
                -packagetest-framework-hunit \
                -packagetest-framework-th \
                -i../../src \
+               -optP-include -optP../../dist/build/autogen/cabal_macros.h \
                 Main.hs
 else
     echo "$DOCTEST is not executable!"
