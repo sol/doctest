@@ -47,6 +47,19 @@ case_parseTestSimple = parseTest "parseTestSimple"  ["Fib.hs"]
     ]
   ]
 
+case_parseTestNonExported = parseTest "parseTestNonExported"  ["Fib.hs"]
+  [ ModuleGroup "Fib.hs" "Fib"
+    [
+      [ ghci "putStrLn \"foo\""
+        ["foo"]
+      , ghci "putStr \"bar\""
+        ["bar"]
+      , ghci "putStrLn \"baz\""
+        ["baz"]
+      ]
+    ]
+  ]
+
 deriving instance Read Interaction
 deriving instance Read DocTest
 deriving instance Eq Interaction
