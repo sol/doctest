@@ -11,6 +11,7 @@ action `shouldBeM` expected = do
   actual `shouldBe` expected
 
 
+shouldGive :: (String, String) -> [String] -> Assertion
 (dir, m) `shouldGive` expected = do
   extract ["-i" ++ dir] [dir ++ "/" ++ m] `shouldBeM` expected
 
@@ -23,6 +24,9 @@ spec = do
   describe "extract" $ do
     it "extracts documentation for a top-level declaration" $ do
       ("declaration", "Foo.hs") `shouldGive` [" Some documentation"]
+
+    it "extracts documentation from argument list" $ do
+      ("argument-list", "Foo.hs") `shouldGive` [" doc for arg1", " doc for arg2"]
 
     it "extracts documentation from the module header" $ do
       ("module-header", "Foo.hs") `shouldGive` [" Some documentation"]
