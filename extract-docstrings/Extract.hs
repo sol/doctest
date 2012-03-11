@@ -1,13 +1,37 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Extract (extract) where
 
-import Prelude hiding (mod)
-import GHC hiding (flags)
-import FastString (unpackFS)
+import           Prelude hiding (mod, catch)
+import           Control.Exception
 
-import GhcUtil (withGhc)
-import Data.Generics
+import           Control.DeepSeq (deepseq)
+import           Data.Generics
+
+import           GHC hiding (flags)
+import           FastString (unpackFS)
+
+import           GhcUtil (withGhc)
+
+-- | A wrapper around `GhcException`, to allow a custom `Show` instance.
+newtype WrappedGhcException = WrappedGhcException GhcException
+  deriving Typeable
+
+instance Show WrappedGhcException where
+  show (WrappedGhcException e) = case e of
+    Panic s -> unlines [
+        ""
+      , "GHC panic: " ++ s
+      , ""
+      , "This is most likely a bug in doctest."
+      , ""
+      , "Please report it here: https://github.com/sol/doctest-haskell/issues/new"
+      ]
+    _ -> show e
+
+instance Exception WrappedGhcException
 
 
+-- | Parse a list of modules.
 parse :: [String] -- ^ flags
       -> [String] -- ^ files/modules
       -> IO [ParsedModule]
@@ -16,10 +40,17 @@ parse flags modules = withGhc flags $ do
   depanal [] False >>= mapM parseModule
 
 
+-- | Extract all docstrings from given list of files/modules.
+--
+-- This includes the docstrings of all local modules that are imported from
+-- those modules (possibly indirect).
 extract :: [String] -- ^ flags
         -> [String] -- ^ files/modules
         -> IO [String]
-extract flags modules = (map unLoc . concatMap docStringsFromModule) `fmap` parse flags modules
+extract flags modules = handle (throwIO . WrappedGhcException) $ do
+  mods <- parse flags modules
+  let docs = (map unLoc . concatMap docStringsFromModule) mods
+  docs `deepseq` return docs
 
 
 -- | Extract all docstrings from given module.
