@@ -1,9 +1,10 @@
-module Spec (main, spec) where
+module ExtractSpec (main, spec) where
 
 import           Test.Hspec.ShouldBe
 import           Test.HUnit
 
 import           Extract (extract)
+import           System.FilePath
 
 shouldBeM :: (Show a, Eq a) => IO a -> a -> Assertion
 action `shouldBeM` expected = do
@@ -12,8 +13,9 @@ action `shouldBeM` expected = do
 
 
 shouldGive :: (String, String) -> [String] -> Assertion
-(dir, m) `shouldGive` expected = do
-  extract ["-i" ++ dir] [dir ++ "/" ++ m] `shouldBeM` expected
+(d, m) `shouldGive` expected =
+  extract ["-i" ++ dir] [dir </> m] `shouldBeM` expected
+  where dir = "extract" </> d
 
 main :: IO ()
 main = hspecX spec

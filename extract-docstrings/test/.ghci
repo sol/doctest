@@ -1,1 +1,1 @@
-:set -i.. -packageghc
+:set -i../src -packageghc
