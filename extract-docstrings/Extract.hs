@@ -8,6 +8,7 @@ import           Control.DeepSeq (deepseq)
 import           Data.Generics
 
 import           GHC hiding (flags)
+import           NameSet
 import           FastString (unpackFS)
 
 import           GhcUtil (withGhc)
@@ -55,27 +56,47 @@ extract flags modules = handle (throwIO . WrappedGhcException) $ do
 
 -- | Extract all docstrings from given module.
 docStringsFromModule :: ParsedMod m => m -> [Located String]
-docStringsFromModule mod = maybeAddHeader $ map (fmap unpackDocString) $ concatMap docStringsFromLHsDecl decls
+docStringsFromModule mod = maybeAddHeader $ map (fmap unpackDocString) $ concatMap extractDocStrings decls
   where
     source = (unLoc . parsedSource) mod
     decls = hsmodDecls source
     maybeAddHeader = maybe id ((:) . fmap unpackDocString) (hsmodHaddockModHeader source)
 
 
--- | Extract all docstrings from given declaration.
-docStringsFromLHsDecl :: LHsDecl RdrName -> [LHsDocString]
-docStringsFromLHsDecl (L loc decl) = case decl of
+type Selector a = a -> ([LHsDocString], Bool)
 
-  -- top-level documentation
-  DocD x -> [L loc (docDeclDoc x)]
+-- | Ignore a subtree.
+ignore :: Selector a
+ignore = const ([], True)
 
-  -- ValDs contain error thunks, so we ignore them.  The should not contain any
-  -- documentation, anyway.
-  ValD _ -> []
+-- | Collect given value and descend into subtree.
+select :: a -> ([a], Bool)
+select x = ([x], False)
 
-  -- documentation on type signatures, etc.
-  _ -> listify (const True :: LHsDocString -> Bool) decl
+-- | Extract all docstrings from given value.
+extractDocStrings :: Data a => a -> [LHsDocString]
+extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
+  `extQ` fromLDocDecl
+  `extQ` fromLHsDocString
+  `extQ` (ignore :: Selector NameSet)
+  `extQ` (ignore :: Selector PostTcKind)
+  )
+  where
+    fromLHsDecl :: Selector (LHsDecl RdrName)
+    fromLHsDecl (L loc decl) = case decl of
 
+      -- Top-level documentation has to be treated separately, because it has
+      -- no location information attached.  The location information is
+      -- attached to HsDecl instead.
+      DocD x -> (select . L loc . docDeclDoc) x
+
+      _ -> (extractDocStrings decl, True)
+
+    fromLDocDecl :: Selector LDocDecl
+    fromLDocDecl = select . fmap docDeclDoc
+
+    fromLHsDocString :: Selector LHsDocString
+    fromLHsDocString = select
 
 -- | Convert a docstring to a plain string.
 unpackDocString :: HsDocString -> String

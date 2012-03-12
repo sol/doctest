@@ -28,6 +28,12 @@ spec = do
     it "extracts documentation from argument list" $ do
       ("argument-list", "Foo.hs") `shouldGive` [" doc for arg1", " doc for arg2"]
 
+    it "extracts documentation for a type class function" $ do
+      ("type-class", "Foo.hs") `shouldGive` [" Convert given value to a string."]
+
+    it "extracts documentation from the argument list of a type class function" $ do
+      ("type-class-args", "Foo.hs") `shouldGive` [" foo", " bar"]
+
     it "extracts documentation from the module header" $ do
       ("module-header", "Foo.hs") `shouldGive` [" Some documentation"]
 
