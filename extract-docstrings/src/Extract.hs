@@ -8,7 +8,6 @@ import           Control.DeepSeq (deepseq, NFData(rnf))
 import           Data.Generics
 
 import           GHC hiding (flags, Module)
-import qualified GHC
 import           NameSet (NameSet)
 import           FastString (unpackFS)
 
