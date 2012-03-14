@@ -93,6 +93,7 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
   `extQ` fromLHsDocString
   `extQ` (ignore :: Selector NameSet)
   `extQ` (ignore :: Selector PostTcKind)
+  `extQ` (ignore :: Selector GHC.Fixity)
   )
   where
     fromLHsDecl :: Selector (LHsDecl RdrName)

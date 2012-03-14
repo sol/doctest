@@ -15,13 +15,15 @@ module Test.DocTest (
   , withInterpreter
   ) where
 
-import           HaddockBackend.Api
 import           DocTest
 import           Interpreter (Interpreter)
 import qualified Interpreter
 
+-- | Instead of what the name suggests, this returns the module name, not the
+-- file name.
 sourcePath :: DocTest -> FilePath
-sourcePath = source
+sourcePath = moduleName
+{-# DEPRECATED sourcePath "this function will vanish in a future release" #-}
 
 firstExpression :: DocTest -> String
 firstExpression test = expression $ head $ interactions test

@@ -8,13 +8,14 @@ module DocTest (
 
 import Test.HUnit (Test(..), assertEqual, Assertion)
 import qualified Interpreter
-import HaddockBackend.Api
+import Parse
 
 
 toTestCase :: Interpreter.Interpreter -> DocTest -> Test
 toTestCase repl test = TestLabel sourceFile $ TestCase $ toAssertion repl test
   where
-    sourceFile = source test
+    -- FIXME: use source location here
+    sourceFile = moduleName test
 
 -- |
 -- Execute all expressions from given 'DocTest' in given
@@ -26,10 +27,9 @@ toTestCase repl test = TestLabel sourceFile $ TestCase $ toAssertion repl test
 toAssertion :: Interpreter.Interpreter -> DocTest -> Assertion
 toAssertion repl test = do
   _ <- Interpreter.eval repl $ ":reload"
-  _ <- Interpreter.eval repl $ ":m *" ++ moduleName
+  _ <- Interpreter.eval repl $ ":m *" ++ moduleName test
   mapM_ interactionToAssertion $ interactions test
   where
-    moduleName = module_ test
     interactionToAssertion x = do
       result' <- Interpreter.eval repl exampleExpression
       assertEqual ("expression `" ++ exampleExpression ++ "'")

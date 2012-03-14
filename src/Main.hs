@@ -4,7 +4,7 @@ import Test.HUnit (runTestTT, Test(..), Counts(..))
 import System.Exit (exitSuccess, exitFailure)
 import System.IO
 
-import HaddockBackend.Api
+import Parse
 import Options
 import DocTest
 
@@ -17,8 +17,7 @@ main = do
   Interpreter.withInterpreter ghciArgs $ \repl -> do
 
     -- get examples from Haddock comments
-    let haddockFlags = haddockOptions options
-    docTests <- getDocTests haddockFlags files
+    docTests <- getDocTests (ghcOptions options) files
 
     let (tCount, iCount) = (length docTests, length (concatMap interactions docTests))
     hPutStrLn stderr (formatTestAndInteractionCount tCount iCount)
