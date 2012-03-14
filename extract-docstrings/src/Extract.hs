@@ -1,14 +1,15 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-module Extract (extract) where
+module Extract (Module(..), extract) where
 
 import           Prelude hiding (mod, catch)
 import           Control.Exception
 
-import           Control.DeepSeq (deepseq)
+import           Control.DeepSeq (deepseq, NFData(rnf))
 import           Data.Generics
 
-import           GHC hiding (flags)
-import           NameSet
+import           GHC hiding (flags, Module)
+import qualified GHC
+import           NameSet (NameSet)
 import           FastString (unpackFS)
 
 import           GhcUtil (withGhc)
@@ -31,6 +32,14 @@ instance Show WrappedGhcException where
 
 instance Exception WrappedGhcException
 
+-- | Documentation for a module grouped together with the modules name.
+data Module = Module {
+  moduleName          :: String
+, moduleDocumentation :: [String]
+} deriving (Eq, Show)
+
+instance NFData Module where
+  rnf (Module name docs) = name `deepseq` docs `deepseq` ()
 
 -- | Parse a list of modules.
 parse :: [String] -- ^ flags
@@ -40,19 +49,24 @@ parse flags modules = withGhc flags $ do
   mapM (flip guessTarget Nothing) modules >>= setTargets
   depanal [] False >>= mapM parseModule
 
-
 -- | Extract all docstrings from given list of files/modules.
 --
 -- This includes the docstrings of all local modules that are imported from
 -- those modules (possibly indirect).
 extract :: [String] -- ^ flags
         -> [String] -- ^ files/modules
-        -> IO [String]
+        -> IO [Module]
 extract flags modules = handle (throwIO . WrappedGhcException) $ do
   mods <- parse flags modules
-  let docs = (map unLoc . concatMap docStringsFromModule) mods
+  let docs = map extractFromModule mods
   docs `deepseq` return docs
 
+-- | Extract all docstrings from given module and attach the modules name.
+extractFromModule :: ParsedModule -> Module
+extractFromModule m = Module name docs
+  where
+    docs = map unLoc (docStringsFromModule m)
+    name = (moduleNameString . GHC.moduleName . ms_mod . pm_mod_summary) m
 
 -- | Extract all docstrings from given module.
 docStringsFromModule :: ParsedMod m => m -> [Located String]
