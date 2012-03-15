@@ -42,5 +42,14 @@ spec = do
     it "extracts documentation from imported modules" $ do
       ("imported-module", "Bar.hs") `shouldGive` [Module "Bar" [" documentation for bar"], Module "Baz" [" documentation for baz"]]
 
+    it "extracts documentation from export list" $ do
+      ("export-list", "Foo.hs") `shouldGive` [Module "Foo" [" documentation from export list"]]
+
+    it "extracts documentation from named chunks" $ do
+      ("named-chunks", "Foo.hs") `shouldGive` [Module "Foo" [" named chunk foo", "\n named chunk bar"]]
+
+    it "returns docstrings in the same order they appear in the source" $ do
+      ("comment-order", "Foo.hs") `shouldGive` [Module "Foo" [" module header", " export list 1", " export list 2", " foo", " named chunk", " bar"]]
+
     it "fails on invalid flags" $ do
       extract ["--foobar"] ["test/Foo.hs"] `shouldThrow` errorCall "Unrecognized GHC option: --foobar"

@@ -68,12 +68,22 @@ extractFromModule m = Module name docs
     name = (moduleNameString . GHC.moduleName . ms_mod . pm_mod_summary) m
 
 -- | Extract all docstrings from given module.
-docStringsFromModule :: ParsedMod m => m -> [Located String]
-docStringsFromModule mod = maybeAddHeader $ map (fmap unpackDocString) $ concatMap extractDocStrings decls
+docStringsFromModule :: ParsedModule -> [Located String]
+docStringsFromModule mod = map (fmap unpackDocString) docs
   where
-    source = (unLoc . parsedSource) mod
-    decls = hsmodDecls source
-    maybeAddHeader = maybe id ((:) . fmap unpackDocString) (hsmodHaddockModHeader source)
+    source   = (unLoc . pm_parsed_source) mod
+
+    -- we use dlist-style concatenation here
+    docs     = (maybe id (:) mHeader . maybe id (++) mExports) decls
+
+    -- We process header, exports and declarations separately instead of
+    -- traversing the whole source in a generic way, to ensure that we get
+    -- everything in source order.
+    mHeader  = hsmodHaddockModHeader source
+    mExports = f `fmap` hsmodExports source
+      where
+        f xs = [L loc doc | L loc (IEDoc doc) <- xs]
+    decls    = extractDocStrings (hsmodDecls source)
 
 
 type Selector a = a -> ([LHsDocString], Bool)
