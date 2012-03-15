@@ -1,25 +1,40 @@
+{-# LANGUAGE CPP #-}
 module GhcUtil (withGhc) where
 
-import GHC.Paths (libdir)
-import GHC hiding (flags)
-import Data.IORef (writeIORef)
-import StaticFlags (v_opt_C_ready)
-import DynFlags (dopt_set)
+import            Control.Exception
+
+import            GHC.Paths (libdir)
+import            GHC hiding (flags)
+import            DynFlags (dopt_set)
+
+#if __GLASGOW_HASKELL__ < 702
+import            StaticFlags (v_opt_C_ready)
+import            Data.IORef (writeIORef)
+#else
+import            StaticFlags (saveStaticFlagGlobals, restoreStaticFlagGlobals)
+#endif
+
+
+-- | Save static flag globals, run action, and restore them.
+bracketStaticFlags :: IO a -> IO a
+#if __GLASGOW_HASKELL__ < 702
+-- GHC < 7.2 does not provide saveStaticFlagGlobals/restoreStaticFlagGlobals,
+-- so we need to modifying v_opt_C_ready directly
+bracketStaticFlags action = action `finally` writeIORef v_opt_C_ready False
+#else
+bracketStaticFlags action = bracket saveStaticFlagGlobals restoreStaticFlagGlobals (const action)
+#endif
 
 -- | Run a GHC action in Haddock mode
 withGhc :: [String] -> Ghc a -> IO a
-withGhc flags action = do
+withGhc flags action = bracketStaticFlags $ do
   flags_ <- handleStaticFlags flags
   runGhc (Just libdir) $ do
     handleDynamicFlags flags_
     action
 
 handleStaticFlags :: [String] -> IO [Located String]
-handleStaticFlags flags = do
-  -- FIXME: use saveStaticFlagGlobals/restoreStaticFlagGlobals
-  -- for ghc >= 7.2 instead of modifying v_opt_C_ready directly
-  writeIORef v_opt_C_ready False
-  fst `fmap` parseStaticFlags (map noLoc flags)
+handleStaticFlags flags = fst `fmap` parseStaticFlags (map noLoc flags)
 
 handleDynamicFlags :: GhcMonad m => [Located String] -> m ()
 handleDynamicFlags flags = do
