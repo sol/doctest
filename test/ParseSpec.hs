@@ -40,6 +40,10 @@ spec = do
       r <- getDocTests [] ["parse/non-exported/Fib.hs"]
       r `shouldBe` expected
 
+    it "returns an empty list, if documentation contains no examples" $ do
+      r <- getDocTests [] ["parse/no-examples/Fib.hs"]
+      r `shouldBe` []
+
   describe "parse (an internal function)" $ do
     it "parses an interaction" $ do
       parse . build $ do

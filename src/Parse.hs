@@ -32,12 +32,12 @@ getDocTests :: [String]     -- ^ List of GHC flags
             -> [String]     -- ^ File or module names
             -> IO [DocTest] -- ^ Extracted 'DocTest's
 getDocTests flags modules = do
-  r <- extract flags modules
-  return (concatMap moduleToDocTest r)
+  mods <- extract flags modules
+  return (concatMap moduleToDocTest mods)
 
 -- | Convert a `Module` to a list of `DocTest`s.
 moduleToDocTest :: Module -> [DocTest]
-moduleToDocTest (Module name docs) = map (DocExample name . parse) docs
+moduleToDocTest (Module name docs) = (map (DocExample name) . filter (not . null) . map parse) docs
 
 -- | Extract all interactions from given Haddock documentation.
 parse :: String -> [Interaction]
