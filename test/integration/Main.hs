@@ -34,7 +34,7 @@ main = do
 
     --  * testCommentLocation
       , doctest "." ["testCommentLocation/Foo.hs"]
-        (cases 8)
+        (cases 10)
 
     -- * testPutStr
       , doctest "testPutStr" ["Fib.hs"]
