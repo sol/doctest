@@ -43,6 +43,7 @@ test = undefined
 
 -- | Note that examples for 'fib' include the two examples below
 -- and the one example with ^ syntax after 'fix'
+--
 -- >>> foo
 -- "foo"
 
