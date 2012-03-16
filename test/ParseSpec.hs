@@ -26,7 +26,7 @@ spec = do
           "bar"
         ghci "putStrLn \"baz\""
           "baz"
-      r <- getDocTests [] ["parse/simple/Fib.hs"]
+      r <- getDocTests [] ["test/parse/simple/Fib.hs"]
       r `shouldBe` expected
 
     it "extracts examples from documentation for non-exported names" $ do
@@ -37,11 +37,11 @@ spec = do
           "bar"
         ghci "putStrLn \"baz\""
           "baz"
-      r <- getDocTests [] ["parse/non-exported/Fib.hs"]
+      r <- getDocTests [] ["test/parse/non-exported/Fib.hs"]
       r `shouldBe` expected
 
     it "returns an empty list, if documentation contains no examples" $ do
-      r <- getDocTests [] ["parse/no-examples/Fib.hs"]
+      r <- getDocTests [] ["test/parse/no-examples/Fib.hs"]
       r `shouldBe` []
 
   describe "parse (an internal function)" $ do

@@ -15,7 +15,7 @@ action `shouldBeM` expected = do
 shouldGive :: (String, String) -> [Module] -> Assertion
 (d, m) `shouldGive` expected =
   extract ["-i" ++ dir] [dir </> m] `shouldBeM` expected
-  where dir = "extract" </> d
+  where dir = "test/extract" </> d
 
 main :: IO ()
 main = hspecX spec

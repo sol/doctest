@@ -4,21 +4,23 @@ import           Test.Hspec.ShouldBe
 
 import           Data.List (isSuffixOf)
 import           System.Process (readProcess)
-import           Interpreter (Interpreter)
+
 import qualified Interpreter
 
 main :: IO ()
 main = hspecX spec
 
+withInterpreter :: ((String -> IO String) -> IO a) -> IO a
 withInterpreter action = Interpreter.withInterpreter [] $ \x -> action (Interpreter.eval x)
 
+shouldEvaluateTo :: (Show a, Eq a) => IO a -> a -> IO ()
 action `shouldEvaluateTo` expected = action >>= (`shouldBe` expected)
 
 spec :: Specs
 spec = do
   describe "Interpreter" $ do
     it "terminates on SIGINT" $ do
-      s <- readProcess "interpreter/termination/test_script.sh" [] ""
+      s <- readProcess "test/interpreter/termination/test_script.sh" [] ""
       s `shouldBe` "success\n"
 
   describe "eval" $ do

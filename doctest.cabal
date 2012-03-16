@@ -67,3 +67,26 @@ executable doctest
     , process
     , ghc-paths   == 0.1.*
     , HUnit       == 1.2.*
+
+test-suite spec
+  type:
+      exitcode-stdio-1.0
+  main-is:
+      Spec.hs
+  ghc-options:
+      -Wall -Werror -threaded
+  hs-source-dirs:
+      src, test
+  build-depends:
+      base        >= 4.0  && < 4.6
+    , ghc         >= 6.12 && < 7.6
+    , syb
+    , deepseq
+    , directory
+    , process
+    , ghc-paths   == 0.1.*
+    , HUnit       == 1.2.*
+    , hspec-shouldbe
+    , transformers
+    , stringbuilder
+    , filepath
