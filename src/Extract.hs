@@ -9,6 +9,7 @@ import           Data.Generics
 
 import           GHC hiding (flags, Module)
 import           NameSet (NameSet)
+import           Coercion (Coercion)
 import           FastString (unpackFS)
 
 import           GhcUtil (withGhc)
@@ -120,6 +121,8 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
   -- thunks (e.g. for parallel list comprehensions)
   `extQ` (ignore :: Selector (HsBind RdrName))
 
+  -- undefined before type checking
+  `extQ` (ignore :: Selector Coercion)
   )
   where
     fromLHsDecl :: Selector (LHsDecl RdrName)

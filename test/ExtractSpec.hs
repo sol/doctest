@@ -55,11 +55,14 @@ spec = do
       extract ["--foobar"] ["test/Foo.hs"] `shouldThrow` errorCall "Unrecognized GHC option: --foobar"
 
   describe "extract (regression tests)" $ do
-    it "failed on infix operators" $ do
+    it "works with infix operators" $ do
       ("regression", "Fixity.hs") `shouldGive` [Module "Fixity" []]
 
-    it "failed on parallel list comprehensions" $ do
+    it "works with parallel list comprehensions" $ do
       ("regression", "ParallelListComp.hs") `shouldGive` [Module "ParallelListComp" []]
 
-    it "failed on parallel list comprehensions in instance definitions" $ do
+    it "works with list comprehensions in instance definitions" $ do
       ("regression", "ParallelListCompClass.hs") `shouldGive` [Module "ParallelListCompClass" []]
+
+    it "works with foreign imports" $ do
+      ("regression", "ForeignImport.hs") `shouldGive` [Module "ForeignImport" []]
