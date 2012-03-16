@@ -2,6 +2,7 @@ module InterpreterSpec (main, spec) where
 
 import           Test.Hspec.ShouldBe
 
+import           System.Process (readProcess)
 import           Interpreter (Interpreter)
 import qualified Interpreter
 
@@ -14,6 +15,10 @@ action `shouldEvaluateTo` expected = action >>= (`shouldBe` expected)
 
 spec :: Specs
 spec = do
+  describe "Interpreter" $ do
+    it "terminates on SIGINT" $ do
+      s <- readProcess "interpreter/termination/test_script.sh" [] ""
+      s `shouldBe` "success\n"
 
   describe "eval" $ do
     it "shows literals" $ withInterpreter $ \ghci -> do
