@@ -56,10 +56,10 @@ spec = do
 
   describe "extract (regression tests)" $ do
     it "failed on infix operators" $ do
-      ("regression", "Fixity.hs") `shouldGive` [Module "Main" []]
+      ("regression", "Fixity.hs") `shouldGive` [Module "Fixity" []]
 
     it "failed on parallel list comprehensions" $ do
-      ("regression", "ParallelListComp.hs") `shouldGive` [Module "Main" []]
+      ("regression", "ParallelListComp.hs") `shouldGive` [Module "ParallelListComp" []]
 
     it "failed on parallel list comprehensions in instance definitions" $ do
-      ("regression", "ParallelListCompClass.hs") `shouldGive` [Module "Main" []]
+      ("regression", "ParallelListCompClass.hs") `shouldGive` [Module "ParallelListCompClass" []]
