@@ -11,8 +11,12 @@ import System.IO (hPutStr, stderr)
 
 import System.Console.GetOpt
 
+import Paths_doctest (version)
+import Data.Version (showVersion)
+import Config as GHC
 
 data Option = Help
+            | Version
             | Verbose
             | GhcOption String
             | DumpOnly
@@ -22,6 +26,7 @@ data Option = Help
 documentedOptions :: [OptDescr Option]
 documentedOptions = [
     Option []     ["help"]        (NoArg Help)                    "display this help and exit"
+  , Option []     ["version"]     (NoArg Version)                 "output version information and exit"
   , Option ['v']  ["verbose"]     (NoArg Verbose)                 "explain what is being done, enable Haddock warnings"
   , Option []     ["optghc"]      (ReqArg GhcOption "OPTION")     "option to be forwarded to GHC"
   ]
@@ -39,6 +44,11 @@ getOptions = do
 
   when (Help `elem` options) $ do
     putStr usage
+    exitSuccess
+
+  when (Version `elem` options) $ do
+    putStrLn ("doctest version " ++ showVersion version)
+    putStrLn ("using version " ++ GHC.cProjectVersion ++ " of the GHC API")
     exitSuccess
 
   when ((not . null) errors) $ do

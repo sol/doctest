@@ -9,7 +9,7 @@ _doctest()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    opts='--help -v --verbose --optghc'
+    opts='--help --version -v --verbose --optghc'
 
     case "${prev}" in
 	--optghc)
