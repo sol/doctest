@@ -66,3 +66,6 @@ spec = do
 
     it "works with foreign imports" $ do
       ("regression", "ForeignImport.hs") `shouldGive` [Module "ForeignImport" []]
+
+    it "works with rewrite rules" $ do
+      ("regression", "RewriteRules.hs") `shouldGive` [Module "RewriteRules" [" doc for foo"]]

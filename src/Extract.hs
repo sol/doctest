@@ -117,9 +117,14 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
   `extQ` (ignore :: Selector NameSet)
   `extQ` (ignore :: Selector PostTcKind)
 
-  -- value bindings never contain any documentation, but they may contain error
-  -- thunks (e.g. for parallel list comprehensions)
-  `extQ` (ignore :: Selector (HsBind RdrName))
+  -- HsExpr never contains any documentation, but it may contain error thunks.
+  --
+  -- Problematic are (non comprehensive):
+  --
+  --  * parallel list comprehensions
+  --  * infix operators
+  --
+  `extQ` (ignore :: Selector (HsExpr RdrName))
 
   -- undefined before type checking
   `extQ` (ignore :: Selector Coercion)
