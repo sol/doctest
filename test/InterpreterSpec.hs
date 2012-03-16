@@ -2,6 +2,7 @@ module InterpreterSpec (main, spec) where
 
 import           Test.Hspec.ShouldBe
 
+import           Data.List (isSuffixOf)
 import           System.Process (readProcess)
 import           Interpreter (Interpreter)
 import qualified Interpreter
@@ -63,4 +64,4 @@ spec = do
       ghci "exitWith $ ExitFailure 10" `shouldEvaluateTo` "*** Exception: ExitFailure 10\n"
 
     it "gives an error message for identifiers that are not in scope" $ withInterpreter $ \ghci -> do
-      ghci "foo" `shouldEvaluateTo` "\n<interactive>:1:1: Not in scope: `foo'\n"
+      ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: `foo'\n")
