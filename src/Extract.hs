@@ -103,7 +103,6 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
   `extQ` fromLHsDocString
   `extQ` (ignore :: Selector NameSet)
   `extQ` (ignore :: Selector PostTcKind)
-  `extQ` (ignore :: Selector GHC.Fixity)
 
   -- value bindings never contain any documentation, but they may contain error
   -- thunks (e.g. for parallel list comprehensions)
