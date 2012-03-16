@@ -13,23 +13,27 @@ import           FastString (unpackFS)
 
 import           GhcUtil (withGhc)
 
--- | A wrapper around `GhcException`, to allow a custom `Show` instance.
-newtype WrappedGhcException = WrappedGhcException GhcException
+-- | A wrapper around `SomeException`, to allow for a custom `Show` instance.
+newtype ExtractError = ExtractError SomeException
   deriving Typeable
 
-instance Show WrappedGhcException where
-  show (WrappedGhcException e) = case e of
-    Panic s -> unlines [
-        ""
-      , "GHC panic: " ++ s
+instance Show ExtractError where
+  show (ExtractError e) =
+    unlines [
+        "Ouch! Hit an error thunk in GHC's AST while extracting documentation."
+      , ""
+      , "    " ++ msg
       , ""
       , "This is most likely a bug in doctest."
       , ""
       , "Please report it here: https://github.com/sol/doctest-haskell/issues/new"
       ]
-    _ -> show e
+    where
+      msg = case fromException e of
+        Just (Panic s) -> "GHC panic: " ++ s
+        _              -> show e
 
-instance Exception WrappedGhcException
+instance Exception ExtractError
 
 -- | Documentation for a module grouped together with the modules name.
 data Module = Module {
@@ -55,10 +59,18 @@ parse flags modules = withGhc flags $ do
 extract :: [String] -- ^ flags
         -> [String] -- ^ files/modules
         -> IO [Module]
-extract flags modules = handle (throwIO . WrappedGhcException) $ do
+extract flags modules = do
   mods <- parse flags modules
   let docs = map extractFromModule mods
-  docs `deepseq` return docs
+
+  (docs `deepseq` return docs) `catches` [
+      -- Re-throw AsyncException, otherwise execution will not terminate on
+      -- SIGINT (ctrl-c).  All AsyncExceptions are re-thrown (not just
+      -- UserInterrupt) because all of them indicate severe conditions and
+      -- should not occur during normal operation.
+      Handler (\e -> throw (e :: AsyncException))
+    , Handler (throwIO . ExtractError)
+    ]
 
 -- | Extract all docstrings from given module and attach the modules name.
 extractFromModule :: ParsedModule -> Module
