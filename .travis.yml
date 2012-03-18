@@ -2,4 +2,3 @@ language: haskell
 
 before_install:
     - cabal update
-    - git clone https://github.com/sol/hspec/ && cd hspec && git checkout travis-ci-support && cabal install && cd ..
