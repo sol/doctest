@@ -1,4 +1,10 @@
 language: haskell
 
-before_install:
+install:
     - cabal update
+    - git clone https://github.com/sol/stringbuilder && cd stringbuilder && cabal install && cd ..
+    - cabal install hspec-shouldbe
+    - cabal install --enable-tests
+
+script:
+    - cabal test
