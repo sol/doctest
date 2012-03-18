@@ -3,8 +3,8 @@
 set -o nounset
 set -o errexit
 
-cd "`dirname $0`"
+cd "`dirname $0`/.."
 
-runhaskell -i../src -packageghc Spec.hs
-./integration/runtests.sh
-./selftest.sh
+runhaskell -isrc -itest -packageghc test/Spec.hs
+./test/integration/runtests.sh
+./test/selftest.sh
