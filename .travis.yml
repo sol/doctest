@@ -2,8 +2,7 @@ language: haskell
 
 install:
     - cabal update
-    - git clone https://github.com/sol/stringbuilder && cd stringbuilder && cabal install && cd ..
-    - cabal install hspec-shouldbe
+    - cabal install hspec-shouldbe stringbuilder
     - cabal install --enable-tests
 
 script:
