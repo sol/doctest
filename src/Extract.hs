@@ -2,6 +2,8 @@
 module Extract (Module(..), extract) where
 
 import           Prelude hiding (mod, catch)
+import           Control.Monad
+import           Control.Applicative
 import           Control.Exception
 
 import           Control.DeepSeq (deepseq, NFData(rnf))
@@ -11,6 +13,7 @@ import           GHC hiding (flags, Module)
 import           NameSet (NameSet)
 import           Coercion (Coercion)
 import           FastString (unpackFS)
+import           Digraph (flattenSCCs)
 
 import           GhcUtil (withGhc)
 
@@ -48,10 +51,12 @@ instance NFData Module where
 -- | Parse a list of modules.
 parse :: [String] -- ^ flags
       -> [String] -- ^ files/modules
-      -> IO [ParsedModule]
+      -> IO [TypecheckedModule]
 parse flags modules = withGhc flags $ do
   mapM (flip guessTarget Nothing) modules >>= setTargets
-  depanal [] False >>= mapM parseModule
+  mods <- depanal [] False
+  let sortedMods = flattenSCCs (topSortModuleGraph False mods Nothing)
+  reverse <$> mapM (parseModule >=> typecheckModule >=> loadModule) sortedMods
 
 -- | Extract all docstrings from given list of files/modules.
 --
@@ -62,7 +67,7 @@ extract :: [String] -- ^ flags
         -> IO [Module]
 extract flags modules = do
   mods <- parse flags modules
-  let docs = map extractFromModule mods
+  let docs = map extractFromModule (map tm_parsed_module mods)
 
   (docs `deepseq` return docs) `catches` [
       -- Re-throw AsyncException, otherwise execution will not terminate on
