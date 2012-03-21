@@ -7,6 +7,9 @@ import            GHC.Paths (libdir)
 import            GHC hiding (flags)
 import            DynFlags (dopt_set)
 
+import            MonadUtils (liftIO)
+import            System.Exit (exitFailure)
+
 #if __GLASGOW_HASKELL__ < 702
 import            StaticFlags (v_opt_C_ready)
 import            Data.IORef (writeIORef)
@@ -25,13 +28,24 @@ bracketStaticFlags action = action `finally` writeIORef v_opt_C_ready False
 bracketStaticFlags action = bracket saveStaticFlagGlobals restoreStaticFlagGlobals (const action)
 #endif
 
+-- Catch GHC source errors, print them and exit.
+handleSrcErrors :: Ghc a -> Ghc a
+handleSrcErrors action' = flip handleSourceError action' $ \err -> do
+#if __GLASGOW_HASKELL__ < 702
+  printExceptionAndWarnings err
+#else
+  printException err
+#endif
+  liftIO exitFailure
+
 -- | Run a GHC action in Haddock mode
 withGhc :: [String] -> Ghc a -> IO a
 withGhc flags action = bracketStaticFlags $ do
   flags_ <- handleStaticFlags flags
+
   runGhc (Just libdir) $ do
     handleDynamicFlags flags_
-    action
+    handleSrcErrors action
 
 handleStaticFlags :: [String] -> IO [Located String]
 handleStaticFlags flags = fst `fmap` parseStaticFlags (map noLoc flags)

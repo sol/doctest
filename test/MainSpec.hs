@@ -8,12 +8,12 @@ import           System.Directory (canonicalizePath, getCurrentDirectory, setCur
 import           System.FilePath
 import           System.Process (readProcessWithExitCode)
 
--- | Construct a doctest specific 'Assertion'.
-doctest :: FilePath   -- ^ current directory of forked `doctest` process
-        -> [String]   -- ^ args, given to `doctest`
-        -> Counts     -- ^ expected test result
-        -> Assertion
-doctest workingDir args counts = do
+
+-- | Run doctest and return stderr.
+doctest_ :: FilePath   -- ^ current directory of forked `doctest` process
+         -> [String]   -- ^ args, given to `doctest`
+         -> IO String     -- ^ stderr
+doctest_ workingDir args = do
   bin <- canonicalizePath "dist/build/doctest/doctest"
 
   -- fork and run a doctest process
@@ -21,8 +21,17 @@ doctest workingDir args counts = do
   setCurrentDirectory ("test/integration" </> workingDir)
   (_, _, err) <- readProcessWithExitCode bin args ""
   setCurrentDirectory cwd
-  let out = lastLine err
+  return err
 
+
+-- | Construct a doctest specific 'Assertion'.
+doctest :: FilePath   -- ^ current directory of forked `doctest` process
+        -> [String]   -- ^ args, given to `doctest`
+        -> Counts     -- ^ expected test result
+        -> Assertion
+doctest workingDir args counts = do
+  err <- doctest_ workingDir args
+  let out = lastLine err
   assertEqual label (showCounts counts) (last . lines $ out)
   where
     label = workingDir ++ " " ++ show args
@@ -113,3 +122,7 @@ spec = do
         (cases 1) {failures = 1}
       doctest "testCPP" ["--optghc=-cpp", "--optghc=-DFOO", "Foo.hs"]
         (cases 1)
+
+    it "prints a useful error message on parse errors" $ do
+      err <- doctest_ "parse-error" ["Foo.hs"]
+      err `shouldBe` "\nFoo.hs:6:1: parse error (possibly incorrect indentation)\n"
