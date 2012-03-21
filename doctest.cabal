@@ -16,7 +16,7 @@ copyright:        (c) 2009-2012 Simon Hengel
 author:           Simon Hengel <sol@typeful.net>
 maintainer:       Simon Hengel <sol@typeful.net>
 build-type:       Simple
-cabal-version:    >= 1.6
+cabal-version:    >= 1.8
 
 source-repository head
   type: git
@@ -35,6 +35,7 @@ library
     , DocTest
     , Parse
     , Extract
+    , GhcUtil
   build-depends:
       base        >= 4.0  && < 4.6
     , ghc         >= 6.12 && < 7.6
@@ -58,6 +59,7 @@ executable doctest
     , DocTest
     , Parse
     , Extract
+    , GhcUtil
   build-depends:
       base        >= 4.0  && < 4.6
     , ghc         >= 6.12 && < 7.6
