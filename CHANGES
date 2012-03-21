@@ -1,3 +1,8 @@
+Changes in 0.6.0
+  * Support for ghc-7.4
+  * Doctest now comes with it's own parser and does not depend on Haddock
+    anymore
+
 Changes in 0.5.2
   * Proper handling of singular/plural when printing stats
   * Improve handling of invalid command line options

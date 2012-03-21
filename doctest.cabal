@@ -38,7 +38,7 @@ library
     , GhcUtil
   build-depends:
       base        >= 4.0  && < 4.6
-    , ghc         >= 6.12 && < 7.6
+    , ghc         >= 7.0  && < 7.6
     , syb
     , deepseq
     , directory
