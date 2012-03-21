@@ -81,6 +81,10 @@ spec = do
       doctest "testDocumentationForArguments" ["Fib.hs"]
         (cases 1)
 
+    it "template-haskell" $ do
+      doctest "template-haskell" ["Foo.hs"]
+        (cases 1)
+
   describe "doctest (regression tests)" $ do
     it "bugfixWorkingDirectory" $ do
       doctest "bugfixWorkingDirectory" ["Fib.hs"]
