@@ -91,7 +91,7 @@ Hacking
 Submit pull request on GitHub.  Add tests for new features.  Make sure that the
 test suite passes with your changes, before submitting any pull requests:
 
-    cabal clean && cabal install && ./tests/runtests.sh
+    cabal configure --enable-tests && cabal build && cabal test
 
 
 Contributors
