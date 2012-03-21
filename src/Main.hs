@@ -14,20 +14,20 @@ main :: IO ()
 main = do
   (options, files) <- getOptions
   let ghciArgs = ghcOptions options ++ files
-  Interpreter.withInterpreter ghciArgs $ \repl -> do
 
-    -- get examples from Haddock comments
-    docTests <- getDocTests (ghcOptions options) files
+  -- get examples from Haddock comments
+  docTests <- getDocTests (ghcOptions options) files
 
-    let (tCount, iCount) = (length docTests, length (concatMap interactions docTests))
-    hPutStrLn stderr (formatTestAndInteractionCount tCount iCount)
+  let (tCount, iCount) = (length docTests, length (concatMap interactions docTests))
+  hPutStrLn stderr (formatTestAndInteractionCount tCount iCount)
 
-    if DumpOnly `elem` options
-      then do
-        -- dump to stdout
-        print docTests
-      else do
-        -- map to unit tests
+  if DumpOnly `elem` options
+    then do
+      -- dump to stdout
+      print docTests
+    else do
+      -- map to unit tests
+      Interpreter.withInterpreter ghciArgs $ \repl -> do
         let tests = TestList $ map (toTestCase repl) docTests
         Counts _ _ errCount failCount <- runTestTT tests
         if errCount == 0 && failCount == 0
