@@ -69,16 +69,16 @@ You may produce Haddock documentation for that module with:
 
     haddock -h Fib.hs -o doc/
 
-### Using GHC extensions
+## Using GHC extensions
 
-The easiest way to tell Doctest about GHC extensions is to use a [LANGUAGE
+The easiest way to tell Doctest about GHC extensions is to use [LANGUAGE
 pragmas] [language-pragma] in your source files.
 
 Alternatively you can pass any GHC options to Doctest with `--optghc`.
 
     doctest --options=-cpp Foo.hs
 
-### Hiding examples from Haddock
+## Hiding examples from Haddock
 
 You can put examples into [named chunks] [named-chunks], and not refer to them
 in the export list.  That way they will not be part of the generated Haddock
