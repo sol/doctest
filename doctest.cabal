@@ -46,6 +46,8 @@ library
     , ghc-paths   == 0.1.*
     , HUnit       == 1.2.*
 
+  buildable: False
+
 executable doctest
   main-is:
       Main.hs
