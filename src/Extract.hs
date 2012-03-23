@@ -41,8 +41,8 @@ instance Exception ExtractError
 
 -- | Documentation for a module grouped together with the modules name.
 data Module a = Module {
-  moduleName          :: String
-, moduleDocumentation :: [a]
+  moduleName    :: String
+, moduleContent :: [a]
 } deriving (Eq, Functor)
 
 deriving instance Show a => Show (Module a)

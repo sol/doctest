@@ -3,6 +3,7 @@
 module ParseSpec (main, spec) where
 
 import           Test.Hspec.ShouldBe
+import           Test.HUnit
 import           Data.String.Builder (Builder, build)
 import           Control.Monad.Trans.Writer
 
@@ -14,35 +15,53 @@ main = hspecX spec
 ghci :: String -> Builder -> Writer [Interaction] ()
 ghci e = tell . return . Interaction e . lines . build
 
+example :: Writer [Interaction] () -> Writer [DocTest] ()
+example = tell . return . DocExample . execWriter
+
+module_ :: String -> Writer [DocTest] () -> Writer [Module DocTest] ()
+module_ name = tell . return . Module name . execWriter
+
+shouldGive :: IO [Module DocTest] -> Writer [Module DocTest] () -> Assertion
+shouldGive action w = action >>= (`shouldBe` execWriter w)
+
 spec :: Specs
 spec = do
 
   describe "getDocTests" $ do
     it "extracts examples from a module" $ do
-      expected <- return . return . DocExample "Fib" . execWriter $ do
-        ghci "putStrLn \"foo\""
-          "foo"
-        ghci "putStr \"bar\""
-          "bar"
-        ghci "putStrLn \"baz\""
-          "baz"
-      r <- getDocTests [] ["test/parse/simple/Fib.hs"]
-      r `shouldBe` expected
+      getDocTests [] ["test/parse/simple/Fib.hs"] `shouldGive` do
+        module_ "Fib" $ do
+          example $ do
+            ghci "putStrLn \"foo\""
+              "foo"
+            ghci "putStr \"bar\""
+              "bar"
+            ghci "putStrLn \"baz\""
+              "baz"
 
     it "extracts examples from documentation for non-exported names" $ do
-      expected <- return . return . DocExample "Fib" . execWriter $ do
-        ghci "putStrLn \"foo\""
-          "foo"
-        ghci "putStr \"bar\""
-          "bar"
-        ghci "putStrLn \"baz\""
-          "baz"
-      r <- getDocTests [] ["test/parse/non-exported/Fib.hs"]
-      r `shouldBe` expected
+      getDocTests [] ["test/parse/non-exported/Fib.hs"] `shouldGive` do
+        module_ "Fib" $ do
+          example $ do
+            ghci "putStrLn \"foo\""
+              "foo"
+            ghci "putStr \"bar\""
+              "bar"
+            ghci "putStrLn \"baz\""
+              "baz"
+
+    it "extracts multiple examples from a module" $ do
+      getDocTests [] ["test/parse/multiple-examples/Foo.hs"] `shouldGive` do
+        module_ "Foo" $ do
+          example $ do
+            ghci "foo"
+              "23"
+          example $ do
+            ghci "bar"
+              "42"
 
     it "returns an empty list, if documentation contains no examples" $ do
-      r <- getDocTests [] ["test/parse/no-examples/Fib.hs"]
-      r `shouldBe` []
+      getDocTests [] ["test/parse/no-examples/Fib.hs"] >>= (`shouldBe` [])
 
   describe "parse (an internal function)" $ do
     it "parses an interaction" $ do
