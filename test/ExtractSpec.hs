@@ -12,7 +12,7 @@ action `shouldBeM` expected = do
   actual `shouldBe` expected
 
 
-shouldGive :: (String, String) -> [Module] -> Assertion
+shouldGive :: (String, String) -> [Module String] -> Assertion
 (d, m) `shouldGive` expected =
   extract ["-i" ++ dir] [dir </> m] `shouldBeM` expected
   where dir = "test/extract" </> d

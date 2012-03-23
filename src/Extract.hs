@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveDataTypeable, StandaloneDeriving, DeriveFunctor #-}
 module Extract (Module(..), extract) where
 
 import           Prelude hiding (mod, catch)
@@ -40,12 +40,14 @@ instance Show ExtractError where
 instance Exception ExtractError
 
 -- | Documentation for a module grouped together with the modules name.
-data Module = Module {
+data Module a = Module {
   moduleName          :: String
-, moduleDocumentation :: [String]
-} deriving (Eq, Show)
+, moduleDocumentation :: [a]
+} deriving (Eq, Functor)
 
-instance NFData Module where
+deriving instance Show a => Show (Module a)
+
+instance NFData a => NFData (Module a) where
   rnf (Module name docs) = name `deepseq` docs `deepseq` ()
 
 -- | Parse a list of modules.
@@ -64,7 +66,7 @@ parse flags modules = withGhc flags $ do
 -- those modules (possibly indirect).
 extract :: [String] -- ^ flags
         -> [String] -- ^ files/modules
-        -> IO [Module]
+        -> IO [Module String]
 extract flags modules = do
   mods <- parse flags modules
   let docs = map extractFromModule (map tm_parsed_module mods)
@@ -79,7 +81,7 @@ extract flags modules = do
     ]
 
 -- | Extract all docstrings from given module and attach the modules name.
-extractFromModule :: ParsedModule -> Module
+extractFromModule :: ParsedModule -> Module String
 extractFromModule m = Module name docs
   where
     docs = map unLoc (docStringsFromModule m)

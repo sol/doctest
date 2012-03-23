@@ -36,7 +36,7 @@ getDocTests flags modules = do
   return (concatMap moduleToDocTest mods)
 
 -- | Convert a `Module` to a list of `DocTest`s.
-moduleToDocTest :: Module -> [DocTest]
+moduleToDocTest :: Module String -> [DocTest]
 moduleToDocTest (Module name docs) = (map (DocExample name) . filter (not . null) . map parse) docs
 
 -- | Extract all interactions from given Haddock documentation.
