@@ -13,6 +13,7 @@ import           Data.List
 import           Data.Maybe (fromMaybe)
 
 import           Extract
+import           Location
 
 data DocTest = DocExample [Interaction]
   deriving (Eq, Show)
@@ -36,12 +37,12 @@ getDocTests flags modules = do
   return (filter (not . null . moduleContent) $ map parseModule mods)
 
 -- | Convert documentation to `DocTest`s.
-parseModule :: Module String -> Module DocTest
+parseModule :: Module (Location, String) -> Module DocTest
 parseModule (Module name docs) = (Module name . map DocExample . filter (not . null) . map parse) docs
 
 -- | Extract all interactions from given Haddock documentation.
-parse :: String -> [Interaction]
-parse input = go (lines input)
+parse :: (Location, String) -> [Interaction]
+parse (_, input) = go (lines input)
   where
     isPrompt = isPrefixOf ">>>" . dropWhile isSpace
     isBlankLine  = null . dropWhile isSpace

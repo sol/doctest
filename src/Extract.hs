@@ -16,6 +16,7 @@ import           FastString (unpackFS)
 import           Digraph (flattenSCCs)
 
 import           GhcUtil (withGhc)
+import           Location
 
 -- | A wrapper around `SomeException`, to allow for a custom `Show` instance.
 newtype ExtractError = ExtractError SomeException
@@ -66,7 +67,7 @@ parse flags modules = withGhc flags $ do
 -- those modules (possibly indirect).
 extract :: [String] -- ^ flags
         -> [String] -- ^ files/modules
-        -> IO [Module String]
+        -> IO [Module (Location, String)]
 extract flags modules = do
   mods <- parse flags modules
   let docs = map extractFromModule (map tm_parsed_module mods)
@@ -81,11 +82,16 @@ extract flags modules = do
     ]
 
 -- | Extract all docstrings from given module and attach the modules name.
-extractFromModule :: ParsedModule -> Module String
+extractFromModule :: ParsedModule -> Module (Location, String)
 extractFromModule m = Module name docs
   where
-    docs = map unLoc (docStringsFromModule m)
+    docs = map (\(L loc doc) -> (toLocation loc, doc)) (docStringsFromModule m)
     name = (moduleNameString . GHC.moduleName . ms_mod . pm_mod_summary) m
+
+    toLocation :: SrcSpan -> Location
+    toLocation loc = case loc of
+      UnhelpfulSpan str -> UnhelpfulLocation (unpackFS str)
+      RealSrcSpan sp    -> Location (unpackFS . srcSpanFile $ sp) (srcSpanStartLine sp)
 
 -- | Extract all docstrings from given module.
 docStringsFromModule :: ParsedModule -> [Located String]

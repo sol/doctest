@@ -15,3 +15,6 @@ enumerate :: Location -> [Location]
 enumerate loc = case loc of
   UnhelpfulLocation _ -> repeat loc
   Location file line  -> map (Location file) [line ..]
+
+noLocation :: a -> (Location, a)
+noLocation a = (UnhelpfulLocation "no location", a)

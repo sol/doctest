@@ -6,15 +6,10 @@ import           Test.HUnit
 import           Extract
 import           System.FilePath
 
-shouldBeM :: (Show a, Eq a) => IO a -> a -> Assertion
-action `shouldBeM` expected = do
-  actual <- action
-  actual `shouldBe` expected
-
-
 shouldGive :: (String, String) -> [Module String] -> Assertion
-(d, m) `shouldGive` expected =
-  extract ["-i" ++ dir] [dir </> m] `shouldBeM` expected
+(d, m) `shouldGive` expected = do
+  r <- map (fmap snd) `fmap` extract ["-i" ++ dir] [dir </> m]
+  r `shouldBe` expected
   where dir = "test/extract" </> d
 
 main :: IO ()

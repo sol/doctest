@@ -8,6 +8,7 @@ import           Data.String.Builder (Builder, build)
 import           Control.Monad.Trans.Writer
 
 import           Parse
+import           Location
 
 main :: IO ()
 main = hspecX spec
@@ -64,25 +65,28 @@ spec = do
       getDocTests [] ["test/parse/no-examples/Fib.hs"] >>= (`shouldBe` [])
 
   describe "parse (an internal function)" $ do
+
+    let parse_ = parse . noLocation . build
+
     it "parses an interaction" $ do
-      parse . build $ do
+      parse_ $ do
         ">>> foo"
         "23"
       `shouldBe` [Interaction "foo" ["23"]]
 
     it "drops whitespace as appropriate" $ do
-      parse . build $ do
+      parse_ $ do
         "    >>> foo   "
         "    23"
       `shouldBe` [Interaction "foo" ["23"]]
 
     it "parses an interaction without a result" $ do
-      parse . build $ do
+      parse_ $ do
         ">>> foo"
       `shouldBe` [Interaction "foo" []]
 
     it "works with a complex example" $ do
-      parse . build $ do
+      parse_ $ do
         "test"
         "foobar"
         ""
