@@ -88,11 +88,6 @@ extractFromModule m = Module name docs
     docs = map (\(L loc doc) -> (toLocation loc, doc)) (docStringsFromModule m)
     name = (moduleNameString . GHC.moduleName . ms_mod . pm_mod_summary) m
 
-    toLocation :: SrcSpan -> Location
-    toLocation loc = case loc of
-      UnhelpfulSpan str -> UnhelpfulLocation (unpackFS str)
-      RealSrcSpan sp    -> Location (unpackFS . srcSpanFile $ sp) (srcSpanStartLine sp)
-
 -- | Extract all docstrings from given module.
 docStringsFromModule :: ParsedModule -> [Located String]
 docStringsFromModule mod = map (fmap unpackDocString) docs
