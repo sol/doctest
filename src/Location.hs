@@ -34,7 +34,11 @@ type Line = Int
 
 -- | A combination of file name and line number.
 data Location = UnhelpfulLocation String | Location FilePath Line
-  deriving (Eq, Show)
+  deriving Eq
+
+instance Show Location where
+  show (UnhelpfulLocation s) = s
+  show (Location file line)  = file ++ ":" ++ show line
 
 instance NFData Location where
   rnf (UnhelpfulLocation str) = str `deepseq` ()

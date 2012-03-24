@@ -29,11 +29,10 @@ toAssertion repl module_ (DocExample interactions) = do
   _ <- Interpreter.eval repl $ ":m *" ++ module_
   mapM_ interactionToAssertion interactions
   where
-    interactionToAssertion x = do
+    interactionToAssertion (Located loc x) = do
       result' <- Interpreter.eval repl exampleExpression
-      assertEqual ("expression `" ++ exampleExpression ++ "'")
+      assertEqual (show loc ++ ": expression `" ++ exampleExpression ++ "'")
         exampleResult $ lines result'
       where
-        y = unLoc x
-        exampleExpression = expression y
-        exampleResult     = result y
+        exampleExpression = expression x
+        exampleResult     = result x
