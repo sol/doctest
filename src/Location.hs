@@ -5,11 +5,14 @@ import           Control.DeepSeq (deepseq, NFData(rnf))
 import           SrcLoc hiding (Located)
 import qualified SrcLoc as GHC
 import           FastString (unpackFS)
+
+#if __GLASGOW_HASKELL__ < 702
 import           Outputable (showPpr)
+#endif
 
 -- | A thing with a location attached.
 data Located a = Located Location a
-  deriving Functor
+  deriving (Eq, Show, Functor)
 
 instance NFData a => NFData (Located a) where
   rnf (Located loc a) = loc `deepseq` a `deepseq` ()

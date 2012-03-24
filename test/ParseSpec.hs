@@ -13,17 +13,27 @@ import           Location
 main :: IO ()
 main = hspecX spec
 
-ghci :: String -> Builder -> Writer [Interaction] ()
-ghci e = tell . return . Interaction e . lines . build
+ghci :: String -> Builder -> Writer [Located Interaction] ()
+ghci e = tell . return . noLocation . Interaction e . lines . build
 
-example :: Writer [Interaction] () -> Writer [DocTest] ()
+example :: Writer [Located Interaction] () -> Writer [DocTest] ()
 example = tell . return . DocExample . execWriter
 
 module_ :: String -> Writer [DocTest] () -> Writer [Module DocTest] ()
 module_ name = tell . return . Module name . execWriter
 
 shouldGive :: IO [Module DocTest] -> Writer [Module DocTest] () -> Assertion
-shouldGive action w = action >>= (`shouldBe` execWriter w)
+shouldGive action w = do
+  r <- map noLoc `fmap` action
+  r `shouldBe` execWriter w
+  where
+    -- replace location information of all interactions of a module with dummy
+    -- location information.
+    noLoc :: Module DocTest -> Module DocTest
+    noLoc = fmap f
+      where
+        f :: DocTest -> DocTest
+        f (DocExample x) = DocExample (map (noLocation . unLoc) x)
 
 spec :: Specs
 spec = do
@@ -66,7 +76,7 @@ spec = do
 
   describe "parse (an internal function)" $ do
 
-    let parse_ = parse . noLocation . build
+    let parse_ = map unLoc . parse . noLocation . build
 
     it "parses an interaction" $ do
       parse_ $ do
@@ -100,3 +110,20 @@ spec = do
         ""
         "baz"
       `shouldBe` [Interaction "foo" ["23"], Interaction "baz" [], Interaction "bar" ["23"]]
+
+    it "attaches location information to parsed interactions" $ do
+      let loc = Located . Location "Foo.hs"
+      r <- return . parse . loc 23 . build  $ do
+        "1"
+        "2"
+        ""
+        ">>> 4"
+        "5"
+        ""
+        ">>> 7"
+        ""
+        ">>> 9"
+        "10"
+        ""
+        "11"
+      r `shouldBe` [loc 26 $ Interaction "4" ["5"], loc 29 $ Interaction "7" [], loc 31 $ Interaction "9" ["10"]]

@@ -15,7 +15,7 @@ import           Data.Maybe (fromMaybe)
 import           Extract
 import           Location
 
-data DocTest = DocExample [Interaction]
+data DocTest = DocExample [Located Interaction]
   deriving (Eq, Show)
 
 
@@ -41,14 +41,19 @@ parseModule :: Module (Located String) -> Module DocTest
 parseModule (Module name docs) = (Module name . map DocExample . filter (not . null) . map parse) docs
 
 -- | Extract all interactions from given Haddock documentation.
-parse :: (Located String) -> [Interaction]
-parse (Located _ input) = go (lines input)
+parse :: (Located String) -> [Located Interaction]
+parse (Located loc input) = go $ zipWith Located (enumerate loc) (lines input)
   where
-    isPrompt = isPrefixOf ">>>" . dropWhile isSpace
-    isBlankLine  = null . dropWhile isSpace
+    isPrompt :: Located String -> Bool
+    isPrompt = isPrefixOf ">>>" . dropWhile isSpace . unLoc
+
+    isBlankLine :: Located String -> Bool
+    isBlankLine  = null . dropWhile isSpace . unLoc
+
+    isEndOfInteraction :: Located String -> Bool
     isEndOfInteraction x = isPrompt x || isBlankLine x
 
-    go :: [String] -> [Interaction]
+    go :: [Located String] -> [Located Interaction]
     go xs =
       case dropWhile (not . isPrompt) xs of
         prompt:rest ->
@@ -59,8 +64,8 @@ parse (Located _ input) = go (lines input)
         _ -> []
 
 -- | Create an `Interaction`, strip superfluous whitespace as appropriate.
-toInteraction :: String -> [String] -> Interaction
-toInteraction x xs =
+toInteraction :: Located String -> [Located String] -> Located Interaction
+toInteraction (Located loc x) xs = Located loc $
   Interaction
     (strip $ drop 3 e)  -- we do not care about leading and trailing
                         -- whitespace in expressions, so drop them
@@ -74,7 +79,7 @@ toInteraction x xs =
     --
     -- 3. interpret lines that only contain the string "<BLANKLINE>" as an
     -- empty line
-    result_ = map (substituteBlankLine . tryStripPrefix prefix) xs
+    result_ = map (substituteBlankLine . tryStripPrefix prefix) (map unLoc xs)
       where
         tryStripPrefix pre ys = fromMaybe ys $ stripPrefix pre ys
 

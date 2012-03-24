@@ -6,9 +6,11 @@ module DocTest (
   , toAssertion
   ) where
 
-import Test.HUnit (Test(..), assertEqual, Assertion)
+import           Test.HUnit (Test(..), assertEqual, Assertion)
+
 import qualified Interpreter
-import Parse
+import           Parse
+import           Location
 
 
 toTestCase :: Interpreter.Interpreter -> Module DocTest -> Test
@@ -32,5 +34,6 @@ toAssertion repl module_ (DocExample interactions) = do
       assertEqual ("expression `" ++ exampleExpression ++ "'")
         exampleResult $ lines result'
       where
-        exampleExpression = expression x
-        exampleResult     = result x
+        y = unLoc x
+        exampleExpression = expression y
+        exampleResult     = result y
