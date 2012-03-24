@@ -9,14 +9,14 @@ import           Control.Exception
 import           Control.DeepSeq (deepseq, NFData(rnf))
 import           Data.Generics
 
-import           GHC hiding (flags, Module)
+import           GHC hiding (flags, Module, Located)
 import           NameSet (NameSet)
 import           Coercion (Coercion)
 import           FastString (unpackFS)
 import           Digraph (flattenSCCs)
 
 import           GhcUtil (withGhc)
-import           Location
+import           Location hiding (unLoc)
 
 -- | A wrapper around `SomeException`, to allow for a custom `Show` instance.
 newtype ExtractError = ExtractError SomeException
@@ -67,7 +67,7 @@ parse flags modules = withGhc flags $ do
 -- those modules (possibly indirect).
 extract :: [String] -- ^ flags
         -> [String] -- ^ files/modules
-        -> IO [Module (Location, String)]
+        -> IO [Module (Located String)]
 extract flags modules = do
   mods <- parse flags modules
   let docs = map extractFromModule (map tm_parsed_module mods)
@@ -82,15 +82,15 @@ extract flags modules = do
     ]
 
 -- | Extract all docstrings from given module and attach the modules name.
-extractFromModule :: ParsedModule -> Module (Location, String)
+extractFromModule :: ParsedModule -> Module (Located String)
 extractFromModule m = Module name docs
   where
-    docs = map (\(L loc doc) -> (toLocation loc, doc)) (docStringsFromModule m)
+    docs = docStringsFromModule m
     name = (moduleNameString . GHC.moduleName . ms_mod . pm_mod_summary) m
 
 -- | Extract all docstrings from given module.
 docStringsFromModule :: ParsedModule -> [Located String]
-docStringsFromModule mod = map (fmap unpackDocString) docs
+docStringsFromModule mod = map (toLocated . fmap unpackDocString) docs
   where
     source   = (unLoc . pm_parsed_source) mod
 

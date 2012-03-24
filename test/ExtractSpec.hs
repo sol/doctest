@@ -4,11 +4,12 @@ import           Test.Hspec.ShouldBe
 import           Test.HUnit
 
 import           Extract
+import           Location
 import           System.FilePath
 
 shouldGive :: (String, String) -> [Module String] -> Assertion
 (d, m) `shouldGive` expected = do
-  r <- map (fmap snd) `fmap` extract ["-i" ++ dir] [dir </> m]
+  r <- map (fmap unLoc) `fmap` extract ["-i" ++ dir] [dir </> m]
   r `shouldBe` expected
   where dir = "test/extract" </> d
 

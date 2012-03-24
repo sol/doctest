@@ -37,12 +37,12 @@ getDocTests flags modules = do
   return (filter (not . null . moduleContent) $ map parseModule mods)
 
 -- | Convert documentation to `DocTest`s.
-parseModule :: Module (Location, String) -> Module DocTest
+parseModule :: Module (Located String) -> Module DocTest
 parseModule (Module name docs) = (Module name . map DocExample . filter (not . null) . map parse) docs
 
 -- | Extract all interactions from given Haddock documentation.
-parse :: (Location, String) -> [Interaction]
-parse (_, input) = go (lines input)
+parse :: (Located String) -> [Interaction]
+parse (Located _ input) = go (lines input)
   where
     isPrompt = isPrefixOf ">>>" . dropWhile isSpace
     isBlankLine  = null . dropWhile isSpace
