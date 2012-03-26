@@ -3,7 +3,4 @@ language: haskell
 install:
     - cabal update
     - cabal install hspec-shouldbe stringbuilder
-    - cabal install --enable-tests
-
-script:
-    - cabal test
+    - cabal install
