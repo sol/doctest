@@ -1,5 +1,5 @@
 name:             doctest
-version:          0.6.0
+version:          0.6.0.1
 synopsis:         Test interactive Haskell examples
 description:      The doctest program checks examples in source code comments.
                   It is modeled after doctest for Python
