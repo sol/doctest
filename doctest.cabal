@@ -36,6 +36,7 @@ library
     , Parse
     , Extract
     , GhcUtil
+    , Paths_doctest
   build-depends:
       base        >= 4.0  && < 4.6
     , ghc         >= 6.12 && < 7.6
@@ -60,6 +61,7 @@ executable doctest
     , Parse
     , Extract
     , GhcUtil
+    , Paths_doctest
   build-depends:
       base        >= 4.0  && < 4.6
     , ghc         >= 6.12 && < 7.6
