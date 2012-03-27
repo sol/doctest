@@ -16,24 +16,24 @@ main = hspecX spec
 ghci :: String -> Builder -> Writer [Located Interaction] ()
 ghci e = tell . return . noLocation . Interaction e . lines . build
 
-example :: Writer [Located Interaction] () -> Writer [DocTest] ()
-example = tell . return . DocExample . execWriter
+example :: Writer [Located Interaction] () -> Writer [Example] ()
+example = tell . return . Example . execWriter
 
-module_ :: String -> Writer [DocTest] () -> Writer [Module DocTest] ()
+module_ :: String -> Writer [Example] () -> Writer [Module Example] ()
 module_ name = tell . return . Module name . execWriter
 
-shouldGive :: IO [Module DocTest] -> Writer [Module DocTest] () -> Assertion
+shouldGive :: IO [Module Example] -> Writer [Module Example] () -> Assertion
 shouldGive action w = do
   r <- map noLoc `fmap` action
   r `shouldBe` execWriter w
   where
     -- replace location information of all interactions of a module with dummy
     -- location information.
-    noLoc :: Module DocTest -> Module DocTest
+    noLoc :: Module Example -> Module Example
     noLoc = fmap f
       where
-        f :: DocTest -> DocTest
-        f (DocExample x) = DocExample (map (noLocation . unLoc) x)
+        f :: Example -> Example
+        f (Example x) = Example (map (noLocation . unLoc) x)
 
 spec :: Specs
 spec = do

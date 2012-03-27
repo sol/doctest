@@ -1,5 +1,5 @@
 module Parse (
-  DocTest(..)
+  Example(..)
 , Module (..)
 , Interaction(..)
 , getDocTests
@@ -15,7 +15,7 @@ import           Data.Maybe (fromMaybe)
 import           Extract
 import           Location
 
-data DocTest = DocExample [Located Interaction]
+data Example = Example [Located Interaction]
   deriving (Eq, Show)
 
 
@@ -26,19 +26,19 @@ data Interaction = Interaction {
 
 
 -- |
--- Extract 'DocTest's from all given modules and all modules included by the
+-- Extract 'Example's from all given modules and all modules included by the
 -- given modules.
 getDocTests
   :: [String]             -- ^ List of GHC flags
   -> [String]             -- ^ File or module names
-  -> IO [Module DocTest]  -- ^ Extracted 'DocTest's
+  -> IO [Module Example]  -- ^ Extracted 'Example's
 getDocTests flags modules = do
   mods <- extract flags modules
   return (filter (not . null . moduleContent) $ map parseModule mods)
 
--- | Convert documentation to `DocTest`s.
-parseModule :: Module (Located String) -> Module DocTest
-parseModule (Module name docs) = (Module name . map DocExample . filter (not . null) . map parse) docs
+-- | Convert documentation to `Example`s.
+parseModule :: Module (Located String) -> Module Example
+parseModule (Module name docs) = (Module name . map Example . filter (not . null) . map parse) docs
 
 -- | Extract all interactions from given Haddock documentation.
 parse :: (Located String) -> [Located Interaction]
