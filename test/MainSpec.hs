@@ -1,12 +1,13 @@
 module MainSpec (main, spec) where
 
 import           Test.Hspec.ShouldBe
-import           Test.HUnit (assertEqual, Counts(Counts, tried, errors, failures), Assertion, showCounts)
-import qualified Test.HUnit as HU
+import           Test.HUnit (assertEqual, Assertion)
 
 import           System.Directory (canonicalizePath, getCurrentDirectory, setCurrentDirectory)
 import           System.FilePath
 import           System.Process (readProcessWithExitCode)
+
+import           DocTest (Summary(..))
 
 
 -- | Run doctest and return stderr.
@@ -27,24 +28,19 @@ doctest_ workingDir args = do
 -- | Construct a doctest specific 'Assertion'.
 doctest :: FilePath   -- ^ current directory of forked `doctest` process
         -> [String]   -- ^ args, given to `doctest`
-        -> Counts     -- ^ expected test result
+        -> Summary    -- ^ expected test result
         -> Assertion
-doctest workingDir args counts = do
+doctest workingDir args summary = do
   err <- doctest_ workingDir args
   let out = lastLine err
-  assertEqual label (showCounts counts) (last . lines $ out)
+  assertEqual label (show summary) (last . lines $ out)
   where
     label = workingDir ++ " " ++ show args
     lastLine = reverse . takeWhile (/= '\r') . reverse
 
 
-cases :: Int -> Counts
-cases n = Counts {
-  HU.cases = n
-, tried    = n
-, errors   = 0
-, failures = 0
-}
+cases :: Int -> Summary
+cases n = Summary n n 0 0
 
 main :: IO ()
 main = hspecX spec
@@ -58,7 +54,7 @@ spec = do
 
     it "testFail" $ do
       doctest "." ["testFail/Foo.hs"]
-        (cases 1) {failures = 1}
+        (cases 1) {sFailures = 1}
 
     it "testImport" $ do
       doctest "testImport" ["ModuleA.hs"]
@@ -76,7 +72,7 @@ spec = do
 
     it "testFailOnMultiline" $ do
       doctest "testFailOnMultiline" ["Fib.hs"]
-        (cases 1) {errors = 1}
+        (cases 1) {sErrors = 1}
 
     it "testBlankline" $ do
       doctest "testBlankline" ["Fib.hs"]
@@ -119,7 +115,7 @@ spec = do
 
     it "testCPP" $ do
       doctest "testCPP" ["--optghc=-cpp", "Foo.hs"]
-        (cases 1) {failures = 1}
+        (cases 1) {sFailures = 1}
       doctest "testCPP" ["--optghc=-cpp", "--optghc=-DFOO", "Foo.hs"]
         (cases 1)
 

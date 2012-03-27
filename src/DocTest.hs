@@ -1,20 +1,108 @@
-module DocTest (
-    getDocTests
-  , Example(..)
-  , Interaction(..)
-  , toTestCase
-  , toAssertion
-  ) where
+module DocTest (runModules, Summary(..)) where
 
-import           Test.HUnit (Test(..), assertEqual, Assertion)
+import           Prelude hiding (putStr, putStrLn)
+import           Data.Monoid
+import           Control.Monad
+import           Text.Printf (printf)
+import           System.IO (hPutStrLn, hPutStr, stderr)
+
+import           Control.Monad.Trans.State
+import           Control.Monad.IO.Class
 
 import qualified Interpreter
-import           Parse
+import           Parse hiding (expression, result)
 import           Location
 
+-- | Summary of a test run.
+data Summary = Summary {
+  sExamples :: Int
+, sTried    :: Int
+, sErrors   :: Int
+, sFailures :: Int
+}
 
-toTestCase :: Interpreter.Interpreter -> Module Example -> Test
-toTestCase repl (Module name examples) = TestLabel name . TestList . map (TestCase . toAssertion repl name) $ examples
+-- | Format a summary.
+instance Show Summary where
+  show (Summary examples tried errors failures) =
+    printf "Examples: %d  Tried: %d  Errors: %d  Failures: %d" examples tried errors failures
+
+-- | Sum up summaries.
+instance Monoid Summary where
+  mempty = Summary 0 0 0 0
+  (Summary x1 x2 x3 x4) `mappend` (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
+
+-- | The result of evaluating an interaction.
+data InteractionResult = Success | Failed (Located Interaction) [String]
+
+-- |
+-- Run all examples from given modules, return true if there were
+-- errors/failures.
+runModules :: Int -> Interpreter.Interpreter -> [Module Example] -> IO Bool
+runModules exampleCount repl modules = do
+  ReportState _ s <- (`execStateT` ReportState 0 mempty {sExamples = exampleCount}) $ do
+    forM_ modules $ runModule repl
+
+    -- report final summary
+    gets (show . reportStateSummary) >>= report
+
+  return (sErrors s /= 0 || sFailures s /= 0)
+
+-- | A monad for generating test reports.
+type Report = StateT ReportState IO
+
+data ReportState = ReportState {
+  reportStateCount   :: Int     -- ^ characters on the current line
+, reportStateSummary :: Summary -- ^ test summary
+}
+
+-- | Add output to the report.
+report :: String -> Report ()
+report msg = do
+  erase
+  liftIO $ hPutStrLn stderr msg
+  modify (\st -> st {reportStateCount = 0})
+
+-- | Add intermediate output to the report.
+--
+-- This will be overwritten by subsequent calls to `report`/`report_`.
+-- Intermediate out may not contain any newlines.
+report_ :: String -> Report ()
+report_ msg = do
+  erase
+  liftIO $ hPutStr stderr msg
+  modify (\st -> st {reportStateCount = length msg})
+
+-- | Clear intermediate out.
+erase :: Report ()
+erase = do
+  n <- gets reportStateCount
+  when (0 < n) $
+    liftIO $ hPutStr stderr ("\r" ++ replicate n ' ' ++ "\r")
+
+-- | Run all examples from given module.
+runModule :: Interpreter.Interpreter -> Module Example -> Report ()
+runModule repl (Module name examples) = do
+  forM_ examples $ \e -> do
+
+    -- report intermediate summary
+    gets (show . reportStateSummary) >>= report_
+
+    r <- liftIO $ runExample repl name e
+    case r of
+      Success ->
+        success
+      Failed (Located loc (Interaction expression expected)) actual -> do
+        report (printf "### Failure in %s: expression `%s'" (show loc) expression)
+        report ("expected: " ++ show expected)
+        report (" but got: " ++ show actual)
+        failure
+  where
+    success = updateSummary (Summary 0 1 0 0)
+    failure = updateSummary (Summary 0 1 0 1)
+
+    updateSummary summary = do
+      ReportState n s <- get
+      put (ReportState n $ s `mappend` summary)
 
 -- |
 -- Execute all expressions from given 'Example' in given
@@ -22,17 +110,18 @@ toTestCase repl (Module name examples) = TestLabel name . TestList . map (TestCa
 --
 -- The interpreter state is zeroed with @:reload@ before executing the
 -- expressions.  This means that you can reuse the same
--- 'Interpreter.Interpreter' for several calls to `toAssertion`.
-toAssertion :: Interpreter.Interpreter -> String -> Example -> Assertion
-toAssertion repl module_ (Example interactions) = do
+-- 'Interpreter.Interpreter' for several calls to `runExample`.
+runExample :: Interpreter.Interpreter -> String -> Example -> IO InteractionResult
+runExample repl module_ (Example interactions) = do
   _ <- Interpreter.eval repl $ ":reload"
   _ <- Interpreter.eval repl $ ":m *" ++ module_
-  mapM_ interactionToAssertion interactions
+  go interactions
   where
-    interactionToAssertion (Located loc x) = do
-      result' <- Interpreter.eval repl exampleExpression
-      assertEqual (show loc ++ ": expression `" ++ exampleExpression ++ "'")
-        exampleResult $ lines result'
-      where
-        exampleExpression = expression x
-        exampleResult     = result x
+    go (i@(Located _ (Interaction expression expected)) : xs) = do
+      actual <- lines `fmap` Interpreter.eval repl expression
+      if expected /= actual
+        then
+          return (Failed i actual)
+        else
+          go xs
+    go [] = return Success

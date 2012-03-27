@@ -45,7 +45,7 @@ library
     , directory
     , process
     , ghc-paths   == 0.1.*
-    , HUnit       == 1.2.*
+    , transformers
 
   buildable: False
 
@@ -72,7 +72,7 @@ executable doctest
     , directory
     , process
     , ghc-paths   == 0.1.*
-    , HUnit       == 1.2.*
+    , transformers
 
 test-suite spec
   type:

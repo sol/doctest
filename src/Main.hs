@@ -1,14 +1,13 @@
 module Main (main) where
 
-import Test.HUnit (runTestTT, Test(..), Counts(..))
-import System.Exit (exitSuccess, exitFailure)
-import System.IO
-import Data.Monoid
+import           Data.Monoid
+import           Control.Monad (when)
+import           System.Exit (exitFailure)
+import           System.IO
 
-import Parse
-import Options
-import DocTest
-
+import           Parse
+import           Options
+import           DocTest
 import qualified Interpreter
 
 main :: IO ()
@@ -29,11 +28,10 @@ main = do
     else do
       -- map to unit tests
       Interpreter.withInterpreter ghciArgs $ \repl -> do
-        let tests = TestList $ map (toTestCase repl) modules
-        Counts _ _ errCount failCount <- runTestTT tests
-        if errCount == 0 && failCount == 0
-          then exitSuccess
-          else exitFailure
+        r <- runModules (exampleCount c) repl modules
+        when r exitFailure
+  where
+    exampleCount (Count n _) = n
 
 -- | Number of examples and interactions.
 data Count = Count Int {- example count -} Int {- interaction count -}
