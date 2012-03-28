@@ -9,9 +9,11 @@ module Report (
 , report_
 ) where
 
-import           Prelude hiding (putStr, putStrLn)
+import           Prelude hiding (putStr, putStrLn, error)
 import           Data.Monoid
 import           Control.Monad
+import           Control.Applicative
+import           Control.Exception
 import           Text.Printf (printf)
 import           System.IO (hPutStrLn, hPutStr, stderr)
 
@@ -39,9 +41,6 @@ instance Show Summary where
 instance Monoid Summary where
   mempty = Summary 0 0 0 0
   (Summary x1 x2 x3 x4) `mappend` (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
-
--- | The result of evaluating an interaction.
-data InteractionResult = Success | Failed (Located Interaction) [String]
 
 -- |
 -- Run all examples from given modules, return true if there were
@@ -102,7 +101,11 @@ runModule repl (Module name examples) = do
     case r of
       Success ->
         success
-      Failed (Located loc (Interaction expression expected)) actual -> do
+      Error   (Located loc (Interaction expression _)) err -> do
+        report (printf "### Error in %s: expression `%s'" (show loc) expression)
+        report err
+        error
+      Failure (Located loc (Interaction expression expected)) actual -> do
         report (printf "### Failure in %s: expression `%s'" (show loc) expression)
         report ("expected: " ++ show expected)
         report (" but got: " ++ show actual)
@@ -110,10 +113,18 @@ runModule repl (Module name examples) = do
   where
     success = updateSummary (Summary 0 1 0 0)
     failure = updateSummary (Summary 0 1 0 1)
+    error   = updateSummary (Summary 0 1 1 0)
 
     updateSummary summary = do
       ReportState n s <- get
       put (ReportState n $ s `mappend` summary)
+
+
+-- | The result of evaluating an interaction.
+data InteractionResult =
+    Success
+  | Failure (Located Interaction) [String]
+  | Error (Located Interaction) String
 
 -- |
 -- Execute all expressions from given 'Example' in given
@@ -129,10 +140,25 @@ runExample repl module_ (Example interactions) = do
   go interactions
   where
     go (i@(Located _ (Interaction expression expected)) : xs) = do
-      actual <- lines `fmap` Interpreter.eval repl expression
-      if expected /= actual
-        then
-          return (Failed i actual)
-        else
-          go xs
+      r <- run expression
+      case r of
+        Left err -> do
+          return (Error i err)
+        Right actual -> do
+          if expected /= actual
+            then
+              return (Failure i actual)
+            else
+              go xs
     go [] = return Success
+
+    run :: String -> IO (Either String [String])
+    run expression = (Right . lines <$> Interpreter.eval repl expression) `catches` [
+      -- Re-throw AsyncException, otherwise execution will not terminate on
+      -- SIGINT (ctrl-c).  All AsyncExceptions are re-thrown (not just
+      -- UserInterrupt) because all of them indicate severe conditions and
+      -- should not occur during normal test runs.
+      Handler $ \e -> throw (e :: AsyncException),
+
+      Handler $ \e -> (return . Left . show) (e :: SomeException)
+      ]
