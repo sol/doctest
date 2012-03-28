@@ -95,4 +95,5 @@ test-suite spec
     , hspec-shouldbe
     , transformers
     , stringbuilder
+    , silently
     , filepath
