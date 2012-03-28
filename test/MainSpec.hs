@@ -7,7 +7,7 @@ import           System.Directory (canonicalizePath, getCurrentDirectory, setCur
 import           System.FilePath
 import           System.Process (readProcessWithExitCode)
 
-import           DocTest (Summary(..))
+import           Report (Summary(..))
 
 
 -- | Run doctest and return stderr.

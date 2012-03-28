@@ -1,4 +1,13 @@
-module DocTest (runModules, Summary(..)) where
+module Report (
+  runModules
+
+-- * exported for testing
+, Report
+, Summary(..)
+, ReportState (..)
+, report
+, report_
+) where
 
 import           Prelude hiding (putStr, putStrLn)
 import           Data.Monoid
@@ -58,8 +67,10 @@ data ReportState = ReportState {
 -- | Add output to the report.
 report :: String -> Report ()
 report msg = do
-  erase
-  liftIO $ hPutStrLn stderr msg
+  overwrite msg
+
+  -- add a newline, this makes the output permanent
+  liftIO $ hPutStrLn stderr ""
   modify (\st -> st {reportStateCount = 0})
 
 -- | Add intermediate output to the report.
@@ -68,16 +79,16 @@ report msg = do
 -- Intermediate out may not contain any newlines.
 report_ :: String -> Report ()
 report_ msg = do
-  erase
-  liftIO $ hPutStr stderr msg
+  overwrite msg
   modify (\st -> st {reportStateCount = length msg})
 
--- | Clear intermediate out.
-erase :: Report ()
-erase = do
+-- | Add output to the report, overwrite any intermediate out.
+overwrite :: String -> Report ()
+overwrite msg = do
   n <- gets reportStateCount
-  when (0 < n) $
-    liftIO $ hPutStr stderr ("\r" ++ replicate n ' ' ++ "\r")
+  let str | 0 < n     = "\r" ++ msg ++ replicate (n - length msg) ' '
+          | otherwise = msg
+  liftIO (hPutStr stderr str)
 
 -- | Run all examples from given module.
 runModule :: Interpreter.Interpreter -> Module Example -> Report ()

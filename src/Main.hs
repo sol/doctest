@@ -7,7 +7,7 @@ import           System.IO
 
 import           Parse
 import           Options
-import           DocTest
+import           Report
 import qualified Interpreter
 
 main :: IO ()
