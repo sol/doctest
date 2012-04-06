@@ -1,7 +1,9 @@
 module DocTest (
     getDocTests
-  , Example(..)
+  , Example
+  , Module(..)
   , Interaction(..)
+  , exampleToInteractions
   , toTestCase
   , toAssertion
   ) where
@@ -12,6 +14,10 @@ import qualified Interpreter
 import           Parse
 import           Location
 
+exampleToInteractions :: Example -> [Interaction]
+exampleToInteractions (Example lis) = map unlocated lis
+  where
+    unlocated (Located _ inter) = inter
 
 toTestCase :: Interpreter.Interpreter -> Module Example -> Test
 toTestCase repl (Module name examples) = TestLabel name . TestList . map (TestCase . toAssertion repl name) $ examples
@@ -19,14 +25,9 @@ toTestCase repl (Module name examples) = TestLabel name . TestList . map (TestCa
 -- |
 -- Execute all expressions from given 'Example' in given
 -- 'Interpreter.Interpreter' and verify the output.
---
--- The interpreter state is zeroed with @:reload@ before executing the
--- expressions.  This means that you can reuse the same
--- 'Interpreter.Interpreter' for several calls to `toAssertion`.
 toAssertion :: Interpreter.Interpreter -> String -> Example -> Assertion
 toAssertion repl module_ (Example interactions) = do
-  _ <- Interpreter.eval repl $ ":reload"
-  _ <- Interpreter.eval repl $ ":m *" ++ module_
+  _ <- Interpreter.eval repl $ ":load " ++ module_
   mapM_ interactionToAssertion interactions
   where
     interactionToAssertion (Located loc x) = do

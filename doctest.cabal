@@ -31,6 +31,7 @@ library
       src
   other-modules:
       Interpreter
+    , Location
     , Options
     , DocTest
     , Parse
@@ -46,8 +47,6 @@ library
     , process
     , ghc-paths   == 0.1.*
     , HUnit       == 1.2.*
-
-  buildable: False
 
 executable doctest
   main-is:
