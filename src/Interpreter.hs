@@ -23,6 +23,7 @@ import GHC.Paths (ghc)
 marker :: String
 marker = show "dcbd2a1e20ae519a1c7714df2859f1890581d57fac96ba3f499412b2f5c928a1"
 
+-- | The GHCi process.
 data Interpreter = Interpreter {
     hIn  :: Handle
   , hOut :: Handle
@@ -51,7 +52,8 @@ newInterpreter flags = do
       hSetEncoding handle utf8
 
 
--- | Run an interpreter session.
+-- |
+-- Run an interpreter session.
 --
 -- Example:
 --
@@ -138,7 +140,7 @@ getResult repl = do
     stdout_ = hOut repl
     stripMarker l = take (length l - length marker) l
 
--- | Evaluate an expresion
+-- | Evaluate an expression.
 eval
   :: Interpreter
   -> String       -- Expression

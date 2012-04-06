@@ -8,14 +8,8 @@
 module Test.DocTest (
     module DocTest
   , withInterpreter
+  , eval
   ) where
 
-import           DocTest
-import           Interpreter (Interpreter)
-import qualified Interpreter
-
-withInterpreter
-  :: [String]               -- ^ List of flags, passed to GHC
-  -> (Interpreter -> IO a)  -- ^ Action to run
-  -> IO a                   -- ^ Result of action
-withInterpreter = Interpreter.withInterpreter
+import DocTest
+import Interpreter (withInterpreter, eval)

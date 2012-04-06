@@ -1,9 +1,14 @@
 module DocTest (
+  -- * Extracting examples from module
     getDocTests
-  , Example
+  -- * Data types
   , Module(..)
+  , Example
   , Interaction(..)
+  -- * Helper functions
   , exampleToInteractions
+  -- * Interaction tests with GHCi.
+  , Interpreter.Interpreter
   , toTestCase
   , toAssertion
   ) where
@@ -14,16 +19,20 @@ import qualified Interpreter
 import           Parse
 import           Location
 
+-- |
+-- Extract 'Interaction's from 'Example'.
 exampleToInteractions :: Example -> [Interaction]
 exampleToInteractions (Example lis) = map unlocated lis
   where
     unlocated (Located _ inter) = inter
 
+-- |
+-- A wrapper function for 'toAssertion'
 toTestCase :: Interpreter.Interpreter -> Module Example -> Test
 toTestCase repl (Module name examples) = TestLabel name . TestList . map (TestCase . toAssertion repl name) $ examples
 
 -- |
--- Execute all expressions from given 'Example' in given
+-- Execute all 'Interaction's from given 'Example' in given
 -- 'Interpreter.Interpreter' and verify the output.
 --
 -- The interpreter state is zeroed with @:reload@ before executing the
