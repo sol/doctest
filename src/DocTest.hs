@@ -25,9 +25,16 @@ toTestCase repl (Module name examples) = TestLabel name . TestList . map (TestCa
 -- |
 -- Execute all expressions from given 'Example' in given
 -- 'Interpreter.Interpreter' and verify the output.
+--
+-- The interpreter state is zeroed with @:reload@ before executing the
+-- expressions.  This means that you can reuse the same
+-- 'Interpreter.Interpreter' for several calls to `toAssertion`.
 toAssertion :: Interpreter.Interpreter -> String -> Example -> Assertion
 toAssertion repl module_ (Example interactions) = do
+  -- A module is alreay loaded here
+  -- Clear interpreter status.
   _ <- Interpreter.eval repl $ ":reload"
+  -- Fix name space.
   _ <- Interpreter.eval repl $ ":m *" ++ module_
   mapM_ interactionToAssertion interactions
   where
