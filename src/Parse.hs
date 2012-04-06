@@ -15,15 +15,19 @@ import           Data.Maybe (fromMaybe)
 import           Extract
 import           Location
 
+-- |
+-- Abstract data type for examples in Haddock.
+-- All example interactions in a comment of a function are stored.
 data Example = Example [Located Interaction]
   deriving (Eq, Show)
 
 
+-- |
+-- Concrete values in 'Example'.
 data Interaction = Interaction {
-  expression :: String    -- ^ example expression
-, result     :: [String]  -- ^ expected result
+  expression :: String    -- ^ Example expression
+, result     :: [String]  -- ^ Expected result
 } deriving (Eq, Show)
-
 
 -- |
 -- Extract 'Example's from all given modules and all modules included by the
