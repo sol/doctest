@@ -27,7 +27,8 @@ toTestCase repl (Module name examples) = TestLabel name . TestList . map (TestCa
 -- 'Interpreter.Interpreter' and verify the output.
 toAssertion :: Interpreter.Interpreter -> String -> Example -> Assertion
 toAssertion repl module_ (Example interactions) = do
-  _ <- Interpreter.eval repl $ ":load " ++ module_
+  _ <- Interpreter.eval repl $ ":reload"
+  _ <- Interpreter.eval repl $ ":m *" ++ module_
   mapM_ interactionToAssertion interactions
   where
     interactionToAssertion (Located loc x) = do
