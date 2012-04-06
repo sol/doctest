@@ -4,7 +4,7 @@ module Options (
 , ghcOptions
 ) where
 
-import Control.Monad (when)
+import Control.Monad (when, unless)
 import System.Environment (getArgs)
 import System.Exit (exitSuccess, exitFailure)
 import System.IO (hPutStr, stderr)
@@ -51,10 +51,10 @@ getOptions = do
     putStrLn ("using version " ++ GHC.cProjectVersion ++ " of the GHC API")
     exitSuccess
 
-  when ((not . null) errors) $ do
+  unless (null errors) $
     tryHelp $ head errors
 
-  when (null modules) $ do
+  when (null modules) $
     tryHelp "no input files\n"
 
   return (options, modules)
