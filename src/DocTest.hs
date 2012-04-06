@@ -42,7 +42,7 @@ toAssertion :: Interpreter.Interpreter -> String -> Example -> Assertion
 toAssertion repl module_ (Example interactions) = do
   -- A module is alreay loaded here
   -- Clear interpreter status.
-  _ <- Interpreter.eval repl $ ":reload"
+  _ <- Interpreter.eval repl ":reload"
   -- Fix name space.
   _ <- Interpreter.eval repl $ ":m *" ++ module_
   mapM_ interactionToAssertion interactions
