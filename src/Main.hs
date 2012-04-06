@@ -20,13 +20,13 @@ main = do
   modules <- getDocTests (ghcOptions options) files
 
   let c = (mconcat . map count) modules
-  hPutStrLn stderr (show c)
+  hPrint stderr c
 
   if DumpOnly `elem` options
-    then do
+    then
       -- dump to stdout
       print modules
-    else do
+    else
       -- map to unit tests
       Interpreter.withInterpreter ghciArgs $ \repl -> do
         let tests = TestList $ map (toTestCase repl) modules

@@ -8,7 +8,7 @@ import System.IO
 import System.Process
 import System.Exit
 import System.Directory (getPermissions, executable)
-import Control.Monad(when)
+import Control.Monad (when, unless)
 import Control.Exception (bracket)
 import Data.Char
 import Data.List
@@ -23,6 +23,7 @@ import GHC.Paths (ghc)
 marker :: String
 marker = show "dcbd2a1e20ae519a1c7714df2859f1890581d57fac96ba3f499412b2f5c928a1"
 
+-- | The GHCi process.
 data Interpreter = Interpreter {
     hIn  :: Handle
   , hOut :: Handle
@@ -35,7 +36,7 @@ newInterpreter flags = do
   -- in a perfect world this permission check should never fail, but I know of
   -- at least one case where it did..
   x <- getPermissions ghc
-  when (not $ executable x) $ do
+  unless (executable x) $
     fail $ ghc ++ " is not executable!"
 
   (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc ghc myFlags) {std_in = CreatePipe, std_out = CreatePipe, std_err = UseHandle stdout}
@@ -51,7 +52,8 @@ newInterpreter flags = do
       hSetEncoding handle utf8
 
 
--- | Run an interpreter session.
+-- |
+-- Run an interpreter session.
 --
 -- Example:
 --
@@ -138,7 +140,7 @@ getResult repl = do
     stdout_ = hOut repl
     stripMarker l = take (length l - length marker) l
 
--- | Evaluate an expresion
+-- | Evaluate an expression.
 eval
   :: Interpreter
   -> String       -- Expression
