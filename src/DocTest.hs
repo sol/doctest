@@ -1,7 +1,14 @@
 module DocTest (
+  -- * Extracting examples from module
     getDocTests
-  , Example(..)
+  -- * Data types
+  , Module(..)
+  , Example
   , Interaction(..)
+  -- * Helper functions
+  , exampleToInteractions
+  -- * Interaction tests with GHCi.
+  , Interpreter.Interpreter
   , toTestCase
   , toAssertion
   ) where
@@ -12,12 +19,20 @@ import qualified Interpreter
 import           Parse
 import           Location
 
+-- |
+-- Extract 'Interaction's from 'Example'.
+exampleToInteractions :: Example -> [Interaction]
+exampleToInteractions (Example lis) = map unlocated lis
+  where
+    unlocated (Located _ inter) = inter
 
+-- |
+-- A wrapper function for 'toAssertion'
 toTestCase :: Interpreter.Interpreter -> Module Example -> Test
 toTestCase repl (Module name examples) = TestLabel name . TestList . map (TestCase . toAssertion repl name) $ examples
 
 -- |
--- Execute all expressions from given 'Example' in given
+-- Execute all 'Interaction's from given 'Example' in given
 -- 'Interpreter.Interpreter' and verify the output.
 --
 -- The interpreter state is zeroed with @:reload@ before executing the
@@ -25,7 +40,10 @@ toTestCase repl (Module name examples) = TestLabel name . TestList . map (TestCa
 -- 'Interpreter.Interpreter' for several calls to `toAssertion`.
 toAssertion :: Interpreter.Interpreter -> String -> Example -> Assertion
 toAssertion repl module_ (Example interactions) = do
-  _ <- Interpreter.eval repl $ ":reload"
+  -- A module is alreay loaded here
+  -- Clear interpreter status.
+  _ <- Interpreter.eval repl ":reload"
+  -- Fix name space.
   _ <- Interpreter.eval repl $ ":m *" ++ module_
   mapM_ interactionToAssertion interactions
   where

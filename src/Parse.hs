@@ -15,15 +15,19 @@ import           Data.Maybe (fromMaybe)
 import           Extract
 import           Location
 
+-- |
+-- Abstract data type for examples in Haddock.
+-- All example interactions in a comment of a function are stored.
 data Example = Example [Located Interaction]
   deriving (Eq, Show)
 
 
+-- |
+-- Concrete values in 'Example'.
 data Interaction = Interaction {
-  expression :: String    -- ^ example expression
-, result     :: [String]  -- ^ expected result
+  expression :: String    -- ^ Example expression
+, result     :: [String]  -- ^ Expected result
 } deriving (Eq, Show)
-
 
 -- |
 -- Extract 'Example's from all given modules and all modules included by the
@@ -41,7 +45,7 @@ parseModule :: Module (Located String) -> Module Example
 parseModule (Module name docs) = (Module name . map Example . filter (not . null) . map parse) docs
 
 -- | Extract all interactions from given Haddock documentation.
-parse :: (Located String) -> [Located Interaction]
+parse :: Located String -> [Located Interaction]
 parse (Located loc input) = go $ zipWith Located (enumerate loc) (lines input)
   where
     isPrompt :: Located String -> Bool
@@ -79,7 +83,7 @@ toInteraction (Located loc x) xs = Located loc $
     --
     -- 3. interpret lines that only contain the string "<BLANKLINE>" as an
     -- empty line
-    result_ = map (substituteBlankLine . tryStripPrefix prefix) (map unLoc xs)
+    result_ = map (substituteBlankLine . tryStripPrefix prefix . unLoc) xs
       where
         tryStripPrefix pre ys = fromMaybe ys $ stripPrefix pre ys
 

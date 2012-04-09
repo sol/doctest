@@ -42,8 +42,8 @@ instance Exception ExtractError
 
 -- | Documentation for a module grouped together with the modules name.
 data Module a = Module {
-  moduleName    :: String
-, moduleContent :: [a]
+  moduleName    :: String  -- ^ Module name
+, moduleContent :: [a]     -- ^ Specific contents in the module
 } deriving (Eq, Functor)
 
 deriving instance Show a => Show (Module a)
@@ -70,7 +70,7 @@ extract :: [String] -- ^ flags
         -> IO [Module (Located String)]
 extract flags modules = do
   mods <- parse flags modules
-  let docs = map extractFromModule (map tm_parsed_module mods)
+  let docs = map (extractFromModule . tm_parsed_module) mods
 
   (docs `deepseq` return docs) `catches` [
       -- Re-throw AsyncException, otherwise execution will not terminate on
