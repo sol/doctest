@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/sol/doctest-haskell.png)](http://travis-ci.org/sol/doctest-haskell)
+
 About
 =====
 
