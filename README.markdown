@@ -1,17 +1,15 @@
+
+# Doctest: Test interactive Haskell examples
+
 [![Build Status](https://secure.travis-ci.org/sol/doctest-haskell.png)](http://travis-ci.org/sol/doctest-haskell)
 
-About
-=====
-
-`doctest` is a small program, that checks
-[examples in Haddock comments](http://www.haskell.org/haddock/doc/html/ch03s08.html#id566093).
-It is modeled after
-[doctest for Python](http://docs.python.org/library/doctest.html).
+`doctest` is a small program, that checks [examples in Haddock comments]
+(http://www.haskell.org/haddock/doc/html/ch03s08.html#id566093).  It is similar
+to the [popular python module with the same name]
+(http://docs.python.org/library/doctest.html).
 
 
-
-Installation
-============
+## Installation
 
 `doctest` is available from
 [Hackage](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/doctest).
@@ -34,8 +32,7 @@ On Windows it's `C:\Documents And Settings\user\Application Data\cabal\bin`.
 Fore more information, see the [section on paths in the Cabal User Guide]
 (http://www.haskell.org/cabal/users-guide/#paths-in-the-simple-build-system).
 
-Usage
-=====
+## Usage
 
 Below is a small Haskell module.
 The module contains a Haddock comment with some examples of interaction.
@@ -71,7 +68,7 @@ You may produce Haddock documentation for that module with:
 
     haddock -h Fib.hs -o doc/
 
-## Using GHC extensions
+### Using GHC extensions
 
 The easiest way to tell Doctest about GHC extensions is to use [LANGUAGE
 pragmas] [language-pragma] in your source files.
@@ -87,8 +84,7 @@ in the export list.  That way they will not be part of the generated Haddock
 documentation, but Doctest will still find them.
 
 
-Hacking
-=======
+## Hacking
 
 Submit pull request on GitHub.  Add tests for new features.  Make sure that the
 test suite passes with your changes, before submitting any pull requests:
@@ -96,8 +92,7 @@ test suite passes with your changes, before submitting any pull requests:
     cabal configure --enable-tests && cabal build && cabal test
 
 
-Contributors
-============
+### List of Contributors
 
 See the [list of contributors](https://github.com/sol/doctest-haskell/contributors).
 
