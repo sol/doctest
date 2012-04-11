@@ -3,7 +3,7 @@
 
 `doctest` is a small program, that checks [examples in Haddock comments]
 (http://www.haskell.org/haddock/doc/html/ch03s08.html#id566093).  It is similar
-to the [popular python module with the same name]
+to the [popular Python module with the same name]
 (http://docs.python.org/library/doctest.html).
 
 
