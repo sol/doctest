@@ -1,8 +1,6 @@
 
 # Doctest: Test interactive Haskell examples
 
-[![Build Status](https://secure.travis-ci.org/sol/doctest-haskell.png)](http://travis-ci.org/sol/doctest-haskell)
-
 `doctest` is a small program, that checks [examples in Haddock comments]
 (http://www.haskell.org/haddock/doc/html/ch03s08.html#id566093).  It is similar
 to the [popular python module with the same name]
@@ -77,17 +75,19 @@ Alternatively you can pass any GHC options to Doctest with `--optghc`.
 
     doctest --options=-cpp Foo.hs
 
-## Hiding examples from Haddock
+### Hiding examples from Haddock
 
 You can put examples into [named chunks] [named-chunks], and not refer to them
 in the export list.  That way they will not be part of the generated Haddock
 documentation, but Doctest will still find them.
 
 
-## Hacking
+## Development [![Build Status](https://secure.travis-ci.org/sol/doctest-haskell.png)](http://travis-ci.org/sol/doctest-haskell)
 
-Submit pull request on GitHub.  Add tests for new features.  Make sure that the
-test suite passes with your changes, before submitting any pull requests:
+Discuss your ideas first, ideally by opening an issue on GitHub.
+
+Add tests for new features, and make sure that the test suite passes with your
+changes.
 
     cabal configure --enable-tests && cabal build && cabal test
 
