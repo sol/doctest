@@ -7,6 +7,7 @@ module Report (
 , ReportState (..)
 , report
 , report_
+, reportFailure
 ) where
 
 import           Prelude hiding (putStr, putStrLn, error)
@@ -16,6 +17,7 @@ import           Control.Applicative
 import           Control.Exception
 import           Text.Printf (printf)
 import           System.IO (hPutStrLn, hPutStr, stderr)
+import           Data.Char
 
 import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
@@ -107,8 +109,7 @@ runModule repl (Module name examples) = do
         error
       Failure (Located loc (Interaction expression expected)) actual -> do
         report (printf "### Failure in %s: expression `%s'" (show loc) expression)
-        report ("expected: " ++ show expected)
-        report (" but got: " ++ show actual)
+        reportFailure expected actual
         failure
   where
     success = updateSummary (Summary 0 1 0 0)
@@ -119,6 +120,32 @@ runModule repl (Module name examples) = do
       ReportState n s <- get
       put (ReportState n $ s `mappend` summary)
 
+reportFailure :: [String] -> [String] -> Report ()
+reportFailure expected actual = do
+  outputLines "expected: " expected
+  outputLines " but got: " actual
+  where
+
+    -- print quotes if any line ends with trailing whitespace
+    printQuotes = any isSpace (map last . filter (not . null) $ expected ++ actual)
+
+    -- use show to escape special characters in output lines if any output line
+    -- contains any unsafe character
+    escapeOutput = any (not . isSafe) (concat $ expected ++ actual)
+
+    isSafe :: Char -> Bool
+    isSafe c = c == ' ' || (isPrint c && (not . isSpace) c)
+
+    outputLines message l_ = case l of
+      x:xs -> do
+        report (message ++ x)
+        let padding = replicate (length message) ' '
+        forM_ xs $ \y -> report (padding ++ y)
+      []   ->
+        report message
+      where
+        l | printQuotes || escapeOutput = map show l_
+          | otherwise                   = l_
 
 -- | The result of evaluating an interaction.
 data InteractionResult =

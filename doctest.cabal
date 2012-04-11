@@ -81,6 +81,8 @@ test-suite spec
       Spec.hs
   ghc-options:
       -Wall -Werror -threaded
+  cpp-options:
+      -DTEST
   hs-source-dirs:
       src, test
   build-depends:

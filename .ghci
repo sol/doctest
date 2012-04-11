@@ -1,1 +1,1 @@
-:set -isrc -itest -idist/build/autogen -packageghc
+:set -DTEST -isrc -itest -idist/build/autogen -packageghc
