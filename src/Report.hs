@@ -1,13 +1,7 @@
 module Report (
   runModules
-
--- * exported for testing
-, Report
-, Summary(..)
-, ReportState (..)
-, report
-, report_
-, reportFailure
+, Result(..)
+, isSucceeded
 ) where
 
 import           Prelude hiding (putStr, putStrLn, error)
@@ -21,10 +15,12 @@ import           Data.Char
 
 import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
+import           Data.List (intercalate)
 
 import qualified Interpreter
 import           Parse hiding (expression, result)
 import           Location
+import           Count
 
 -- | Summary of a test run.
 data Summary = Summary {
@@ -45,31 +41,66 @@ instance Monoid Summary where
   (Summary x1 x2 x3 x4) `mappend` (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- |
+-- The result of doctest.
+data Result = Result {
+    -- | The number of 'Example's
+    rExamples        :: Int
+    -- | How many 'Example's are treid to test
+  , rTried           :: Int
+    -- | How many 'Example's are got errors
+  , rErrors          :: Int
+    -- | How many 'Example's are got wrong results
+  , rFailures        :: Int
+    -- | The number of interaction tests
+  , rInteractions    :: Int
+    -- | Message of failure/error
+  , rFailureMessages :: [String]
+  }
+
+-- |
+-- Checking if 'Result' says that all tests are passed.
+isSucceeded :: Result -> Bool
+isSucceeded r = rErrors r == 0 && rFailures r == 0
+
+-- |
 -- Run all examples from given modules, return true if there were
 -- errors/failures.
-runModules :: Int -> Interpreter.Interpreter -> [Module Example] -> IO Bool
-runModules exampleCount repl modules = do
-  ReportState _ s <- (`execStateT` ReportState 0 mempty {sExamples = exampleCount}) $ do
-    forM_ modules $ runModule repl
+runModules :: Interpreter.Interpreter -> Bool -> [Module Example] -> IO Result
+runModules repl disp modules = do
+  let c = countModules' modules
+  ReportState _ s ms <- runModules' (exampleCount c) repl disp modules
+  return Result {
+      rExamples = sExamples s
+    , rTried = sTried s
+    , rErrors = sErrors s
+    , rFailures = sFailures s
+    , rInteractions = interactionCount c
+    , rFailureMessages = reverse $ filter (not.null) ms
+    }
 
+-- |
+-- Run all examples from given modules.
+runModules' :: Int -> Interpreter.Interpreter -> Bool -> [Module Example] -> IO ReportState
+runModules' exN repl disp modules = flip execStateT initialValue $ do
+    forM_ modules $ runModule repl disp
     -- report final summary
-    gets (show . reportStateSummary) >>= report
-
-  return (sErrors s /= 0 || sFailures s /= 0)
+    when disp $ gets (show . reportStateSummary) >>= report
+  where
+    initialValue = ReportState 0 mempty {sExamples = exN} []
 
 -- | A monad for generating test reports.
 type Report = StateT ReportState IO
 
 data ReportState = ReportState {
-  reportStateCount   :: Int     -- ^ characters on the current line
-, reportStateSummary :: Summary -- ^ test summary
+  reportStateCount    :: Int     -- ^ column of the end of message
+, reportStateSummary  :: Summary -- ^ test summary
+, reportStateMessages :: [String]
 }
 
 -- | Add output to the report.
 report :: String -> Report ()
 report msg = do
   overwrite msg
-
   -- add a newline, this makes the output permanent
   liftIO $ hPutStrLn stderr ""
   modify (\st -> st {reportStateCount = 0})
@@ -92,33 +123,35 @@ overwrite msg = do
   liftIO (hPutStr stderr str)
 
 -- | Run all examples from given module.
-runModule :: Interpreter.Interpreter -> Module Example -> Report ()
-runModule repl (Module name examples) = do
+runModule :: Interpreter.Interpreter -> Bool -> Module Example -> Report ()
+runModule repl disp (Module name examples) =
   forM_ examples $ \e -> do
 
     -- report intermediate summary
-    gets (show . reportStateSummary) >>= report_
+    when disp $ gets (show . reportStateSummary) >>= report_
 
     r <- liftIO $ runExample repl name e
     case r of
       Success ->
-        success
+        success r
       Error   (Located loc (Interaction expression _)) err -> do
-        report (printf "### Error in %s: expression `%s'" (show loc) expression)
-        report err
-        error
+        when disp $ do
+          report (printf "### Error in %s: expression `%s'" (show loc) expression)
+          report err
+        error r
       Failure (Located loc (Interaction expression expected)) actual -> do
-        report (printf "### Failure in %s: expression `%s'" (show loc) expression)
-        reportFailure expected actual
-        failure
+        when disp $ do
+          report (printf "### Failure in %s: expression `%s'" (show loc) expression)
+          reportFailure expected actual
+        failure r
   where
-    success = updateSummary (Summary 0 1 0 0)
-    failure = updateSummary (Summary 0 1 0 1)
-    error   = updateSummary (Summary 0 1 1 0)
+    success = updateState (Summary 0 1 0 0)
+    failure = updateState (Summary 0 1 0 1)
+    error   = updateState (Summary 0 1 1 0)
 
-    updateSummary summary = do
-      ReportState n s <- get
-      put (ReportState n $ s `mappend` summary)
+    updateState summary r = do
+      ReportState n s rs <- get
+      put $ ReportState n (s `mappend` summary) (toMessage r:rs)
 
 reportFailure :: [String] -> [String] -> Report ()
 reportFailure expected actual = do
@@ -153,6 +186,15 @@ data InteractionResult =
   | Failure (Located Interaction) [String]
   | Error (Located Interaction) String
 
+toMessage :: InteractionResult -> String
+toMessage Success = "" -- to be filtered
+toMessage (Error (Located loc (Interaction expression _)) err) =
+    printf "%s: expression `%s'\nError: " (show loc) expression err
+toMessage (Failure (Located loc (Interaction expression expected)) actual) =
+    printf "%s: expression `%s'\n  expected: %s\n   but got: %s" (show loc) expression (flat expected) (flat actual)
+  where
+    flat = intercalate "\n"
+
 -- |
 -- Execute all expressions from given 'Example' in given
 -- 'Interpreter.Interpreter' and verify the output.
@@ -162,21 +204,18 @@ data InteractionResult =
 -- 'Interpreter.Interpreter' for several calls to `runExample`.
 runExample :: Interpreter.Interpreter -> String -> Example -> IO InteractionResult
 runExample repl module_ (Example interactions) = do
-  _ <- Interpreter.eval repl $ ":reload"
+  _ <- Interpreter.eval repl ":reload"
   _ <- Interpreter.eval repl $ ":m *" ++ module_
   go interactions
   where
     go (i@(Located _ (Interaction expression expected)) : xs) = do
       r <- run expression
       case r of
-        Left err -> do
-          return (Error i err)
-        Right actual -> do
-          if expected /= actual
-            then
-              return (Failure i actual)
-            else
-              go xs
+        Left err     -> return (Error i err)
+        Right actual -> if expected /= actual then
+                            return (Failure i actual)
+                        else
+                            go xs
     go [] = return Success
 
     run :: String -> IO (Either String [String])
