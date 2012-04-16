@@ -36,6 +36,7 @@ library
     , Parse
     , Extract
     , GhcUtil
+    , Location
     , Paths_doctest
   build-depends:
       base        >= 4.0  && < 4.6
@@ -46,8 +47,6 @@ library
     , process
     , ghc-paths   == 0.1.*
     , transformers
-
-  buildable: False
 
 executable doctest
   main-is:

@@ -1,6 +1,7 @@
 module Parse (
   Example(..)
-, Module (..)
+, exampleLabel
+, Module (..) -- re-exporting
 , Interaction(..)
 , getDocTests
 
@@ -15,10 +16,19 @@ import           Data.Maybe (fromMaybe)
 import           Extract
 import           Location
 
+-- |
+-- Abstract data type for examples in Haddock.
+-- All example interactions in a comment of a function are stored.
 data Example = Example [Located Interaction]
   deriving (Eq, Show)
 
+-- | Extracting 'String' which is suitable for labeling
+exampleLabel :: Example -> String
+exampleLabel (Example [])    = ""
+exampleLabel (Example ((Located _ e):_)) = expression e
 
+-- |
+-- Concrete values in 'Example'.
 data Interaction = Interaction {
   expression :: String    -- ^ example expression
 , result     :: [String]  -- ^ expected result
