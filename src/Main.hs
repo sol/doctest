@@ -19,7 +19,7 @@ main = do
   modules <- getDocTests (ghcOptions options) files
 
   let c = (mconcat . map count) modules
-  hPutStrLn stderr (show c)
+  hPrint stderr c
 
   if DumpOnly `elem` options
     then do
