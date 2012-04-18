@@ -8,7 +8,7 @@ import System.IO
 import System.Process
 import System.Exit
 import System.Directory (getPermissions, executable)
-import Control.Monad(when)
+import Control.Monad (when, unless)
 import Control.Exception (bracket)
 import Data.Char
 import Data.List
@@ -35,7 +35,7 @@ newInterpreter flags = do
   -- in a perfect world this permission check should never fail, but I know of
   -- at least one case where it did..
   x <- getPermissions ghc
-  when (not $ executable x) $ do
+  unless (executable x) $ do
     fail $ ghc ++ " is not executable!"
 
   (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc ghc myFlags) {std_in = CreatePipe, std_out = CreatePipe, std_err = UseHandle stdout}
@@ -128,7 +128,7 @@ filterExpression e =
 getResult :: Interpreter -> IO String
 getResult repl = do
   line <- hGetLine stdout_
-  if isSuffixOf marker line
+  if marker `isSuffixOf` line
     then
       return $ stripMarker line
     else do
