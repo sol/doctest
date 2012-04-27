@@ -18,13 +18,14 @@ import           Location
 data Example = Example [Located Interaction]
   deriving (Eq, Show)
 
+type Expression = String
+type ExpectedResult = [String]
 
-data Interaction = Interaction {
-  expression :: String    -- ^ example expression
-, result     :: [String]  -- ^ expected result
-} | Property {
-  expression :: String    -- ^ property expression
-} deriving (Eq, Show)
+data Interaction =
+    Interaction Expression ExpectedResult
+  | Property Expression
+  deriving (Eq, Show)
+
 
 -- |
 -- Extract 'Example's from all given modules and all modules included by the
@@ -48,7 +49,7 @@ parse (Located loc input) = go $ zipWith Located (enumerate loc) (lines input)
     isPrompt :: Located String -> Bool
     isPrompt x = ">>>" `isPrefixOf` sx || "prop>" `isPrefixOf` sx
        where
-         sx = dropSpace . unLoc $ x
+         sx = dropSpace (unLoc x)
 
     isInteraction :: Located String -> Bool
     isInteraction = isPrefixOf ">>>" . dropSpace . unLoc
@@ -60,7 +61,8 @@ parse (Located loc input) = go $ zipWith Located (enumerate loc) (lines input)
     isEndOfInteraction x = isPrompt x || isBlankLine x
 
     go :: [Located String] -> [Located Interaction]
-    go xs = case dropWhile (not . isPrompt) xs of
+    go xs =
+      case dropWhile (not . isPrompt) xs of
         [] -> []
         prompt:rest
           | isInteraction prompt -> -- FIXME: doubly checking ">>>"

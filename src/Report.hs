@@ -24,7 +24,7 @@ import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
 
 import qualified Interpreter
-import           Parse hiding (expression, result)
+import           Parse
 import           Location
 
 -- | Summary of a test run.
