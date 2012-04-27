@@ -84,6 +84,8 @@ documentation, but Doctest will still find them.
 
 ## Development [![Build Status](https://secure.travis-ci.org/sol/doctest-haskell.png)](http://travis-ci.org/sol/doctest-haskell)
 
+Join in at `#hspec` on freenode.
+
 Discuss your ideas first, ideally by opening an issue on GitHub.
 
 Add tests for new features, and make sure that the test suite passes with your
