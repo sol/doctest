@@ -22,8 +22,9 @@ data Example = Example [Located Interaction]
 data Interaction = Interaction {
   expression :: String    -- ^ example expression
 , result     :: [String]  -- ^ expected result
+} | Property {
+  expression :: String    -- ^ property expression
 } deriving (Eq, Show)
-
 
 -- |
 -- Extract 'Example's from all given modules and all modules included by the
@@ -45,23 +46,31 @@ parse :: Located String -> [Located Interaction]
 parse (Located loc input) = go $ zipWith Located (enumerate loc) (lines input)
   where
     isPrompt :: Located String -> Bool
-    isPrompt = isPrefixOf ">>>" . dropWhile isSpace . unLoc
+    isPrompt x = ">>>" `isPrefixOf` sx || "prop>" `isPrefixOf` sx
+       where
+         sx = dropSpace . unLoc $ x
+
+    isInteraction :: Located String -> Bool
+    isInteraction = isPrefixOf ">>>" . dropSpace . unLoc
 
     isBlankLine :: Located String -> Bool
-    isBlankLine  = null . dropWhile isSpace . unLoc
+    isBlankLine  = null . dropSpace . unLoc
 
     isEndOfInteraction :: Located String -> Bool
     isEndOfInteraction x = isPrompt x || isBlankLine x
 
     go :: [Located String] -> [Located Interaction]
-    go xs =
-      case dropWhile (not . isPrompt) xs of
-        prompt:rest ->
-          let 
-            (ys,zs) = break isEndOfInteraction rest
-          in
-            toInteraction prompt ys : go zs
-        _ -> []
+    go xs = case dropWhile (not . isPrompt) xs of
+        [] -> []
+        prompt:rest
+          | isInteraction prompt -> -- FIXME: doubly checking ">>>"
+              let (ys,zs) = break isEndOfInteraction rest
+              in toInteraction prompt ys : go zs
+          | otherwise -> toProperty prompt : go rest
+
+toProperty :: Located String -> Located Interaction
+toProperty (Located loc x) =
+    Located loc (Property . strip . drop 5 . dropSpace $ x)
 
 -- | Create an `Interaction`, strip superfluous whitespace as appropriate.
 toInteraction :: Located String -> [Located String] -> Located Interaction
@@ -88,4 +97,7 @@ toInteraction (Located loc x) xs = Located loc $
 
 -- | Remove leading and trailing whitespace.
 strip :: String -> String
-strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
+strip = dropSpace . reverse . dropSpace . reverse
+
+dropSpace :: String -> String
+dropSpace = dropWhile isSpace

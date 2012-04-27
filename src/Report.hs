@@ -18,6 +18,7 @@ import           Control.Exception
 import           Text.Printf (printf)
 import           System.IO (hPutStrLn, hPutStr, stderr)
 import           Data.Char
+import           Data.List
 
 import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
@@ -107,9 +108,17 @@ runModule repl (Module name examples) = do
         report (printf "### Error in %s: expression `%s'" (show loc) expression)
         report err
         error
+      Error   (Located loc (Property expression)) err -> do
+        report (printf "### Error in %s: expression `%s'" (show loc) expression)
+        report err
+        error
       Failure (Located loc (Interaction expression expected)) actual -> do
         report (printf "### Failure in %s: expression `%s'" (show loc) expression)
         reportFailure expected actual
+        failure
+      Failure (Located loc (Property expression)) res -> do
+        report (printf "### Failure in %s: expression `%s'" (show loc) expression)
+        report (concat res)
         failure
   where
     success = updateSummary (Summary 0 1 0 0)
@@ -164,6 +173,7 @@ runExample :: Interpreter.Interpreter -> String -> Example -> IO InteractionResu
 runExample repl module_ (Example interactions) = do
   _ <- Interpreter.eval repl $ ":reload"
   _ <- Interpreter.eval repl $ ":m *" ++ module_
+  _ <- Interpreter.eval repl $ "import Test.QuickCheck (quickCheck, (==>))"
   go interactions
   where
     go (i@(Located _ (Interaction expression expected)) : xs) = do
@@ -177,6 +187,17 @@ runExample repl module_ (Example interactions) = do
               return (Failure i actual)
             else
               go xs
+    go (p@(Located _ (Property expression)) : xs) = do
+      lambda <- toLambda expression
+      r <- run $ "quickCheck $ " ++ lambda
+      case r of
+        Left err -> do
+          return (Error p err)
+        Right res
+          | any ("OK, passed" `isInfixOf`) res -> go xs
+          | otherwise -> do
+              let res' = map (takeLast charBS) res
+              return (Failure p res')
     go [] = return Success
 
     run :: String -> IO (Either String [String])
@@ -189,3 +210,24 @@ runExample repl module_ (Example interactions) = do
 
       Handler $ \e -> (return . Left . show) (e :: SomeException)
       ]
+
+    -- Currently, GHCi is used to detect free variables.
+    -- haskell-src-ext should be used in the future.
+    toLambda :: String -> IO String
+    toLambda expr
+      | "\\" `isPrefixOf` expr = return expr
+      | otherwise = do
+          r <- run expr
+          case r of
+            Right vars
+              | any ("Not in scope" `isInfixOf`) vars -> return $ complete expr vars
+            _ -> return expr
+    complete expr vars = "\\" ++ intercalate " " vars' ++ "-> " ++ expr
+      where
+        vars' = map unquote . nub . map (takeLast ' ')
+             . filter ("Not in scope" `isInfixOf`) $ vars
+        unquote ('`':xs) = init xs
+        unquote xs       = xs
+
+    charBS = chr 8
+    takeLast c = reverse . takeWhile (/= c) . reverse
