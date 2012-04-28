@@ -94,6 +94,27 @@ spec = do
       doctest "dos-line-endings" ["Fib.hs"]
         (cases 1)
 
+  describe "doctest as a runner for QuickCheck properties" $ do
+    it "runs a boolean property" $ do
+      doctest "property-bool" ["Foo.hs"]
+        (cases 1)
+
+    it "runs an explicitly quantified property" $ do
+      doctest "property-quantified" ["Foo.hs"]
+        (cases 1)
+
+    it "runs an implicitly quantified property" $ do
+      doctest "property-implicitly-quantified" ["Foo.hs"]
+        (cases 1)
+
+    it "reports a failing property" $ do
+      doctest "property-failing" ["Foo.hs"]
+        (cases 1) {sFailures = 1}
+
+    it "runs a boolean property with an explicit type signature" $ do
+      doctest "property-bool-with-type-signature" ["Foo.hs"]
+        (cases 1)
+
   describe "doctest (regression tests)" $ do
     it "bugfixWorkingDirectory" $ do
       doctest "bugfixWorkingDirectory" ["Fib.hs"]
