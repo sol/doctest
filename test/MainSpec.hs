@@ -90,6 +90,10 @@ spec = do
       doctest "template-haskell" ["Foo.hs"]
         (cases 1)
 
+    it "handles source files with CRLF line endings" $ do
+      doctest "dos-line-endings" ["Fib.hs"]
+        (cases 1)
+
   describe "doctest (regression tests)" $ do
     it "bugfixWorkingDirectory" $ do
       doctest "bugfixWorkingDirectory" ["Fib.hs"]
@@ -122,7 +126,3 @@ spec = do
     it "prints a useful error message on parse errors" $ do
       err <- doctest_ "parse-error" ["Foo.hs"]
       err `shouldBe` "\nFoo.hs:6:1: parse error (possibly incorrect indentation)\n"
-
-    it "handle source files with CRLF line endings" $ do
-      doctest "dos-line-endings" ["Fib.hs"]
-        (cases 1)
