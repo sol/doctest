@@ -18,6 +18,8 @@ import           Digraph (flattenSCCs)
 import           GhcUtil (withGhc)
 import           Location hiding (unLoc)
 
+import           Util (convertDosLineEndings)
+
 -- | A wrapper around `SomeException`, to allow for a custom `Show` instance.
 newtype ExtractError = ExtractError SomeException
   deriving Typeable
@@ -70,7 +72,7 @@ extract :: [String] -- ^ flags
         -> IO [Module (Located String)]
 extract flags modules = do
   mods <- parse flags modules
-  let docs = map (extractFromModule . tm_parsed_module) mods
+  let docs = map (fmap (fmap convertDosLineEndings) . extractFromModule . tm_parsed_module) mods
 
   (docs `deepseq` return docs) `catches` [
       -- Re-throw AsyncException, otherwise execution will not terminate on

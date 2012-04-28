@@ -65,3 +65,6 @@ spec = do
 
     it "works with rewrite rules" $ do
       ("regression", "RewriteRules.hs") `shouldGive` [Module "RewriteRules" [" doc for foo"]]
+
+    it "strips CR from dos line endings" $ do
+      ("dos-line-endings", "Foo.hs") `shouldGive` [Module "Foo" ["\n foo\n bar\n baz"]]

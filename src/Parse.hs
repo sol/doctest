@@ -42,7 +42,7 @@ parseModule (Module name docs) = (Module name . map Example . filter (not . null
 
 -- | Extract all interactions from given Haddock documentation.
 parse :: Located String -> [Located Interaction]
-parse (Located loc input) = go $ zipWith Located (enumerate loc) (map (reverse . dropWhile ((==) '\r') . reverse) $ lines input)
+parse (Located loc input) = go $ zipWith Located (enumerate loc) (lines input)
   where
     isPrompt :: Located String -> Bool
     isPrompt = isPrefixOf ">>>" . dropWhile isSpace . unLoc
