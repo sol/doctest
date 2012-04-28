@@ -1,6 +1,7 @@
 module Report (
   runModules
-
+, runExample
+, InteractionResult(..)
 -- * exported for testing
 , Report
 , Summary(..)
@@ -103,12 +104,12 @@ runModule repl (Module name examples) = do
     case r of
       Success ->
         success
-      Error   (Located loc (Interaction expression _)) err -> do
-        report (printf "### Error in %s: expression `%s'" (show loc) expression)
+      Error loc expression err -> do
+        report $ printf "### Error in %s: expression `%s'" loc expression
         report err
         error
-      Failure (Located loc (Interaction expression expected)) actual -> do
-        report (printf "### Failure in %s: expression `%s'" (show loc) expression)
+      Failure loc expression expected actual -> do
+        report $ printf "### Failure in %s: expression `%s'" loc expression
         reportFailure expected actual
         failure
   where
@@ -150,8 +151,18 @@ reportFailure expected actual = do
 -- | The result of evaluating an interaction.
 data InteractionResult =
     Success
-  | Failure (Located Interaction) [String]
-  | Error (Located Interaction) String
+    -- | File:line, expression, expected results, and actual results
+  | Failure String String [String] [String]
+    -- | File:line, expression, error
+  | Error   String String String
+
+toFailure :: Located Interaction -> [String] -> InteractionResult
+toFailure (Located loc (Interaction expression expected)) actual =
+    Failure (show loc) expression expected actual
+
+toError :: Located Interaction -> String -> InteractionResult
+toError (Located loc (Interaction expression _)) err =
+    Error (show loc) expression err
 
 -- |
 -- Execute all expressions from given 'Example' in given
@@ -170,11 +181,11 @@ runExample repl module_ (Example interactions) = do
       r <- run expression
       case r of
         Left err -> do
-          return (Error i err)
+          return (toError i err)
         Right actual -> do
           if expected /= actual
             then
-              return (Failure i actual)
+              return (toFailure i actual)
             else
               go xs
     go [] = return Success
