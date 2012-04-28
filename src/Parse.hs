@@ -41,7 +41,7 @@ moduleToDocTest (Module name docs) = (map (DocExample name) . filter (not . null
 
 -- | Extract all interactions from given Haddock documentation.
 parse :: String -> [Interaction]
-parse input = go (lines input)
+parse input = go (map (reverse . dropWhile ((==) '\r') . reverse) $ lines input)
   where
     isPrompt = isPrefixOf ">>>" . dropWhile isSpace
     isBlankLine  = null . dropWhile isSpace
