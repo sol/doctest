@@ -21,6 +21,7 @@ import           Data.List
 import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
 
+import           Interpreter (Interpreter)
 import qualified Interpreter
 import           Parse
 import           Location
@@ -47,7 +48,7 @@ instance Monoid Summary where
 -- |
 -- Run all examples from given modules, return true if there were
 -- errors/failures.
-runModules :: Int -> Interpreter.Interpreter -> [Module DocTest] -> IO Bool
+runModules :: Int -> Interpreter -> [Module DocTest] -> IO Bool
 runModules exampleCount repl modules = do
   ReportState _ s <- (`execStateT` ReportState 0 mempty {sExamples = exampleCount}) $ do
     forM_ modules $ runModule repl
@@ -92,7 +93,7 @@ overwrite msg = do
   liftIO (hPutStr stderr str)
 
 -- | Run all examples from given module.
-runModule :: Interpreter.Interpreter -> Module DocTest -> Report ()
+runModule :: Interpreter -> Module DocTest -> Report ()
 runModule repl (Module name examples) = do
   forM_ examples $ \e -> do
 
@@ -151,7 +152,7 @@ reportFailure expected actual = do
         l | printQuotes || escapeOutput = map show l_
           | otherwise                   = l_
 
-runDocTest :: Interpreter.Interpreter -> String -> DocTest -> IO DocTestResult
+runDocTest :: Interpreter -> String -> DocTest -> IO DocTestResult
 runDocTest repl module_ docTest = do
   _ <- Interpreter.eval repl $ ":reload"
   _ <- Interpreter.eval repl $ ":m *" ++ module_
@@ -168,7 +169,7 @@ data DocTestResult =
 
 -- |
 -- Execute all expressions from given example in given
--- 'Interpreter.Interpreter' and verify the output.
+-- 'Interpreter' and verify the output.
 --
 -- The interpreter state is zeroed with @:reload@ before executing the
 -- expressions.  This means that you can reuse the same
