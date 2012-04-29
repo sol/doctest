@@ -5,16 +5,16 @@ module Interpreter (
 , withInterpreter
 ) where
 
-import System.IO
-import System.Process
-import System.Exit
-import System.Directory (getPermissions, executable)
-import Control.Monad (when, unless)
-import Control.Exception hiding (handle)
-import Data.Char
-import Data.List
+import           System.IO
+import           System.Process
+import           System.Exit
+import           System.Directory (getPermissions, executable)
+import           Control.Monad (when, unless)
+import           Control.Exception hiding (handle)
+import           Data.Char
+import           Data.List
 
-import GHC.Paths (ghc)
+import           GHC.Paths (ghc)
 
 -- | Truly random marker, used to separate expressions.
 --

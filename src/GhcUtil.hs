@@ -1,21 +1,21 @@
 {-# LANGUAGE CPP #-}
 module GhcUtil (withGhc) where
 
-import            Control.Exception
+import           Control.Exception
 import           Control.Monad (void)
 
-import            GHC.Paths (libdir)
-import            GHC hiding (flags)
-import            DynFlags (dopt_set)
+import           GHC.Paths (libdir)
+import           GHC hiding (flags)
+import           DynFlags (dopt_set)
 
-import            MonadUtils (liftIO)
-import            System.Exit (exitFailure)
+import           MonadUtils (liftIO)
+import           System.Exit (exitFailure)
 
 #if __GLASGOW_HASKELL__ < 702
-import            StaticFlags (v_opt_C_ready)
-import            Data.IORef (writeIORef)
+import           StaticFlags (v_opt_C_ready)
+import           Data.IORef (writeIORef)
 #else
-import            StaticFlags (saveStaticFlagGlobals, restoreStaticFlagGlobals)
+import           StaticFlags (saveStaticFlagGlobals, restoreStaticFlagGlobals)
 #endif
 
 

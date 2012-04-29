@@ -4,15 +4,15 @@ module Options (
 , ghcOptions
 ) where
 
-import Control.Monad (when, unless)
-import System.Exit (exitSuccess, exitFailure)
-import System.IO (hPutStr, stderr)
+import           Control.Monad (when, unless)
+import           System.Exit (exitSuccess, exitFailure)
+import           System.IO (hPutStr, stderr)
 
-import System.Console.GetOpt
+import           System.Console.GetOpt
 
-import Paths_doctest (version)
-import Data.Version (showVersion)
-import Config as GHC
+import           Paths_doctest (version)
+import           Data.Version (showVersion)
+import           Config as GHC
 
 data Option = Help
             | Version
