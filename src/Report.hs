@@ -20,7 +20,6 @@ import           Control.Monad
 import           Text.Printf (printf)
 import           System.IO (hPutStrLn, hPutStr, stderr)
 import           Data.Char
-import           Data.List
 
 import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
@@ -29,7 +28,8 @@ import           Interpreter (Interpreter)
 import qualified Interpreter
 import           Parse
 import           Location
-import           Util
+import           Type
+import           Property
 
 -- | Summary of a test run.
 data Summary = Summary {
@@ -164,14 +164,6 @@ runDocTest repl module_ docTest = do
     Example xs -> runExample repl xs
     Property p -> runProperty repl p
 
--- | The result of evaluating an interaction.
-data DocTestResult =
-    Success
-  | InteractionFailure (Located Interaction) [String]
-  | PropertyFailure (Located Expression) String
-  | Error (Located Expression) String
-  deriving (Eq, Show)
-
 -- |
 -- Execute all expressions from given example in given
 -- 'Interpreter' and verify the output.
@@ -194,36 +186,3 @@ runExample repl = go
             else
               go xs
     go [] = return Success
-
-runProperty :: Interpreter -> Located Expression -> IO DocTestResult
-runProperty repl p@(Located _ expression) = do
-  _ <- Interpreter.eval repl "import Test.QuickCheck (quickCheck, (==>))"
-  lambda <- toLambda expression
-  r <- Interpreter.safeEval repl $ "quickCheck (" ++ lambda ++ ")"
-  case r of
-    Left err -> do
-      return (Error p err)
-    Right res
-      | "OK, passed" `isInfixOf` res -> return Success
-      | otherwise -> do
-          let msg =  stripEnd (takeWhileEnd (/= '\b') res)
-          return (PropertyFailure p msg)
-  where
-    -- Currently, GHCi is used to detect free variables.
-    -- haskell-src-ext should be used in the future.
-    toLambda :: String -> IO String
-    toLambda expr = do
-      r <- fmap lines `fmap` Interpreter.safeEval repl expr
-      case r of
-        Right vars
-          | any ("Not in scope" `isInfixOf`) vars -> return $ closeTerm expr vars
-        _ -> return expr
-
-    -- | Close a given term over a given list of variables.
-    closeTerm :: String -> [String] -> String
-    closeTerm term vars = "\\" ++ intercalate " " vars' ++ "-> " ++ term
-      where
-        vars' = map unquote . nub . map (takeWhileEnd (/= ' '))
-             . filter ("Not in scope" `isInfixOf`) $ vars
-        unquote ('`':xs) = init xs
-        unquote xs       = xs
