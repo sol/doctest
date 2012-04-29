@@ -18,8 +18,7 @@ import           Parse
 runProperty :: Interpreter -> Located Expression -> IO DocTestResult
 runProperty repl p@(Located _ expression) = do
   _ <- Interpreter.eval repl "import Test.QuickCheck (quickCheck, (==>))"
-  lambda <- closeTerm expression
-  r <- Interpreter.safeEval repl $ quickCheck lambda
+  r <- closeTerm expression >>= (Interpreter.safeEval repl . quickCheck)
   case r of
     Left err -> do
       return (Error p err)
@@ -38,7 +37,7 @@ runProperty repl p@(Located _ expression) = do
       r <- freeVariables repl (quickCheck term)
       case r of
         []   -> return term
-        vars -> return ("\\" ++ intercalate " " vars ++ "-> (" ++ term ++ ")")
+        vars -> return ("\\" ++ unwords vars ++ "-> (" ++ term ++ ")")
 
 -- | Find all free variables in given term.
 --

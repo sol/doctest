@@ -58,7 +58,7 @@ parse :: [String] -- ^ flags
       -> [String] -- ^ files/modules
       -> IO [TypecheckedModule]
 parse flags modules = withGhc flags $ do
-  mapM (flip guessTarget Nothing) modules >>= setTargets
+  mapM (`guessTarget` Nothing) modules >>= setTargets
   mods <- depanal [] False
   let sortedMods = flattenSCCs (topSortModuleGraph False mods Nothing)
   reverse <$> mapM (parseModule >=> typecheckModule >=> loadModule) sortedMods

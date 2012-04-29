@@ -2,6 +2,7 @@
 module GhcUtil (withGhc) where
 
 import            Control.Exception
+import           Control.Monad (void)
 
 import            GHC.Paths (libdir)
 import            GHC hiding (flags)
@@ -55,7 +56,7 @@ handleDynamicFlags flags = do
   (dynflags, rest, _) <- (setHaddockMode `fmap` getSessionDynFlags) >>= flip parseDynamicFlags flags
   case rest of
     x : _ -> error ("Unrecognized GHC option: " ++ unLoc x)
-    _     -> setSessionDynFlags dynflags >> return ()
+    _     -> void (setSessionDynFlags dynflags)
 
 setHaddockMode :: DynFlags -> DynFlags
 setHaddockMode dynflags = (dopt_set dynflags Opt_Haddock) {

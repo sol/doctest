@@ -158,7 +158,7 @@ reportFailure expected actual = do
 
 runDocTest :: Interpreter -> String -> DocTest -> IO DocTestResult
 runDocTest repl module_ docTest = do
-  _ <- Interpreter.eval repl $ ":reload"
+  _ <- Interpreter.eval repl   ":reload"
   _ <- Interpreter.eval repl $ ":m *" ++ module_
   case docTest of
     Example xs -> runExample repl xs
