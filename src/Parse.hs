@@ -1,11 +1,14 @@
 module Parse (
-  Example(..)
-, Module (..)
-, Interaction(..)
+  Module (..)
+, DocTest (..)
+, Interaction (..)
+, Expression
+, ExpectedResult
 , getDocTests
 
 -- * exported for testing
-, parse
+, parseInteractions
+, parseProperties
 ) where
 
 import           Data.Char (isSpace)
@@ -15,64 +18,67 @@ import           Data.Maybe (fromMaybe)
 import           Extract
 import           Location
 
-data Example = Example [Located Interaction]
+data DocTest = Example [Located Interaction] | Property (Located Expression)
   deriving (Eq, Show)
 
 type Expression = String
 type ExpectedResult = [String]
 
-data Interaction =
-    Interaction Expression ExpectedResult
-  | Property Expression
+data Interaction = Interaction Expression ExpectedResult
   deriving (Eq, Show)
 
-
 -- |
--- Extract 'Example's from all given modules and all modules included by the
+-- Extract 'DocTest's from all given modules and all modules included by the
 -- given modules.
 getDocTests
   :: [String]             -- ^ List of GHC flags
   -> [String]             -- ^ File or module names
-  -> IO [Module Example]  -- ^ Extracted 'Example's
+  -> IO [Module DocTest]  -- ^ Extracted 'DocTest's
 getDocTests flags modules = do
   mods <- extract flags modules
   return (filter (not . null . moduleContent) $ map parseModule mods)
 
 -- | Convert documentation to `Example`s.
-parseModule :: Module (Located String) -> Module Example
-parseModule (Module name docs) = (Module name . map Example . filter (not . null) . map parse) docs
+parseModule :: Module (Located String) -> Module DocTest
+parseModule (Module name docs) = Module name (properties ++ examples)
+  where
+    examples = (map Example . filter (not . null) . map parseInteractions) docs
+    properties = (map Property . concat . map parseProperties) docs
 
--- | Extract all interactions from given Haddock documentation.
-parse :: Located String -> [Located Interaction]
-parse (Located loc input) = go $ zipWith Located (enumerate loc) (lines input)
+-- | Extract all properties from given Haddock comment.
+parseProperties :: Located String -> [Located Expression]
+parseProperties (Located loc input) = go $ zipWith Located (enumerate loc) (lines input)
   where
     isPrompt :: Located String -> Bool
-    isPrompt x = ">>>" `isPrefixOf` sx || "prop>" `isPrefixOf` sx
-       where
-         sx = dropSpace (unLoc x)
+    isPrompt = isPrefixOf "prop>" . dropWhile isSpace . unLoc
 
-    isInteraction :: Located String -> Bool
-    isInteraction = isPrefixOf ">>>" . dropSpace . unLoc
+    go xs = case dropWhile (not . isPrompt) xs of
+      prop:rest -> stripPrompt `fmap` prop : go rest
+      [] -> []
+
+    stripPrompt = strip . drop 5 . dropWhile isSpace
+
+-- | Extract all interactions from given Haddock comment.
+parseInteractions :: Located String -> [Located Interaction]
+parseInteractions (Located loc input) = go $ zipWith Located (enumerate loc) (lines input)
+  where
+    isPrompt :: Located String -> Bool
+    isPrompt = isPrefixOf ">>>" . dropWhile isSpace . unLoc
 
     isBlankLine :: Located String -> Bool
-    isBlankLine  = null . dropSpace . unLoc
+    isBlankLine  = null . dropWhile isSpace . unLoc
 
     isEndOfInteraction :: Located String -> Bool
     isEndOfInteraction x = isPrompt x || isBlankLine x
 
     go :: [Located String] -> [Located Interaction]
-    go xs =
-      case dropWhile (not . isPrompt) xs of
-        [] -> []
-        prompt:rest
-          | isInteraction prompt -> -- FIXME: doubly checking ">>>"
-              let (ys,zs) = break isEndOfInteraction rest
-              in toInteraction prompt ys : go zs
-          | otherwise -> toProperty prompt : go rest
-
-toProperty :: Located String -> Located Interaction
-toProperty (Located loc x) =
-    Located loc (Property . strip . drop 5 . dropSpace $ x)
+    go xs = case dropWhile (not . isPrompt) xs of
+      prompt:rest ->
+        let
+          (ys,zs) = break isEndOfInteraction rest
+        in
+          toInteraction prompt ys : go zs
+      [] -> []
 
 -- | Create an `Interaction`, strip superfluous whitespace as appropriate.
 toInteraction :: Located String -> [Located String] -> Located Interaction
@@ -99,7 +105,4 @@ toInteraction (Located loc x) xs = Located loc $
 
 -- | Remove leading and trailing whitespace.
 strip :: String -> String
-strip = dropSpace . reverse . dropSpace . reverse
-
-dropSpace :: String -> String
-dropSpace = dropWhile isSpace
+strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse

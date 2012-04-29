@@ -45,9 +45,10 @@ instance Show Count where
   show (Count 1 iCount)      = "There is one test, with " ++ show iCount ++ " interactions."
   show (Count tCount iCount) = "There are " ++ show tCount ++ " tests, with " ++ show iCount ++ " total interactions."
 
--- | Count number of examples and interactions in fiven module.
-count :: Module Example -> Count
+-- | Count number of examples and interactions in given module.
+count :: Module DocTest -> Count
 count (Module _ examples) = (mconcat . map f) examples
   where
-    f :: Example -> Count
-    f (Example x) = Count 1 (length x)
+    f :: DocTest -> Count
+    f (Example x)  = Count 1 (length x)
+    f (Property _) = Count 1 1

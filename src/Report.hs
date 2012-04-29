@@ -47,7 +47,7 @@ instance Monoid Summary where
 -- |
 -- Run all examples from given modules, return true if there were
 -- errors/failures.
-runModules :: Int -> Interpreter.Interpreter -> [Module Example] -> IO Bool
+runModules :: Int -> Interpreter.Interpreter -> [Module DocTest] -> IO Bool
 runModules exampleCount repl modules = do
   ReportState _ s <- (`execStateT` ReportState 0 mempty {sExamples = exampleCount}) $ do
     forM_ modules $ runModule repl
@@ -92,32 +92,28 @@ overwrite msg = do
   liftIO (hPutStr stderr str)
 
 -- | Run all examples from given module.
-runModule :: Interpreter.Interpreter -> Module Example -> Report ()
+runModule :: Interpreter.Interpreter -> Module DocTest -> Report ()
 runModule repl (Module name examples) = do
   forM_ examples $ \e -> do
 
     -- report intermediate summary
     gets (show . reportStateSummary) >>= report_
 
-    r <- liftIO $ runExample repl name e
+    r <- liftIO $ runDocTest repl name e
     case r of
       Success ->
         success
-      Error   (Located loc (Interaction expression _)) err -> do
+      Error (Located loc expression) err -> do
         report (printf "### Error in %s: expression `%s'" (show loc) expression)
         report err
         error
-      Error   (Located loc (Property expression)) err -> do
-        report (printf "### Error in %s: expression `%s'" (show loc) expression)
-        report err
-        error
-      Failure (Located loc (Interaction expression expected)) actual -> do
+      InteractionFailure (Located loc (Interaction expression expected)) actual -> do
         report (printf "### Failure in %s: expression `%s'" (show loc) expression)
         reportFailure expected actual
         failure
-      Failure (Located loc (Property expression)) res -> do
+      PropertyFailure (Located loc expression) msg -> do
         report (printf "### Failure in %s: expression `%s'" (show loc) expression)
-        report (concat res)
+        report msg
         failure
   where
     success = updateSummary (Summary 0 1 0 0)
@@ -155,50 +151,58 @@ reportFailure expected actual = do
         l | printQuotes || escapeOutput = map show l_
           | otherwise                   = l_
 
+runDocTest :: Interpreter.Interpreter -> String -> DocTest -> IO DocTestResult
+runDocTest repl module_ docTest = do
+  _ <- Interpreter.eval repl $ ":reload"
+  _ <- Interpreter.eval repl $ ":m *" ++ module_
+  case docTest of
+    Example xs -> runExample repl xs
+    Property p -> runProperty repl p
+
 -- | The result of evaluating an interaction.
-data InteractionResult =
+data DocTestResult =
     Success
-  | Failure (Located Interaction) [String]
-  | Error (Located Interaction) String
+  | InteractionFailure (Located Interaction) [String]
+  | PropertyFailure (Located Expression) String
+  | Error (Located Expression) String
 
 -- |
--- Execute all expressions from given 'Example' in given
+-- Execute all expressions from given example in given
 -- 'Interpreter.Interpreter' and verify the output.
 --
 -- The interpreter state is zeroed with @:reload@ before executing the
 -- expressions.  This means that you can reuse the same
 -- 'Interpreter.Interpreter' for several calls to `runExample`.
-runExample :: Interpreter.Interpreter -> String -> Example -> IO InteractionResult
-runExample repl module_ (Example interactions) = do
-  _ <- Interpreter.eval repl $ ":reload"
-  _ <- Interpreter.eval repl $ ":m *" ++ module_
-  _ <- Interpreter.eval repl $ "import Test.QuickCheck (quickCheck, (==>))"
-  go interactions
+runExample :: Interpreter.Interpreter -> [Located Interaction] -> IO DocTestResult
+runExample repl = go
   where
-    go (i@(Located _ (Interaction expression expected)) : xs) = do
+    go (i@(Located loc (Interaction expression expected)) : xs) = do
       r <- safeEval repl expression
       case r of
         Left err -> do
-          return (Error i err)
+          return (Error (Located loc expression) err)
         Right actual -> do
           if expected /= actual
             then
-              return (Failure i actual)
+              return (InteractionFailure i actual)
             else
               go xs
-    go (p@(Located _ (Property expression)) : xs) = do
-      lambda <- toLambda expression
-      r <- safeEval repl $ "quickCheck $ " ++ lambda
-      case r of
-        Left err -> do
-          return (Error p err)
-        Right res
-          | any ("OK, passed" `isInfixOf`) res -> go xs
-          | otherwise -> do
-              let res' = map (takeWhileEnd (/= '\b')) res
-              return (Failure p res')
     go [] = return Success
 
+runProperty :: Interpreter.Interpreter -> Located Expression -> IO DocTestResult
+runProperty repl p@(Located _ expression) = do
+  _ <- Interpreter.eval repl "import Test.QuickCheck (quickCheck, (==>))"
+  lambda <- toLambda expression
+  r <- safeEval repl $ "quickCheck $ " ++ lambda
+  case r of
+    Left err -> do
+      return (Error p err)
+    Right res
+      | any ("OK, passed" `isInfixOf`) res -> return Success
+      | otherwise -> do
+          let msg = concatMap (takeWhileEnd (/= '\b')) res
+          return (PropertyFailure p msg)
+  where
     -- Currently, GHCi is used to detect free variables.
     -- haskell-src-ext should be used in the future.
     toLambda :: String -> IO String

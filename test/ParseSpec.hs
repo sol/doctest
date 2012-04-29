@@ -16,29 +16,39 @@ main = hspecX spec
 ghci :: String -> Builder -> Writer [Located Interaction] ()
 ghci e = tell . return . noLocation . Interaction e . lines . build
 
-example :: Writer [Located Interaction] () -> Writer [Example] ()
+example :: Writer [Located Interaction] () -> Writer [DocTest] ()
 example = tell . return . Example . execWriter
 
-module_ :: String -> Writer [Example] () -> Writer [Module Example] ()
+prop_ :: Expression -> Writer [DocTest] ()
+prop_ = tell . return . Property . noLocation
+
+module_ :: String -> Writer [DocTest] () -> Writer [Module DocTest] ()
 module_ name = tell . return . Module name . execWriter
 
-shouldGive :: IO [Module Example] -> Writer [Module Example] () -> Assertion
+shouldGive :: IO [Module DocTest] -> Writer [Module DocTest] () -> Assertion
 shouldGive action w = do
   r <- map noLoc `fmap` action
   r `shouldBe` execWriter w
   where
     -- replace location information of all interactions of a module with dummy
     -- location information.
-    noLoc :: Module Example -> Module Example
+    noLoc :: Module DocTest -> Module DocTest
     noLoc = fmap f
       where
-        f :: Example -> Example
-        f (Example x) = Example (map (noLocation . unLoc) x)
+        f :: DocTest -> DocTest
+        f (Example x)  = Example (map (noLocation . unLoc) x)
+        f (Property x) = (Property . noLocation . unLoc) x
 
 spec :: Specs
 spec = do
-
   describe "getDocTests" $ do
+    it "extracts properties from a module" $ do
+      getDocTests [] ["test/parse/property/Fib.hs"] `shouldGive` do
+        module_ "Fib" $ do
+          prop_ "foo"
+          prop_ "bar"
+          prop_ "baz"
+
     it "extracts examples from a module" $ do
       getDocTests [] ["test/parse/simple/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
@@ -74,9 +84,9 @@ spec = do
     it "returns an empty list, if documentation contains no examples" $ do
       getDocTests [] ["test/parse/no-examples/Fib.hs"] >>= (`shouldBe` [])
 
-  describe "parse (an internal function)" $ do
+  describe "parseInteractions (an internal function)" $ do
 
-    let parse_ = map unLoc . parse . noLocation . build
+    let parse_ = map unLoc . parseInteractions . noLocation . build
 
     it "parses an interaction" $ do
       parse_ $ do
@@ -113,7 +123,7 @@ spec = do
 
     it "attaches location information to parsed interactions" $ do
       let loc = Located . Location "Foo.hs"
-      r <- return . parse . loc 23 . build  $ do
+      r <- return . parseInteractions . loc 23 . build  $ do
         "1"
         "2"
         ""
@@ -127,3 +137,11 @@ spec = do
         ""
         "11"
       r `shouldBe` [loc 26 $ Interaction "4" ["5"], loc 29 $ Interaction "7" [], loc 31 $ Interaction "9" ["10"]]
+
+  describe " parseProperties (an internal function)" $ do
+    let parse_ = map unLoc . parseProperties . noLocation . build
+
+    it "parses a property" $ do
+      parse_ $ do
+        "prop> foo"
+      `shouldBe` ["foo"]
