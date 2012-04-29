@@ -1,13 +1,17 @@
+{-# LANGUAGE CPP #-}
 module Report (
   runModules
 
--- * exported for testing
+#ifdef TEST
 , Report
 , Summary(..)
 , ReportState (..)
 , report
 , report_
 , reportFailure
+, runProperty
+, DocTestResult (..)
+#endif
 ) where
 
 import           Prelude hiding (putStr, putStrLn, error)
@@ -166,6 +170,7 @@ data DocTestResult =
   | InteractionFailure (Located Interaction) [String]
   | PropertyFailure (Located Expression) String
   | Error (Located Expression) String
+  deriving (Eq, Show)
 
 -- |
 -- Execute all expressions from given example in given
@@ -173,8 +178,8 @@ data DocTestResult =
 --
 -- The interpreter state is zeroed with @:reload@ before executing the
 -- expressions.  This means that you can reuse the same
--- 'Interpreter.Interpreter' for several calls to `runExample`.
-runExample :: Interpreter.Interpreter -> [Located Interaction] -> IO DocTestResult
+-- 'Interpreter' for several calls to `runExample`.
+runExample :: Interpreter -> [Located Interaction] -> IO DocTestResult
 runExample repl = go
   where
     go (i@(Located loc (Interaction expression expected)) : xs) = do
@@ -190,11 +195,11 @@ runExample repl = go
               go xs
     go [] = return Success
 
-runProperty :: Interpreter.Interpreter -> Located Expression -> IO DocTestResult
+runProperty :: Interpreter -> Located Expression -> IO DocTestResult
 runProperty repl p@(Located _ expression) = do
   _ <- Interpreter.eval repl "import Test.QuickCheck (quickCheck, (==>))"
   lambda <- toLambda expression
-  r <- safeEval repl $ "quickCheck $ " ++ lambda
+  r <- safeEval repl $ "quickCheck (" ++ lambda ++ ")"
   case r of
     Left err -> do
       return (Error p err)

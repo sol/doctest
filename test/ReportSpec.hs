@@ -11,6 +11,8 @@ import           System.IO
 import           System.IO.Silently (hCapture)
 import           Control.Monad.Trans.State
 import           Report
+import           Interpreter (withInterpreter)
+import           Location (noLocation)
 
 main :: IO ()
 main = hspecX spec
@@ -92,3 +94,10 @@ spec = do
       `shouldGive` do
         "expected: \"foo\\160bar\""
         " but got: \"foo bar\""
+
+  describe "runProperty" $ do
+    it "runs a Bool property" $ withInterpreter [] $ \repl -> do
+      runProperty repl (noLocation "True") `shouldReturn` Success
+
+    it "runs a Bool property with an explicit type signature" $ withInterpreter [] $ \repl -> do
+      runProperty repl (noLocation "True :: Bool") `shouldReturn` Success
