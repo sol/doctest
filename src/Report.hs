@@ -212,14 +212,12 @@ runProperty repl p@(Located _ expression) = do
     -- Currently, GHCi is used to detect free variables.
     -- haskell-src-ext should be used in the future.
     toLambda :: String -> IO String
-    toLambda expr
-      | "\\" `isPrefixOf` expr = return expr
-      | otherwise = do
-          r <- safeEval repl expr
-          case r of
-            Right vars
-              | any ("Not in scope" `isInfixOf`) vars -> return $ closeTerm expr vars
-            _ -> return expr
+    toLambda expr = do
+      r <- safeEval repl expr
+      case r of
+        Right vars
+          | any ("Not in scope" `isInfixOf`) vars -> return $ closeTerm expr vars
+        _ -> return expr
 
     -- | Close a given term over a given list of variables.
     closeTerm :: String -> [String] -> String
