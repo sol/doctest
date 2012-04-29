@@ -3,6 +3,7 @@ module UtilSpec (main, spec) where
 import           Test.Hspec.ShouldBe
 
 import           Util
+import           Interpreter (withInterpreter)
 
 main :: IO ()
 main = hspecX spec
@@ -20,3 +21,10 @@ spec = do
   describe "takeWhileEnd" $ do
     it "returns the longest suffix of elements that satisfy a given predicate" $ do
       takeWhileEnd (/= ' ') "foo bar" `shouldBe` "bar"
+
+  describe "safeEval" $ do
+    it "evaluates an expression" $ withInterpreter [] $ \repl -> do
+      safeEval repl "23 + 42" `shouldReturn` Right ["65"]
+
+    it "returns Left on unterminated multiline command" $ withInterpreter [] $ \repl -> do
+      safeEval repl ":{\n23 + 42" `shouldReturn` Left "unterminated multiline command"

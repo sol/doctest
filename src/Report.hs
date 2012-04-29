@@ -13,8 +13,6 @@ module Report (
 import           Prelude hiding (putStr, putStrLn, error)
 import           Data.Monoid
 import           Control.Monad
-import           Control.Applicative
-import           Control.Exception
 import           Text.Printf (printf)
 import           System.IO (hPutStrLn, hPutStr, stderr)
 import           Data.Char
@@ -26,7 +24,7 @@ import           Control.Monad.IO.Class
 import qualified Interpreter
 import           Parse
 import           Location
-import           Util (takeWhileEnd)
+import           Util (takeWhileEnd, safeEval)
 
 -- | Summary of a test run.
 data Summary = Summary {
@@ -178,7 +176,7 @@ runExample repl module_ (Example interactions) = do
   go interactions
   where
     go (i@(Located _ (Interaction expression expected)) : xs) = do
-      r <- run expression
+      r <- safeEval repl expression
       case r of
         Left err -> do
           return (Error i err)
@@ -190,7 +188,7 @@ runExample repl module_ (Example interactions) = do
               go xs
     go (p@(Located _ (Property expression)) : xs) = do
       lambda <- toLambda expression
-      r <- run $ "quickCheck $ " ++ lambda
+      r <- safeEval repl $ "quickCheck $ " ++ lambda
       case r of
         Left err -> do
           return (Error p err)
@@ -201,29 +199,21 @@ runExample repl module_ (Example interactions) = do
               return (Failure p res')
     go [] = return Success
 
-    run :: String -> IO (Either String [String])
-    run expression = (Right . lines <$> Interpreter.eval repl expression) `catches` [
-      -- Re-throw AsyncException, otherwise execution will not terminate on
-      -- SIGINT (ctrl-c).  All AsyncExceptions are re-thrown (not just
-      -- UserInterrupt) because all of them indicate severe conditions and
-      -- should not occur during normal test runs.
-      Handler $ \e -> throw (e :: AsyncException),
-
-      Handler $ \e -> (return . Left . show) (e :: SomeException)
-      ]
-
     -- Currently, GHCi is used to detect free variables.
     -- haskell-src-ext should be used in the future.
     toLambda :: String -> IO String
     toLambda expr
       | "\\" `isPrefixOf` expr = return expr
       | otherwise = do
-          r <- run expr
+          r <- safeEval repl expr
           case r of
             Right vars
-              | any ("Not in scope" `isInfixOf`) vars -> return $ complete expr vars
+              | any ("Not in scope" `isInfixOf`) vars -> return $ closeTerm expr vars
             _ -> return expr
-    complete expr vars = "\\" ++ intercalate " " vars' ++ "-> " ++ expr
+
+    -- | Close a given term over a given list of variables.
+    closeTerm :: String -> [String] -> String
+    closeTerm term vars = "\\" ++ intercalate " " vars' ++ "-> " ++ term
       where
         vars' = map unquote . nub . map (takeWhileEnd (/= ' '))
              . filter ("Not in scope" `isInfixOf`) $ vars
