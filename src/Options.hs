@@ -1,11 +1,10 @@
 module Options (
   Option(..)
-, getOptions
+, parseOptions
 , ghcOptions
 ) where
 
 import Control.Monad (when, unless)
-import System.Environment (getArgs)
 import System.Exit (exitSuccess, exitFailure)
 import System.IO (hPutStr, stderr)
 
@@ -37,9 +36,8 @@ undocumentedOptions = [
   ]
 
 
-getOptions :: IO ([Option], [String])
-getOptions = do
-  args  <- getArgs
+parseOptions :: [String] -> IO ([Option], [String])
+parseOptions args = do
   let (options, modules, errors) = getOpt Permute (documentedOptions ++ undocumentedOptions) args
 
   when (Help `elem` options) $ do
