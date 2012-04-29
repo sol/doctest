@@ -1,10 +1,5 @@
 module Util where
-
-import           Control.Applicative
-import           Control.Exception
-
-import           Interpreter (Interpreter)
-import qualified Interpreter
+import           Data.Char
 
 convertDosLineEndings :: String -> String
 convertDosLineEndings = go
@@ -23,17 +18,9 @@ convertDosLineEndings = go
 takeWhileEnd :: (a -> Bool) -> [a] -> [a]
 takeWhileEnd p = reverse . takeWhile p . reverse
 
-
--- | Evaluate an expression, returning any exceptions as a Left value.
+-- | Remove trailing white space from a string.
 --
--- Exceptions may e.g. be caused on unterminated multiline expressions.
-safeEval :: Interpreter -> String -> IO (Either String [String])
-safeEval repl expression = (Right . lines <$> Interpreter.eval repl expression) `catches` [
-  -- Re-throw AsyncException, otherwise execution will not terminate on
-  -- SIGINT (ctrl-c).  All AsyncExceptions are re-thrown (not just
-  -- UserInterrupt) because all of them indicate severe conditions and
-  -- should not occur during normal test runs.
-  Handler $ \e -> throw (e :: AsyncException),
-
-  Handler $ \e -> (return . Left . show) (e :: SomeException)
-  ]
+-- >>> stripEnd "foo   "
+-- "foo"
+stripEnd :: String -> String
+stripEnd = reverse . dropWhile isSpace . reverse

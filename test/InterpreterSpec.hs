@@ -6,6 +6,7 @@ import           Data.List (isSuffixOf)
 import           System.Process (readProcess)
 
 import qualified Interpreter
+import           Interpreter (safeEval)
 
 main :: IO ()
 main = hspecX spec
@@ -67,3 +68,10 @@ spec = do
 
     it "gives an error message for identifiers that are not in scope" $ withInterpreter $ \ghci -> do
       ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: `foo'\n")
+
+  describe "safeEval" $ do
+    it "evaluates an expression" $ Interpreter.withInterpreter [] $ \ghci -> do
+      safeEval ghci "23 + 42" `shouldReturn` Right "65\n"
+
+    it "returns Left on unterminated multiline command" $ Interpreter.withInterpreter [] $ \ghci -> do
+      safeEval ghci ":{\n23 + 42" `shouldReturn` Left "unterminated multiline command"

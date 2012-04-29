@@ -1,6 +1,7 @@
 module Interpreter (
   Interpreter
 , eval
+, safeEval
 , withInterpreter
 ) where
 
@@ -9,7 +10,7 @@ import System.Process
 import System.Exit
 import System.Directory (getPermissions, executable)
 import Control.Monad (when, unless)
-import Control.Exception (bracket)
+import Control.Exception hiding (handle)
 import Data.Char
 import Data.List
 
@@ -146,3 +147,17 @@ eval
 eval repl expr = do
   putExpression repl expr
   getResult repl
+
+-- | Evaluate an expression; return a Left value on executions.
+--
+-- Exceptions may e.g. be caused on unterminated multiline expressions.
+safeEval :: Interpreter -> String -> IO (Either String String)
+safeEval repl expression = (Right `fmap` Interpreter.eval repl expression) `catches` [
+  -- Re-throw AsyncException, otherwise execution will not terminate on
+  -- SIGINT (ctrl-c).  All AsyncExceptions are re-thrown (not just
+  -- UserInterrupt) because all of them indicate severe conditions and
+  -- should not occur during normal test runs.
+  Handler $ \e -> throw (e :: AsyncException),
+
+  Handler $ \e -> (return . Left . show) (e :: SomeException)
+  ]

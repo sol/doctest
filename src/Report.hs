@@ -29,7 +29,7 @@ import           Interpreter (Interpreter)
 import qualified Interpreter
 import           Parse
 import           Location
-import           Util (takeWhileEnd, safeEval)
+import           Util
 
 -- | Summary of a test run.
 data Summary = Summary {
@@ -183,7 +183,7 @@ runExample :: Interpreter -> [Located Interaction] -> IO DocTestResult
 runExample repl = go
   where
     go (i@(Located loc (Interaction expression expected)) : xs) = do
-      r <- safeEval repl expression
+      r <- fmap lines `fmap` Interpreter.safeEval repl expression
       case r of
         Left err -> do
           return (Error (Located loc expression) err)
@@ -199,21 +199,21 @@ runProperty :: Interpreter -> Located Expression -> IO DocTestResult
 runProperty repl p@(Located _ expression) = do
   _ <- Interpreter.eval repl "import Test.QuickCheck (quickCheck, (==>))"
   lambda <- toLambda expression
-  r <- safeEval repl $ "quickCheck (" ++ lambda ++ ")"
+  r <- Interpreter.safeEval repl $ "quickCheck (" ++ lambda ++ ")"
   case r of
     Left err -> do
       return (Error p err)
     Right res
-      | any ("OK, passed" `isInfixOf`) res -> return Success
+      | "OK, passed" `isInfixOf` res -> return Success
       | otherwise -> do
-          let msg = concatMap (takeWhileEnd (/= '\b')) res
+          let msg =  stripEnd (takeWhileEnd (/= '\b') res)
           return (PropertyFailure p msg)
   where
     -- Currently, GHCi is used to detect free variables.
     -- haskell-src-ext should be used in the future.
     toLambda :: String -> IO String
     toLambda expr = do
-      r <- safeEval repl expr
+      r <- fmap lines `fmap` Interpreter.safeEval repl expr
       case r of
         Right vars
           | any ("Not in scope" `isInfixOf`) vars -> return $ closeTerm expr vars
