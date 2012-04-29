@@ -39,3 +39,16 @@ spec = do
     it "reports the values for which a property that takes multiple arguments fails" $ withInterpreter [] $ \repl -> do
       let vals x = case x of (PropertyFailure _ r) -> tail (lines r); _ -> error "Property did not fail!"
       vals `fmap` runProperty repl (noLocation "x == True && y == 10 && z == \"foo\"") `shouldReturn` ["False", "0", show ("" :: String)]
+
+  describe "freeVariables" $ do
+    it "finds a free variables in a term" $ withInterpreter [] $ \repl -> do
+      freeVariables repl "x" `shouldReturn` ["x"]
+
+    it "ignores duplicates" $ withInterpreter [] $ \repl -> do
+      freeVariables repl "x == x" `shouldReturn` ["x"]
+
+    it "works for terms with multiple names" $ withInterpreter [] $ \repl -> do
+      freeVariables repl "\\z -> x + y + z == foo 23" `shouldReturn` ["x", "y", "foo"]
+
+    it "works for names that contain a prime" $ withInterpreter [] $ \repl -> do
+      freeVariables repl "x' == y''" `shouldReturn` ["x'", "y''"]
