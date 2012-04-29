@@ -16,3 +16,7 @@ spec = do
 
     it "strips a trailing CR" $ do
       convertDosLineEndings "foo\r" `shouldBe` "foo"
+
+  describe "takeWhileEnd" $ do
+    it "returns the longest suffix of elements that satisfy a given predicate" $ do
+      takeWhileEnd (/= ' ') "foo bar" `shouldBe` "bar"

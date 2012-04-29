@@ -26,6 +26,7 @@ import           Control.Monad.IO.Class
 import qualified Interpreter
 import           Parse
 import           Location
+import           Util (takeWhileEnd)
 
 -- | Summary of a test run.
 data Summary = Summary {
@@ -196,7 +197,7 @@ runExample repl module_ (Example interactions) = do
         Right res
           | any ("OK, passed" `isInfixOf`) res -> go xs
           | otherwise -> do
-              let res' = map (takeLast charBS) res
+              let res' = map (takeWhileEnd (/= '\b')) res
               return (Failure p res')
     go [] = return Success
 
@@ -224,10 +225,7 @@ runExample repl module_ (Example interactions) = do
             _ -> return expr
     complete expr vars = "\\" ++ intercalate " " vars' ++ "-> " ++ expr
       where
-        vars' = map unquote . nub . map (takeLast ' ')
+        vars' = map unquote . nub . map (takeWhileEnd (/= ' '))
              . filter ("Not in scope" `isInfixOf`) $ vars
         unquote ('`':xs) = init xs
         unquote xs       = xs
-
-    charBS = chr 8
-    takeLast c = reverse . takeWhile (/= c) . reverse

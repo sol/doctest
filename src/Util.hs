@@ -12,3 +12,7 @@ convertDosLineEndings = go
 
       x:xs         -> x : go xs
       ""           -> ""
+
+-- | Return the longest suffix of elements that satisfy a given predicate.
+takeWhileEnd :: (a -> Bool) -> [a] -> [a]
+takeWhileEnd p = reverse . takeWhile p . reverse
