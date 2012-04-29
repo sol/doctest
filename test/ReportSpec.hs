@@ -96,8 +96,21 @@ spec = do
         " but got: \"foo bar\""
 
   describe "runProperty" $ do
+    it "reports a failing property" $ withInterpreter [] $ \repl -> do
+      let expression = noLocation "False"
+      runProperty repl expression `shouldReturn` PropertyFailure expression "Falsifiable (after 1 test):  "
+
     it "runs a Bool property" $ withInterpreter [] $ \repl -> do
       runProperty repl (noLocation "True") `shouldReturn` Success
 
     it "runs a Bool property with an explicit type signature" $ withInterpreter [] $ \repl -> do
       runProperty repl (noLocation "True :: Bool") `shouldReturn` Success
+
+    it "runs an implicitly quantified property" $ withInterpreter [] $ \repl -> do
+      runProperty repl (noLocation "(reverse . reverse) xs == (xs :: [Int])") `shouldReturn` Success
+
+    it "runs an explicitly quantified property" $ withInterpreter [] $ \repl -> do
+      runProperty repl (noLocation "\\xs -> (reverse . reverse) xs == (xs :: [Int])") `shouldReturn` Success
+
+    it "allows to mix implicit and explicit quantification" $ withInterpreter [] $ \repl -> do
+      runProperty repl (noLocation "\\x -> x + y == y + x") `shouldReturn` Success
