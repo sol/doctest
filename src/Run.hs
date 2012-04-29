@@ -1,4 +1,4 @@
-module Run where
+module Run (doctest) where
 import           Data.Monoid
 import           Control.Monad (when)
 import           System.Exit (exitFailure)

@@ -8,6 +8,7 @@ import qualified ExtractSpec
 import qualified ParseSpec
 import qualified InterpreterSpec
 import qualified ReportSpec
+import qualified RunSpec
 import qualified MainSpec
 
 main :: IO ()
@@ -18,4 +19,5 @@ main = hspecX $ do
   describe "ParseSpec"        ParseSpec.spec
   describe "InterpreterSpec"  InterpreterSpec.spec
   describe "ReportSpec"       ReportSpec.spec
+  describe "RunSpec"          RunSpec.spec
   describe "MainSpec"         MainSpec.spec

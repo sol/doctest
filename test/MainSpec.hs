@@ -52,8 +52,8 @@ spec = do
       doctest "." ["testSimple/Fib.hs"]
         (cases 1)
 
-    it "testFail" $ do
-      doctest "." ["testFail/Foo.hs"]
+    it "failing" $ do
+      doctest "." ["failing/Foo.hs"]
         (cases 1) {sFailures = 1}
 
     it "testImport" $ do
