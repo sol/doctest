@@ -1,0 +1,16 @@
+name:             example
+version:          0.0.0
+build-type:       Simple
+cabal-version:    >= 1.8
+
+library
+  hs-source-dirs:   src
+  exposed-modules:  Example
+  build-depends:    base
+
+test-suite doctests
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   test
+  main-is:          doctests.hs
+  ghc-options:      -threaded
+  build-depends:    base, doctest
