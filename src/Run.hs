@@ -10,6 +10,16 @@ import           Report
 import qualified Interpreter
 
 doctest :: [String] -> IO ()
+-- | Run doctest with given list of arguments.
+--
+-- Example:
+--
+-- >>> doctest ["--optghc=-iexample/src", "example/src/Example.hs"]
+-- There are 2 tests, with 2 total interactions.
+-- Examples: 2  Tried: 2  Errors: 0  Failures: 0
+--
+-- This can be used to create a Cabal test suite that runs doctest for your
+-- project.
 doctest args = do
   (options, files) <- parseOptions args
   let ghciArgs = ghcOptions options ++ files
