@@ -30,40 +30,18 @@ library
   hs-source-dirs:
       src
   other-modules:
-      Interpreter
-    , Options
-    , Report
-    , Parse
-    , Extract
+      Extract
     , GhcUtil
-    , Paths_doctest
-  build-depends:
-      base        >= 4.0  && < 4.6
-    , ghc         >= 7.0  && < 7.6
-    , syb
-    , deepseq
-    , directory
-    , process
-    , ghc-paths   == 0.1.*
-    , transformers
-
-  buildable: False
-
-executable doctest
-  main-is:
-      Main.hs
-  ghc-options:
-      -Wall -threaded
-  hs-source-dirs:
-      src
-  other-modules:
-      Interpreter
+    , Interpreter
+    , Location
     , Options
-    , Report
     , Parse
-    , Extract
-    , GhcUtil
     , Paths_doctest
+    , Property
+    , Report
+    , Run
+    , Type
+    , Util
   build-depends:
       base        >= 4.0  && < 4.6
     , ghc         >= 6.12 && < 7.6
@@ -74,11 +52,22 @@ executable doctest
     , ghc-paths   == 0.1.*
     , transformers
 
+executable doctest
+  main-is:
+      Main.hs
+  ghc-options:
+      -Wall -threaded
+  hs-source-dirs:
+      driver
+  build-depends:
+      base        >= 4.0  && < 4.6
+    , doctest
+
 test-suite spec
-  type:
-      exitcode-stdio-1.0
   main-is:
       Spec.hs
+  type:
+      exitcode-stdio-1.0
   ghc-options:
       -Wall -Werror -threaded
   cpp-options:
@@ -93,9 +82,9 @@ test-suite spec
     , directory
     , process
     , ghc-paths   == 0.1.*
+    , transformers
     , HUnit       == 1.2.*
     , hspec-shouldbe
-    , transformers
     , stringbuilder
     , silently
     , filepath

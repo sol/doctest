@@ -22,7 +22,7 @@ main = do
     , "--optghc=-idist/build/autogen/"
     , "--optghc=-optP-include"
     , "--optghc=-optPdist/build/autogen/cabal_macros.h"
-    , "src/Main.hs"
+    , "src/Run.hs"
     ]
   hspecX $ do
     describe "UtilSpec"         UtilSpec.spec

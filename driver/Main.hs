@@ -1,5 +1,5 @@
 module Main (main) where
-import           Run
+import           Test.DocTest
 import           System.Environment (getArgs)
 
 main :: IO ()
