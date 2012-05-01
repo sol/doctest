@@ -1,6 +1,9 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 module PropertySpec (main, spec) where
 
 import           Test.Hspec.ShouldBe
+import           Data.String.Builder
 
 import           Property
 import           Type
@@ -62,3 +65,38 @@ spec = do
       -- ghc will include a suggestion (did you mean `id` instead of `is`) in
       -- the error message
       freeVariables repl "length_" `shouldReturn` ["length_"]
+
+  describe "parseNotInScope" $ do
+
+    context "when error message was produced by GHC 7.4.1" $ do
+
+      it "extracts a variable name of variable that is not in scope from error an message" $ do
+        parseNotInScope . build $ do
+          "<interactive>:4:1: Not in scope: `x'"
+          ""
+          "<interactive>:4:6: Not in scope: `x'"
+        `shouldBe` ["x"]
+
+      it "ignores duplicates" $ do
+        parseNotInScope . build $ do
+          "<interactive>:4:1: Not in scope: `x'"
+          ""
+          "<interactive>:4:6: Not in scope: `x'"
+        `shouldBe` ["x"]
+
+      it "works for error messages with suggestions" $ do
+        parseNotInScope . build $ do
+          "<interactive>:1:1:"
+          "    Not in scope: `is'"
+          "    Perhaps you meant `id' (imported from Prelude)"
+        `shouldBe` ["is"]
+
+      it "works for variable names that contain a prime" $ do
+        parseNotInScope . build $ do
+          "<interactive>:2:1: Not in scope: x'"
+          ""
+          "<interactive>:2:7: Not in scope: y'"
+        `shouldBe` ["x'", "y'"]
+  where
+    -- context will be provided with a future version of hspec
+    context = describe

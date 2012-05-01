@@ -3,6 +3,7 @@ module Property (
   runProperty
 #ifdef TEST
 , freeVariables
+, parseNotInScope
 #endif
 ) where
 
@@ -44,12 +45,16 @@ runProperty repl p@(Located _ expression) = do
 -- GHCi is used to detect free variables.
 freeVariables :: Interpreter -> String -> IO [String]
 freeVariables repl term = do
-  r <- fmap lines `fmap` Interpreter.safeEval repl (":type " ++ term)
-  case r of
-    Right err -> do
-      return (nub . map extractVariable . filter ("Not in scope: " `isInfixOf`) $ err)
-    _ ->
-      return []
+  r <- Interpreter.safeEval repl (":type " ++ term)
+  return (either (const []) (nub . parseNotInScope) r)
+
+-- | Parse and return all variables that are not in scope from a ghc error
+-- message.
+--
+-- >>> parseNotInScope "<interactive>:4:1: Not in scope: `foo'"
+-- ["foo"]
+parseNotInScope :: String -> [String]
+parseNotInScope = nub . map extractVariable . filter ("Not in scope: " `isInfixOf`) . lines
   where
     -- | Extract variable name from a "Not in scope"-error.
     extractVariable :: String -> String
