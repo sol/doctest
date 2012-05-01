@@ -27,6 +27,8 @@ spec = do
       runProperty repl (noLocation "(reverse . reverse) xs == (xs :: [Int])") `shouldReturn` Success
 
     it "runs an implicitly quantified property even with GHC 7.4" $ withInterpreter [] $ \repl -> do
+      -- ghc will include a suggestion (did you mean `id` instead of `is`) in
+      -- the error message
       runProperty repl (noLocation "foldr (+) 0 is == sum (is :: [Int])") `shouldReturn` Success
 
     it "runs an explicitly quantified property" $ withInterpreter [] $ \repl -> do
@@ -55,3 +57,8 @@ spec = do
 
     it "works for names that contain a prime" $ withInterpreter [] $ \repl -> do
       freeVariables repl "x' == y''" `shouldReturn` ["x'", "y''"]
+
+    it "works for names that are similar to other names that are in scope" $ withInterpreter [] $ \repl -> do
+      -- ghc will include a suggestion (did you mean `id` instead of `is`) in
+      -- the error message
+      freeVariables repl "length_" `shouldReturn` ["length_"]
