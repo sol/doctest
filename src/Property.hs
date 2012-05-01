@@ -47,7 +47,7 @@ freeVariables repl term = do
   r <- fmap lines `fmap` Interpreter.safeEval repl (":type " ++ term)
   case r of
     Right err -> do
-      return (nub . map extractVariable . filter (": Not in scope: " `isInfixOf`) $ err)
+      return (nub . map extractVariable . filter ("Not in scope: " `isInfixOf`) $ err)
     _ ->
       return []
   where
