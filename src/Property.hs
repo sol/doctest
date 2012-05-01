@@ -28,7 +28,7 @@ runProperty repl p@(Located _ expression) = do
           let msg =  stripEnd (takeWhileEnd (/= '\b') res)
           return (PropertyFailure p msg)
   where
-    quickCheck term = "quickCheck (" ++ term ++ ")"
+    quickCheck term = "quickCheck $ " ++ term
 
     -- | Find all free variables in given term, and close it by abstrating over
     -- them.
@@ -37,7 +37,7 @@ runProperty repl p@(Located _ expression) = do
       r <- freeVariables repl (quickCheck term)
       case r of
         []   -> return term
-        vars -> return ("\\" ++ unwords vars ++ "-> (" ++ term ++ ")")
+        vars -> return ("\\" ++ unwords vars ++ " -> " ++ term)
 
 -- | Find all free variables in given term.
 --
@@ -47,7 +47,7 @@ freeVariables repl term = do
   r <- fmap lines `fmap` Interpreter.safeEval repl (":type " ++ term)
   case r of
     Right err -> do
-      return (nub . map extractVariable . filter (": Not in scope: " `isInfixOf`) $ err)
+      return (nub . map extractVariable . filter ("Not in scope: " `isInfixOf`) $ err)
     _ ->
       return []
   where
