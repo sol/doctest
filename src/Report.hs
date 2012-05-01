@@ -18,7 +18,7 @@ import           Prelude hiding (putStr, putStrLn, error)
 import           Data.Monoid
 import           Control.Monad
 import           Text.Printf (printf)
-import           System.IO (hPutStrLn, hPutStr, stderr)
+import           System.IO (hPutStrLn, hPutStr, stderr, hIsTerminalDevice)
 import           Data.Char
 
 import           Control.Monad.Trans.State
@@ -54,7 +54,8 @@ instance Monoid Summary where
 -- errors/failures.
 runModules :: Int -> Interpreter -> [Module DocTest] -> IO Bool
 runModules exampleCount repl modules = do
-  ReportState _ s <- (`execStateT` ReportState 0 mempty {sExamples = exampleCount}) $ do
+  isInteractive <- hIsTerminalDevice stderr
+  ReportState _ _ s <- (`execStateT` ReportState 0 isInteractive mempty {sExamples = exampleCount}) $ do
     forM_ modules $ runModule repl
 
     -- report final summary
@@ -66,8 +67,9 @@ runModules exampleCount repl modules = do
 type Report = StateT ReportState IO
 
 data ReportState = ReportState {
-  reportStateCount   :: Int     -- ^ characters on the current line
-, reportStateSummary :: Summary -- ^ test summary
+  reportStateCount        :: Int     -- ^ characters on the current line
+, reportStateInteractive  :: Bool    -- ^ should intermediate results be printed?
+, reportStateSummary      :: Summary -- ^ test summary
 }
 
 -- | Add output to the report.
@@ -85,8 +87,10 @@ report msg = do
 -- Intermediate out may not contain any newlines.
 report_ :: String -> Report ()
 report_ msg = do
-  overwrite msg
-  modify (\st -> st {reportStateCount = length msg})
+  f <- gets reportStateInteractive
+  when f $ do
+    overwrite msg
+    modify (\st -> st {reportStateCount = length msg})
 
 -- | Add output to the report, overwrite any intermediate out.
 overwrite :: String -> Report ()
@@ -126,8 +130,8 @@ runModule repl (Module name examples) = do
     error   = updateSummary (Summary 0 1 1 0)
 
     updateSummary summary = do
-      ReportState n s <- get
-      put (ReportState n $ s `mappend` summary)
+      ReportState n f s <- get
+      put (ReportState n f $ s `mappend` summary)
 
 reportFailure :: [String] -> [String] -> Report ()
 reportFailure expected actual = do

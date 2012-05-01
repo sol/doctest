@@ -35,7 +35,7 @@ doctest args = do
       -- dump to stdout
       print modules
     else do
-      -- map to unit tests
+      -- run tests
       Interpreter.withInterpreter ghciArgs $ \repl -> do
         r <- runModules (exampleCount c) repl modules
         when r exitFailure
