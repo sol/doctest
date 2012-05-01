@@ -26,6 +26,9 @@ spec = do
     it "runs an implicitly quantified property" $ withInterpreter [] $ \repl -> do
       runProperty repl (noLocation "(reverse . reverse) xs == (xs :: [Int])") `shouldReturn` Success
 
+    it "runs an implicitly quantified property even with GHC 7.4" $ withInterpreter [] $ \repl -> do
+      runProperty repl (noLocation "foldr (+) 0 is == sum (is :: [Int])") `shouldReturn` Success
+
     it "runs an explicitly quantified property" $ withInterpreter [] $ \repl -> do
       runProperty repl (noLocation "\\xs -> (reverse . reverse) xs == (xs :: [Int])") `shouldReturn` Success
 
