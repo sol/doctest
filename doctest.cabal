@@ -84,6 +84,7 @@ test-suite spec
     , ghc-paths   == 0.1.*
     , transformers
     , HUnit       == 1.2.*
+    , hspec-discover
     , hspec-shouldbe
     , stringbuilder
     , silently
