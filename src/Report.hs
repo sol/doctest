@@ -37,7 +37,7 @@ data Summary = Summary {
 , sTried    :: Int
 , sErrors   :: Int
 , sFailures :: Int
-}
+} deriving Eq
 
 -- | Format a summary.
 instance Show Summary where

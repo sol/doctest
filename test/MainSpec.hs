@@ -3,41 +3,30 @@ module MainSpec (main, spec) where
 import           Test.Hspec.ShouldBe
 import           Test.HUnit (assertEqual, Assertion)
 
-import           System.Directory (canonicalizePath, getCurrentDirectory, setCurrentDirectory)
+import           Control.Exception
+import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           System.FilePath
-import           System.Process (readProcessWithExitCode)
-
 import           Report (Summary(..))
+import           Run hiding (doctest)
+import           System.IO.Silently
+import           System.IO
 
-
--- | Run doctest and return stderr.
-doctest_ :: FilePath   -- ^ current directory of forked `doctest` process
-         -> [String]   -- ^ args, given to `doctest`
-         -> IO String     -- ^ stderr
-doctest_ workingDir args = do
-  bin <- canonicalizePath "dist/build/doctest/doctest"
-
-  -- fork and run a doctest process
-  cwd <- getCurrentDirectory
-  setCurrentDirectory ("test/integration" </> workingDir)
-  (_, _, err) <- readProcessWithExitCode bin args ""
-  setCurrentDirectory cwd
-  return err
-
+withCurrentDirectory :: FilePath -> IO a -> IO a
+withCurrentDirectory workingDir action = do
+  bracket getCurrentDirectory setCurrentDirectory $ \_ -> do
+    setCurrentDirectory workingDir
+    action
 
 -- | Construct a doctest specific 'Assertion'.
-doctest :: FilePath   -- ^ current directory of forked `doctest` process
+doctest :: FilePath   -- ^ current directory of `doctest` process
         -> [String]   -- ^ args, given to `doctest`
         -> Summary    -- ^ expected test result
         -> Assertion
 doctest workingDir args summary = do
-  err <- doctest_ workingDir args
-  let out = lastLine err
-  assertEqual label (show summary) (last . lines $ out)
+  r <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctest_ args)
+  assertEqual label summary r
   where
     label = workingDir ++ " " ++ show args
-    lastLine = reverse . takeWhile (/= '\r') . reverse
-
 
 cases :: Int -> Summary
 cases n = Summary n n 0 0
@@ -143,7 +132,3 @@ spec = do
         (cases 1) {sFailures = 1}
       doctest "testCPP" ["--optghc=-cpp", "--optghc=-DFOO", "Foo.hs"]
         (cases 1)
-
-    it "prints a useful error message on parse errors" $ do
-      err <- doctest_ "parse-error" ["Foo.hs"]
-      err `shouldBe` "\nFoo.hs:6:1: parse error (possibly incorrect indentation)\n"
