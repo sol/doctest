@@ -104,8 +104,10 @@ And a corresponding Cabal test suite section like this:
 
     test-suite doctests
       type:          exitcode-stdio-1.0
+      ghc-options:   -threaded
       main-is:       doctests.hs
       build-depends: base, doctest
+      build-depends: base, doctest >= 0.7
 
 ### Hiding examples from Haddock
 
