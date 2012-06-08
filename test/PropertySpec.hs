@@ -3,18 +3,20 @@
 module PropertySpec (main, spec) where
 
 import           Test.Hspec.ShouldBe
-import           Data.String.Builder
+-- import           Data.String.Builder
 
-import           Property
-import           Type
-import           Location
-import           Interpreter (withInterpreter)
+-- import           Property
+-- import           Type
+-- import           Location
+-- import           Interpreter (withInterpreter)
 
 main :: IO ()
 main = hspecX spec
 
 spec :: Specs
 spec = do
+  return ()
+{-
   describe "runProperty" $ do
     it "reports a failing property" $ withInterpreter [] $ \repl -> do
       let expression = noLocation "False"
@@ -100,3 +102,4 @@ spec = do
   where
     -- context will be provided with a future version of hspec
     context = describe
+    -}

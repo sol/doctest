@@ -1,10 +1,10 @@
 {-# LANGUAGE CPP #-}
 module Report (
   runModules
+, Summary(..)
 
 #ifdef TEST
 , Report
-, Summary(..)
 , ReportState (..)
 , report
 , report_
