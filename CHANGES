@@ -1,10 +1,11 @@
+Changes in 0.8.0
+ - Add support for QuickCheck properties
+
 Changes in 0.7.0
  - Print source location for failing tests
  - Output less clutter on failing examples
  - Expose Doctest's functionality through a very simplistic API, which can be
    used for cabal integration
- - Add preliminary support for QuickCheck properties (this is not supported by
-   Haddock yet!)
 
 Changes in 0.6.1
  - Fix a parser bug with CR+LF line endings
