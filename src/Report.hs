@@ -1,10 +1,10 @@
 {-# LANGUAGE CPP #-}
 module Report (
   runModules
+, Summary(..)
 
 #ifdef TEST
 , Report
-, Summary(..)
 , ReportState (..)
 , report
 , report_
@@ -52,7 +52,7 @@ instance Monoid Summary where
 -- |
 -- Run all examples from given modules, return true if there were
 -- errors/failures.
-runModules :: Int -> Interpreter -> [Module DocTest] -> IO Bool
+runModules :: Int -> Interpreter -> [Module DocTest] -> IO Summary
 runModules exampleCount repl modules = do
   isInteractive <- hIsTerminalDevice stderr
   ReportState _ _ s <- (`execStateT` ReportState 0 isInteractive mempty {sExamples = exampleCount}) $ do
@@ -61,7 +61,7 @@ runModules exampleCount repl modules = do
     -- report final summary
     gets (show . reportStateSummary) >>= report
 
-  return (sErrors s /= 0 || sFailures s /= 0)
+  return s
 
 -- | A monad for generating test reports.
 type Report = StateT ReportState IO

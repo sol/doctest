@@ -1,4 +1,11 @@
-module Run (doctest) where
+{-# LANGUAGE CPP #-}
+module Run (
+  doctest
+#ifdef TEST
+, doctest_
+, Summary
+#endif
+) where
 import           Data.Monoid
 import           Control.Monad (when)
 import           System.Exit (exitFailure)
@@ -9,7 +16,6 @@ import           Options
 import           Report
 import qualified Interpreter
 
-doctest :: [String] -> IO ()
 -- | Run doctest with given list of arguments.
 --
 -- Example:
@@ -20,7 +26,13 @@ doctest :: [String] -> IO ()
 --
 -- This can be used to create a Cabal test suite that runs doctest for your
 -- project.
+doctest :: [String] -> IO ()
 doctest args = do
+  r <- doctest_ args
+  when (not . isSuccess $ r) exitFailure
+
+doctest_ :: [String] -> IO Summary
+doctest_ args = do
   (options, files) <- parseOptions args
   let ghciArgs = ghcOptions options ++ files
 
@@ -34,13 +46,16 @@ doctest args = do
     then do
       -- dump to stdout
       print modules
+      return mempty
     else do
       -- run tests
       Interpreter.withInterpreter ghciArgs $ \repl -> do
-        r <- runModules (exampleCount c) repl modules
-        when r exitFailure
+        runModules (exampleCount c) repl modules
   where
     exampleCount (Count n _) = n
+
+isSuccess :: Summary -> Bool
+isSuccess s = sErrors s == 0 && sFailures s == 0
 
 -- | Number of examples and interactions.
 data Count = Count Int {- example count -} Int {- interaction count -}
