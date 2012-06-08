@@ -83,6 +83,7 @@ spec = do
       doctest "dos-line-endings" ["Fib.hs"]
         (cases 1)
 
+{-
   describe "doctest as a runner for QuickCheck properties" $ do
     it "runs a boolean property" $ do
       doctest "property-bool" ["Foo.hs"]
@@ -103,6 +104,7 @@ spec = do
     it "runs a boolean property with an explicit type signature" $ do
       doctest "property-bool-with-type-signature" ["Foo.hs"]
         (cases 1)
+        -}
 
   describe "doctest (regression tests)" $ do
     it "bugfixWorkingDirectory" $ do

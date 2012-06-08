@@ -18,8 +18,8 @@ ghci e = tell . return . noLocation . Interaction e . lines . build
 example :: Writer [Located Interaction] () -> Writer [DocTest] ()
 example = tell . return . Example . execWriter
 
-prop_ :: Expression -> Writer [DocTest] ()
-prop_ = tell . return . Property . noLocation
+-- prop_ :: Expression -> Writer [DocTest] ()
+-- prop_ = tell . return . Property . noLocation
 
 module_ :: String -> Writer [DocTest] () -> Writer [Module DocTest] ()
 module_ name = tell . return . Module name . execWriter
@@ -41,12 +41,14 @@ shouldGive action w = do
 spec :: Spec
 spec = do
   describe "getDocTests" $ do
+  {-
     it "extracts properties from a module" $ do
       getDocTests ["test/parse/property/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
           prop_ "foo"
           prop_ "bar"
           prop_ "baz"
+          -}
 
     it "extracts examples from a module" $ do
       getDocTests ["test/parse/simple/Fib.hs"] `shouldGive` do
