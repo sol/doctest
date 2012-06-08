@@ -18,8 +18,10 @@ group g = tell [execWriter g]
 ghci :: Expression -> Builder -> Writer [DocTest] ()
 ghci expressions expected = tell [Example expressions $ (lines . build) expected]
 
+{-
 prop_ :: Expression -> Writer [DocTest] ()
 prop_ e = tell [Property e]
+-}
 
 module_ :: String -> Writer [[DocTest]] () -> Writer [Module [DocTest]] ()
 module_ name gs = tell [Module name Nothing $ execWriter gs]
@@ -30,6 +32,7 @@ shouldGive action expected = map (fmap $ map unLoc) `fmap` action `shouldReturn`
 spec :: Spec
 spec = do
   describe "getDocTests" $ do
+  {-
     it "extracts properties from a module" $ do
       getDocTests ["test/parse/property/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
@@ -37,6 +40,7 @@ spec = do
             prop_ "foo"
             prop_ "bar"
             prop_ "baz"
+            -}
 
     it "extracts examples from a module" $ do
       getDocTests ["test/parse/simple/Fib.hs"] `shouldGive` do
