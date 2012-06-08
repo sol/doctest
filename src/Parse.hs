@@ -49,7 +49,7 @@ parseComment :: Located String -> [Located DocTest]
 parseComment c = properties ++ examples
   where
     examples   = map (fmap $ uncurry Example) (parseInteractions c)
-    properties = map (fmap          Property) (parseProperties   c)
+    properties = [] -- map (fmap          Property) (parseProperties   c)
 
 -- | Extract all properties from given Haddock comment.
 parseProperties :: Located String -> [Located Expression]
