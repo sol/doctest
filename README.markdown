@@ -1,4 +1,3 @@
-
 # Doctest: Test interactive Haskell examples
 
 `doctest` is a small program, that checks [examples in Haddock comments]
@@ -106,7 +105,6 @@ And a corresponding Cabal test suite section like this:
       type:          exitcode-stdio-1.0
       ghc-options:   -threaded
       main-is:       doctests.hs
-      build-depends: base, doctest
       build-depends: base, doctest >= 0.7
 
 ### Hiding examples from Haddock
