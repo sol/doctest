@@ -1,3 +1,6 @@
+Changes in 0.6.1
+ - Fix a parser bug with CR+LF line endings
+
 Changes in 0.6.0
  - Support for ghc-7.4
  - Doctest now comes with it's own parser and does not depend on Haddock
