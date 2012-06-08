@@ -40,7 +40,7 @@ parseModule :: Module (Located String) -> Module DocTest
 parseModule (Module name docs) = Module name (properties ++ examples)
   where
     examples = (map Example . filter (not . null) . map parseInteractions) docs
-    properties = (map Property . concatMap parseProperties) docs
+    properties = [] -- (map Property . concatMap parseProperties) docs
 
 -- | Extract all properties from given Haddock comment.
 parseProperties :: Located String -> [Located Expression]
