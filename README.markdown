@@ -75,6 +75,38 @@ Alternatively you can pass any GHC options to Doctest with `--optghc`.
 
     doctest --options=-cpp Foo.hs
 
+### Cabal integration
+
+Doctest provides both, an executable and a library.  The library exposes a
+function `doctest` of type:
+
+```haskell
+doctest :: [String] -> IO ()
+```
+
+Doctest's own `main` is simply:
+
+```haskell
+main = getArgs >>= doctest
+```
+
+Consequently, it is possible to create a custom executable for a project, by
+passing all command-line arguments that are required for that project to
+`doctest`.  A simple example looks like this:
+
+```haskell
+-- file doctests.hs
+import Test.DocTest
+main = doctest ["--optghc=isrc", "src/Main.hs"]
+```
+
+And a corresponding Cabal test suite section like this:
+
+    test-suite doctests
+      type:          exitcode-stdio-1.0
+      main-is:       doctests.hs
+      build-depends: base, doctest
+
 ### Hiding examples from Haddock
 
 You can put examples into [named chunks] [named-chunks], and not refer to them
