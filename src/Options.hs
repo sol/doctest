@@ -24,10 +24,10 @@ data Option = Help
 
 documentedOptions :: [OptDescr Option]
 documentedOptions = [
-    Option []     ["help"]        (NoArg Help)                    "display this help and exit"
-  , Option []     ["version"]     (NoArg Version)                 "output version information and exit"
+    Option []     ["optghc"]      (ReqArg GhcOption "OPTION")     "option to be forwarded to GHC"
   , Option ['v']  ["verbose"]     (NoArg Verbose)                 "explain what is being done, enable Haddock warnings"
-  , Option []     ["optghc"]      (ReqArg GhcOption "OPTION")     "option to be forwarded to GHC"
+  , Option []     ["help"]        (NoArg Help)                    "display this help and exit"
+  , Option []     ["version"]     (NoArg Version)                 "output version information and exit"
   ]
 
 undocumentedOptions :: [OptDescr Option]
