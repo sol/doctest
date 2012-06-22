@@ -5,6 +5,7 @@ import           System.Exit
 
 import           Control.Exception
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
+import           Data.List
 
 import           System.IO.Silently
 import           System.IO (stderr)
@@ -25,6 +26,23 @@ spec = do
   describe "doctest" $ do
     it "exits with ExitFailure, if at least one test case fails" $ do
       hSilence [stderr] (doctest ["test/integration/failing/Foo.hs"]) `shouldThrow` (== ExitFailure 1)
+
+    it "prints help on --help" $ do
+      (r, e) <- (capture . try) (doctest ["--help"])
+      e `shouldBe` Left ExitSuccess
+      lines r `shouldBe` [
+          "Usage: doctest [OPTION]... MODULE..."
+        , ""
+        , "      --optghc=OPTION  option to be forwarded to GHC"
+        , "  -v  --verbose        explain what is being done, enable Haddock warnings"
+        , "      --help           display this help and exit"
+        , "      --version        output version information and exit"
+        ]
+
+    it "prints resion on --version" $ do
+      (r, e) <- (capture . try) (doctest ["--version"])
+      e `shouldBe` Left ExitSuccess
+      lines r `shouldSatisfy` any (isPrefixOf "doctest version ")
 
   describe "doctest_" $ do
     context "on parse error" $ do
