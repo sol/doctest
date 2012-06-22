@@ -2,8 +2,6 @@
 module GhcUtil (withGhc) where
 
 import           Control.Exception
-import           Control.Monad (when)
-
 import           GHC.Paths (libdir)
 import           GHC hiding (flags)
 import           DynFlags (dopt_set)
@@ -60,10 +58,9 @@ handleDynamicFlags flags = do
   -- "unrecognised flags" from source files.
   let srcs = map unLoc locSrcs
       unknown_opts = [ f | f@('-':_) <- srcs ]
-  when ((not . null) unknown_opts) $
-    ghcError (UsageError ("unrecognised flags: " ++ unwords unknown_opts))
-
-  return srcs
+  case unknown_opts of
+    opt : _ -> ghcError (UsageError ("unrecognized option `"++ opt ++ "'"))
+    _       -> return srcs
 
 setHaddockMode :: DynFlags -> DynFlags
 setHaddockMode dynflags = (dopt_set dynflags Opt_Haddock) {

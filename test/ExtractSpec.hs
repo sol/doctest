@@ -50,7 +50,7 @@ spec = do
       ("comment-order", "Foo.hs") `shouldGive` [Module "Foo" [" module header", " export list 1", " export list 2", " foo", " named chunk", " bar"]]
 
     it "fails on invalid flags" $ do
-      extract ["--foobar", "test/Foo.hs"] `shouldThrow` (== UsageError "unrecognised flags: --foobar")
+      extract ["--foobar", "test/Foo.hs"] `shouldThrow` (== UsageError "unrecognized option `--foobar'")
 
   describe "extract (regression tests)" $ do
     it "works with infix operators" $ do

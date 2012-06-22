@@ -8,12 +8,16 @@ module Run (
 #endif
 ) where
 
+import           Prelude hiding (catch)
 import           Data.Monoid
 import           Data.List
 import           Data.Maybe
 import           Control.Monad (when)
 import           System.Exit (exitFailure)
 import           System.IO
+
+import           Control.Exception
+import           Panic
 
 import           Parse
 import           Options
@@ -38,7 +42,13 @@ doctest args = do
     ["--version"] ->
       printVersion
     _ -> do
-      r <- doctest_ (stripOptGhc args)
+      r <- doctest_ (stripOptGhc args) `catch` \e -> do
+        case fromException e of
+          Just (UsageError err) -> do
+            hPutStrLn stderr ("doctest: " ++ err)
+            hPutStrLn stderr "Try `doctest --help' for more information."
+            exitFailure
+          _ -> throw e
       when (not $ isSuccess r) exitFailure
 
 -- | Strip --optghc from GHC options.  This is for backward compatibility with

@@ -48,6 +48,14 @@ spec = do
     it "accepts arbitrary GHC options" $ do
       hSilence [stderr] $ doctest ["-cpp", "-DFOO", "test/integration/test-options/Foo.hs"]
 
+    it "prints error message on invalid option" $ do
+      (r, e) <- hCapture [stderr] . try $ doctest ["--foo", "test/integration/test-options/Foo.hs"]
+      e `shouldBe` Left (ExitFailure 1)
+      r `shouldBe` unlines [
+          "doctest: unrecognized option `--foo'"
+        , "Try `doctest --help' for more information."
+        ]
+
   describe "doctest_" $ do
     context "on parse error" $ do
       let action = withCurrentDirectory "test/integration/parse-error" (doctest_ ["Foo.hs"])
