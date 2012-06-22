@@ -9,6 +9,7 @@ import           Data.List
 
 import           System.IO.Silently
 import           System.IO (stderr)
+import qualified Help
 
 import           Run
 
@@ -29,14 +30,7 @@ spec = do
 
     it "prints help on --help" $ do
       (r, ()) <- capture (doctest ["--help"])
-      lines r `shouldBe` [
-          "Usage: doctest [OPTION]... MODULE..."
-        , ""
-        , "      --optghc=OPTION  option to be forwarded to GHC"
-        , "  -v  --verbose        explain what is being done, enable Haddock warnings"
-        , "      --help           display this help and exit"
-        , "      --version        output version information and exit"
-        ]
+      r `shouldBe` Help.usage
 
     it "prints resion on --version" $ do
       (r, ()) <- capture (doctest ["--version"])

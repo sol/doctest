@@ -19,7 +19,7 @@ import           Control.Exception
 import           Panic
 
 import           Parse
-import           Options
+import           Help
 import           Report
 import qualified Interpreter
 
