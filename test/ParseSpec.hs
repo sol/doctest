@@ -11,7 +11,7 @@ import           Parse
 import           Location
 
 main :: IO ()
-main = hspecX spec
+main = hspec spec
 
 ghci :: String -> Builder -> Writer [Located Interaction] ()
 ghci e = tell . return . noLocation . Interaction e . lines . build
@@ -39,7 +39,7 @@ shouldGive action w = do
         f (Example x)  = Example (map (noLocation . unLoc) x)
         f (Property x) = (Property . noLocation . unLoc) x
 
-spec :: Specs
+spec :: Spec
 spec = do
   describe "getDocTests" $ do
     it "extracts properties from a module" $ do

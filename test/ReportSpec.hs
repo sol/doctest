@@ -13,7 +13,7 @@ import           Control.Monad.Trans.State
 import           Report
 
 main :: IO ()
-main = hspecX spec
+main = hspec spec
 
 capture :: Report a -> IO String
 capture = fmap fst . hCapture [stderr] . (`execStateT` ReportState 0 True mempty)
@@ -25,10 +25,7 @@ capture_ = fmap fst . hCapture [stderr] . (`execStateT` ReportState 0 False memp
 shouldGive :: IO String -> Builder -> Assertion
 action `shouldGive` expected = action `shouldReturn` build expected
 
-context :: String -> Specs -> Specs
-context = describe
-
-spec :: Specs
+spec :: Spec
 spec = do
 
   describe "report" $ do

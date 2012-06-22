@@ -9,7 +9,7 @@ import qualified Interpreter
 import           Interpreter (safeEval)
 
 main :: IO ()
-main = hspecX spec
+main = hspec spec
 
 withInterpreter :: ((String -> IO String) -> IO a) -> IO a
 withInterpreter action = Interpreter.withInterpreter [] $ \x -> action (Interpreter.eval x)
@@ -17,7 +17,7 @@ withInterpreter action = Interpreter.withInterpreter [] $ \x -> action (Interpre
 shouldEvaluateTo :: (Show a, Eq a) => IO a -> a -> IO ()
 action `shouldEvaluateTo` expected = action >>= (`shouldBe` expected)
 
-spec :: Specs
+spec :: Spec
 spec = do
   describe "Interpreter" $ do
     it "terminates on SIGINT" $ do

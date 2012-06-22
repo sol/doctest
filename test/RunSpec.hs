@@ -1,6 +1,6 @@
 module RunSpec (main, spec) where
 
-import           Test.Hspec.ShouldBe
+import           Test.Hspec.ShouldBe hiding (Summary)
 import           System.Exit
 
 import           Control.Exception
@@ -18,9 +18,9 @@ withCurrentDirectory workingDir action = do
     action
 
 main :: IO ()
-main = hspecX spec
+main = hspec spec
 
-spec :: Specs
+spec :: Spec
 spec = do
   describe "doctest" $ do
     it "exits with ExitFailure, if at least one test case fails" $ do
@@ -36,5 +36,3 @@ spec = do
       it "prints a useful error message" $ do
         (r, _) <- hCapture [stderr] (try action :: IO (Either ExitCode Summary))
         r `shouldBe` "\nFoo.hs:6:1: parse error (possibly incorrect indentation)\n"
-  where
-    context = describe

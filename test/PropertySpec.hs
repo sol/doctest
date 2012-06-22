@@ -11,9 +11,9 @@ import           Location
 import           Interpreter (withInterpreter)
 
 main :: IO ()
-main = hspecX spec
+main = hspec spec
 
-spec :: Specs
+spec :: Spec
 spec = do
   describe "runProperty" $ do
     it "reports a failing property" $ withInterpreter [] $ \repl -> do
@@ -97,6 +97,3 @@ spec = do
           ""
           "<interactive>:2:7: Not in scope: y'"
         `shouldBe` ["x'", "y'"]
-  where
-    -- context will be provided with a future version of hspec
-    context = describe

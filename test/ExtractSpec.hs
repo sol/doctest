@@ -14,9 +14,9 @@ shouldGive :: (String, String) -> [Module String] -> Assertion
   where dir = "test/extract" </> d
 
 main :: IO ()
-main = hspecX spec
+main = hspec spec
 
-spec :: Specs
+spec :: Spec
 spec = do
 
   describe "extract" $ do

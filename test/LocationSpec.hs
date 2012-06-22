@@ -7,9 +7,9 @@ import           SrcLoc
 import           FastString (fsLit)
 
 main :: IO ()
-main = hspecX spec
+main = hspec spec
 
-spec :: Specs
+spec :: Spec
 spec = do
 
   describe "toLocation" $ do

@@ -1,6 +1,6 @@
 module MainSpec (main, spec) where
 
-import           Test.Hspec.ShouldBe
+import           Test.Hspec.ShouldBe hiding (Summary)
 import           Test.HUnit (assertEqual, Assertion)
 
 import           Control.Exception
@@ -32,9 +32,9 @@ cases :: Int -> Summary
 cases n = Summary n n 0 0
 
 main :: IO ()
-main = hspecX spec
+main = hspec spec
 
-spec :: Specs
+spec :: Spec
 spec = do
   describe "doctest" $ do
     it "testSimple" $ do
