@@ -11,7 +11,6 @@ module Run (
 import           Prelude hiding (catch)
 import           Data.Monoid
 import           Data.List
-import           Data.Maybe
 import           Control.Monad (when)
 import           System.Exit (exitFailure)
 import           System.IO
@@ -28,7 +27,7 @@ import qualified Interpreter
 --
 -- Example:
 --
--- >>> doctest ["--optghc=-iexample/src", "example/src/Example.hs"]
+-- >>> doctest ["-iexample/src", "example/src/Example.hs"]
 -- There are 2 tests, with 2 total interactions.
 -- Examples: 2  Tried: 2  Errors: 0  Failures: 0
 --
@@ -42,7 +41,11 @@ doctest args = do
     ["--version"] ->
       printVersion
     _ -> do
-      r <- doctest_ (stripOptGhc args) `catch` \e -> do
+      let (f, args_) = stripOptGhc args
+      when f $ do
+        hPutStrLn stderr "WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."
+        hFlush stderr
+      r <- doctest_ args_ `catch` \e -> do
         case fromException e of
           Just (UsageError err) -> do
             hPutStrLn stderr ("doctest: " ++ err)
@@ -51,15 +54,19 @@ doctest args = do
           _ -> throw e
       when (not $ isSuccess r) exitFailure
 
--- | Strip --optghc from GHC options.  This is for backward compatibility with
+-- |
+-- Strip --optghc from GHC options.  This is for backward compatibility with
 -- previous versions of doctest.
-stripOptGhc :: [String] -> [String]
+--
+-- A boolean is returned with the stripped arguments.  It is True if striping
+-- occurred.
+stripOptGhc :: [String] -> (Bool, [String])
 stripOptGhc = go
   where
     go args = case args of
-      []                      -> []
-      "--optghc" : opt : rest -> opt : go rest
-      opt : rest              -> fromMaybe opt (stripPrefix "--optghc=" opt) : go rest
+      []                      -> (False, [])
+      "--optghc" : opt : rest -> (True, opt : snd (go rest))
+      opt : rest              -> maybe (fmap (opt :)) (\x (_, xs) -> (True, x :xs)) (stripPrefix "--optghc=" opt) (go rest)
 
 doctest_ :: [String] -> IO Summary
 doctest_ args = do

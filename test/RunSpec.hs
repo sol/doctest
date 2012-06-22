@@ -42,11 +42,18 @@ spec = do
       (r, ()) <- capture (doctest ["--version"])
       lines r `shouldSatisfy` any (isPrefixOf "doctest version ")
 
+    it "accepts arbitrary GHC options" $ do
+      hSilence [stderr] $ doctest ["-cpp", "-DFOO", "test/integration/test-options/Foo.hs"]
+
     it "accepts GHC options with --optghc" $ do
       hSilence [stderr] $ doctest ["--optghc=-cpp", "--optghc=-DFOO", "test/integration/test-options/Foo.hs"]
 
-    it "accepts arbitrary GHC options" $ do
-      hSilence [stderr] $ doctest ["-cpp", "-DFOO", "test/integration/test-options/Foo.hs"]
+    it "prints a deprecation message for --optghc" $ do
+      (r, _) <- hCapture [stderr] $ doctest ["--optghc=-cpp", "--optghc=-DFOO", "test/integration/test-options/Foo.hs"]
+      lines r `shouldSatisfy` isPrefixOf [
+          "WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options"
+        , "directly."
+        ]
 
     it "prints error message on invalid option" $ do
       (r, e) <- hCapture [stderr] . try $ doctest ["--foo", "test/integration/test-options/Foo.hs"]
@@ -70,8 +77,12 @@ spec = do
   describe "stripOptGhc (an internal function)" $ do
     it "strips --optghc=" $
       property $ \xs ys ->
-        stripOptGhc (xs ++ ["--optghc=foobar"] ++ ys) == (xs ++ ["foobar"] ++ ys)
+        stripOptGhc (xs ++ ["--optghc=foobar"] ++ ys) == (True, xs ++ ["foobar"] ++ ys)
 
     it "strips --optghc" $
       property $ \xs ys ->
-        stripOptGhc (xs ++ ["--optghc", "foobar"] ++ ys) == (xs ++ ["foobar"] ++ ys)
+        stripOptGhc (xs ++ ["--optghc", "foobar"] ++ ys) == (True, xs ++ ["foobar"] ++ ys)
+
+    it "indicates when nothing got striped" $
+      property $ \xs ->
+        stripOptGhc xs == (False, xs)
