@@ -26,7 +26,7 @@ On Mac OS X:
 
 On Windows it's `C:\Documents And Settings\user\Application Data\cabal\bin`.
 
-Fore more information, see the [section on paths in the Cabal User Guide]
+For more information, see the [section on paths in the Cabal User Guide]
 (http://www.haskell.org/cabal/users-guide/installing-packages.html#paths-in-the-simple-build-system).
 
 ## Usage
@@ -105,7 +105,7 @@ And a corresponding Cabal test suite section like this:
       type:          exitcode-stdio-1.0
       ghc-options:   -threaded
       main-is:       doctests.hs
-      build-depends: base, doctest >= 0.7
+      build-depends: base, doctest >= 0.8
 
 ### Hiding examples from Haddock
 
