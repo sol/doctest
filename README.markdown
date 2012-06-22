@@ -70,9 +70,9 @@ You may produce Haddock documentation for that module with:
 The easiest way to tell Doctest about GHC extensions is to use [LANGUAGE
 pragmas] [language-pragma] in your source files.
 
-Alternatively you can pass any GHC options to Doctest with `--optghc`.
+Alternatively you can pass any GHC options to Doctest, e.g.:
 
-    doctest --options=-cpp Foo.hs
+    doctest -cpp Foo.hs
 
 ### Cabal integration
 
@@ -96,7 +96,7 @@ passing all command-line arguments that are required for that project to
 ```haskell
 -- file doctests.hs
 import Test.DocTest
-main = doctest ["--optghc=isrc", "src/Main.hs"]
+main = doctest ["-isrc", "src/Main.hs"]
 ```
 
 And a corresponding Cabal test suite section like this:

@@ -9,12 +9,9 @@ _doctest()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    opts='--help --version -v --verbose --optghc'
+    opts='--help --version'
 
     case "${prev}" in
-	--optghc)
-            return 0
-            ;;
         *)
             ;;
     esac

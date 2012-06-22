@@ -3,4 +3,4 @@ module Main where
 import           Test.DocTest
 
 main :: IO ()
-main = doctest ["--optghc=-isrc", "src/Example.hs"]
+main = doctest ["-isrc", "src/Example.hs"]
