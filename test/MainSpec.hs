@@ -48,7 +48,7 @@ spec = do
     it "testImport" $ do
       doctest "testImport" ["ModuleA.hs"]
         (cases 2)
-      doctest ".." ["--optghc=-iintegration/testImport", "integration/testImport/ModuleA.hs"]
+      doctest ".." ["-iintegration/testImport", "integration/testImport/ModuleA.hs"]
         (cases 2)
 
     it "testCommentLocation" $ do
@@ -128,7 +128,7 @@ spec = do
         (cases 3)
 
     it "testCPP" $ do
-      doctest "testCPP" ["--optghc=-cpp", "Foo.hs"]
+      doctest "testCPP" ["-cpp", "Foo.hs"]
         (cases 1) {sFailures = 1}
-      doctest "testCPP" ["--optghc=-cpp", "--optghc=-DFOO", "Foo.hs"]
+      doctest "testCPP" ["-cpp", "-DFOO", "Foo.hs"]
         (cases 1)

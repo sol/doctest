@@ -4,9 +4,11 @@ module Run (
 #ifdef TEST
 , doctest_
 , Summary
+, stripOptGhc
 #endif
 ) where
 import           Data.Monoid
+import           Data.List
 import           Control.Monad (when)
 import           System.Exit (exitFailure)
 import           System.IO
@@ -28,29 +30,41 @@ import qualified Interpreter
 -- project.
 doctest :: [String] -> IO ()
 doctest args = do
-  r <- doctest_ args
-  when (not . isSuccess $ r) exitFailure
+  case args of
+    ["--help"] -> do
+      putStr usage
+    ["--version"] ->
+      printVersion
+    _ -> do
+      r <- doctest_ (stripOptGhc args)
+      when (not $ isSuccess r) exitFailure
+
+-- | Strip --optghc from GHC options.  This is for backward compatibility with
+-- previous versions of doctest.
+stripOptGhc :: [String] -> [String]
+stripOptGhc = go
+  where
+    go args = case args of
+      []                      -> []
+      "--optghc" : opt : rest -> opt : go rest
+      opt : rest              -> stripPrefix opt : go rest
+      where
+        prefix = "--optghc="
+        stripPrefix opt
+          | prefix `isPrefixOf` opt = drop (length prefix) opt
+          | otherwise               = opt
 
 doctest_ :: [String] -> IO Summary
 doctest_ args = do
-  (options, files) <- parseOptions args
-  let ghciArgs = ghcOptions options ++ files
 
   -- get examples from Haddock comments
-  modules <- getDocTests (ghcOptions options) files
+  modules <- getDocTests args
 
   let c = (mconcat . map count) modules
   hPrint stderr c
 
-  if DumpOnly `elem` options
-    then do
-      -- dump to stdout
-      print modules
-      return mempty
-    else do
-      -- run tests
-      Interpreter.withInterpreter ghciArgs $ \repl -> do
-        runModules (exampleCount c) repl modules
+  Interpreter.withInterpreter args $ \repl -> do
+    runModules (exampleCount c) repl modules
   where
     exampleCount (Count n _) = n
 

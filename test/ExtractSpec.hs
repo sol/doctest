@@ -3,13 +3,15 @@ module ExtractSpec (main, spec) where
 import           Test.Hspec.ShouldBe
 import           Test.HUnit
 
+import           Panic (GhcException (..))
+
 import           Extract
 import           Location
 import           System.FilePath
 
 shouldGive :: (String, String) -> [Module String] -> Assertion
 (d, m) `shouldGive` expected = do
-  r <- map (fmap unLoc) `fmap` extract ["-i" ++ dir] [dir </> m]
+  r <- map (fmap unLoc) `fmap` extract ["-i" ++ dir, dir </> m]
   r `shouldBe` expected
   where dir = "test/extract" </> d
 
@@ -48,7 +50,7 @@ spec = do
       ("comment-order", "Foo.hs") `shouldGive` [Module "Foo" [" module header", " export list 1", " export list 2", " foo", " named chunk", " bar"]]
 
     it "fails on invalid flags" $ do
-      extract ["--foobar"] ["test/Foo.hs"] `shouldThrow` errorCall "Unrecognized GHC option: --foobar"
+      extract ["--foobar", "test/Foo.hs"] `shouldThrow` (== UsageError "unrecognised flags: --foobar")
 
   describe "extract (regression tests)" $ do
     it "works with infix operators" $ do

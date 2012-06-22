@@ -54,10 +54,8 @@ instance NFData a => NFData (Module a) where
   rnf (Module name docs) = name `deepseq` docs `deepseq` ()
 
 -- | Parse a list of modules.
-parse :: [String] -- ^ flags
-      -> [String] -- ^ files/modules
-      -> IO [TypecheckedModule]
-parse flags modules = withGhc flags $ do
+parse :: [String] -> IO [TypecheckedModule]
+parse args = withGhc args $ \modules -> do
   mapM (`guessTarget` Nothing) modules >>= setTargets
   mods <- depanal [] False
   let sortedMods = flattenSCCs (topSortModuleGraph False mods Nothing)
@@ -67,11 +65,9 @@ parse flags modules = withGhc flags $ do
 --
 -- This includes the docstrings of all local modules that are imported from
 -- those modules (possibly indirect).
-extract :: [String] -- ^ flags
-        -> [String] -- ^ files/modules
-        -> IO [Module (Located String)]
-extract flags modules = do
-  mods <- parse flags modules
+extract :: [String] -> IO [Module (Located String)]
+extract args = do
+  mods <- parse args
   let docs = map (fmap (fmap convertDosLineEndings) . extractFromModule . tm_parsed_module) mods
 
   (docs `deepseq` return docs) `catches` [

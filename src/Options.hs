@@ -2,6 +2,8 @@ module Options (
   Option(..)
 , parseOptions
 , ghcOptions
+, usage
+, printVersion
 ) where
 
 import           Control.Monad (when, unless)
@@ -40,15 +42,6 @@ parseOptions :: [String] -> IO ([Option], [String])
 parseOptions args = do
   let (options, modules, errors) = getOpt Permute (documentedOptions ++ undocumentedOptions) args
 
-  when (Help `elem` options) $ do
-    putStr usage
-    exitSuccess
-
-  when (Version `elem` options) $ do
-    putStrLn ("doctest version " ++ showVersion version)
-    putStrLn ("using version " ++ GHC.cProjectVersion ++ " of the GHC API")
-    exitSuccess
-
   unless (null errors) $ do
     tryHelp $ head errors
 
@@ -57,12 +50,18 @@ parseOptions args = do
 
   return (options, modules)
   where
-    usage = usageInfo "Usage: doctest [OPTION]... MODULE...\n" documentedOptions
 
     tryHelp message = do
       hPutStr stderr $ "doctest: " ++ message ++ "Try `doctest --help' for more information.\n"
       exitFailure
 
+usage :: String
+usage = usageInfo "Usage: doctest [OPTION]... MODULE...\n" documentedOptions
+
+printVersion :: IO ()
+printVersion = do
+  putStrLn ("doctest version " ++ showVersion version)
+  putStrLn ("using version " ++ GHC.cProjectVersion ++ " of the GHC API")
 
 -- | Extract all ghc options from given list of options.
 --

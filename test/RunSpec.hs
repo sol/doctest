@@ -6,6 +6,7 @@ import           System.Exit
 import           Control.Exception
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           Data.List
+import           Data.Monoid
 
 import           System.IO.Silently
 import           System.IO (stderr)
@@ -24,12 +25,11 @@ main = hspec spec
 spec :: Spec
 spec = do
   describe "doctest" $ do
-    it "exits with ExitFailure, if at least one test case fails" $ do
+    it "exits with ExitFailure if at least one test case fails" $ do
       hSilence [stderr] (doctest ["test/integration/failing/Foo.hs"]) `shouldThrow` (== ExitFailure 1)
 
     it "prints help on --help" $ do
-      (r, e) <- (capture . try) (doctest ["--help"])
-      e `shouldBe` Left ExitSuccess
+      (r, ()) <- capture (doctest ["--help"])
       lines r `shouldBe` [
           "Usage: doctest [OPTION]... MODULE..."
         , ""
@@ -40,9 +40,14 @@ spec = do
         ]
 
     it "prints resion on --version" $ do
-      (r, e) <- (capture . try) (doctest ["--version"])
-      e `shouldBe` Left ExitSuccess
+      (r, ()) <- capture (doctest ["--version"])
       lines r `shouldSatisfy` any (isPrefixOf "doctest version ")
+
+    it "accepts GHC options with --optghc" $ do
+      hSilence [stderr] $ doctest ["--optghc=-cpp", "--optghc=-DFOO", "test/integration/test-options/Foo.hs"]
+
+    it "accepts arbitrary GHC options" $ do
+      hSilence [stderr] $ doctest ["-cpp", "-DFOO", "test/integration/test-options/Foo.hs"]
 
   describe "doctest_" $ do
     context "on parse error" $ do
@@ -54,3 +59,12 @@ spec = do
       it "prints a useful error message" $ do
         (r, _) <- hCapture [stderr] (try action :: IO (Either ExitCode Summary))
         r `shouldBe` "\nFoo.hs:6:1: parse error (possibly incorrect indentation)\n"
+
+  describe "stripOptGhc (an internal function)" $ do
+    it "strips --optghc=" $
+      property $ \xs ys ->
+        stripOptGhc (xs ++ ["--optghc=foobar"] ++ ys) == (xs ++ ["foobar"] ++ ys)
+
+    it "strips --optghc" $
+      property $ \xs ys ->
+        stripOptGhc (xs ++ ["--optghc", "foobar"] ++ ys) == (xs ++ ["foobar"] ++ ys)

@@ -43,14 +43,14 @@ spec :: Spec
 spec = do
   describe "getDocTests" $ do
     it "extracts properties from a module" $ do
-      getDocTests [] ["test/parse/property/Fib.hs"] `shouldGive` do
+      getDocTests ["test/parse/property/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
           prop_ "foo"
           prop_ "bar"
           prop_ "baz"
 
     it "extracts examples from a module" $ do
-      getDocTests [] ["test/parse/simple/Fib.hs"] `shouldGive` do
+      getDocTests ["test/parse/simple/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
           example $ do
             ghci "putStrLn \"foo\""
@@ -61,7 +61,7 @@ spec = do
               "baz"
 
     it "extracts examples from documentation for non-exported names" $ do
-      getDocTests [] ["test/parse/non-exported/Fib.hs"] `shouldGive` do
+      getDocTests ["test/parse/non-exported/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
           example $ do
             ghci "putStrLn \"foo\""
@@ -72,7 +72,7 @@ spec = do
               "baz"
 
     it "extracts multiple examples from a module" $ do
-      getDocTests [] ["test/parse/multiple-examples/Foo.hs"] `shouldGive` do
+      getDocTests ["test/parse/multiple-examples/Foo.hs"] `shouldGive` do
         module_ "Foo" $ do
           example $ do
             ghci "foo"
@@ -82,7 +82,7 @@ spec = do
               "42"
 
     it "returns an empty list, if documentation contains no examples" $ do
-      getDocTests [] ["test/parse/no-examples/Fib.hs"] >>= (`shouldBe` [])
+      getDocTests ["test/parse/no-examples/Fib.hs"] >>= (`shouldBe` [])
 
   describe "parseInteractions (an internal function)" $ do
 

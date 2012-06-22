@@ -2,11 +2,12 @@
 module GhcUtil (withGhc) where
 
 import           Control.Exception
-import           Control.Monad (void)
+import           Control.Monad (void, when)
 
 import           GHC.Paths (libdir)
 import           GHC hiding (flags)
 import           DynFlags (dopt_set)
+import           Panic (ghcError)
 
 import           MonadUtils (liftIO)
 import           System.Exit (exitFailure)
@@ -40,23 +41,29 @@ handleSrcErrors action' = flip handleSourceError action' $ \err -> do
   liftIO exitFailure
 
 -- | Run a GHC action in Haddock mode
-withGhc :: [String] -> Ghc a -> IO a
+withGhc :: [String] -> ([String] -> Ghc a) -> IO a
 withGhc flags action = bracketStaticFlags $ do
   flags_ <- handleStaticFlags flags
 
   runGhc (Just libdir) $ do
-    handleDynamicFlags flags_
-    handleSrcErrors action
+    handleDynamicFlags flags_ >>= handleSrcErrors . action
 
 handleStaticFlags :: [String] -> IO [Located String]
 handleStaticFlags flags = fst `fmap` parseStaticFlags (map noLoc flags)
 
-handleDynamicFlags :: GhcMonad m => [Located String] -> m ()
+handleDynamicFlags :: GhcMonad m => [Located String] -> m [String]
 handleDynamicFlags flags = do
-  (dynflags, rest, _) <- (setHaddockMode `fmap` getSessionDynFlags) >>= flip parseDynamicFlags flags
-  case rest of
-    x : _ -> error ("Unrecognized GHC option: " ++ unLoc x)
-    _     -> void (setSessionDynFlags dynflags)
+  (dynflags, locSrcs, _) <- (setHaddockMode `fmap` getSessionDynFlags) >>= flip parseDynamicFlags flags
+  _ <- setSessionDynFlags dynflags
+
+  -- We basically do the same thing as `ghc/Main.hs` to distinguish
+  -- "unrecognised flags" from source files.
+  let srcs = map unLoc locSrcs
+      unknown_opts = [ f | f@('-':_) <- srcs ]
+  when ((not . null) unknown_opts) $
+    ghcError (UsageError ("unrecognised flags: " ++ unwords unknown_opts))
+
+  return srcs
 
 setHaddockMode :: DynFlags -> DynFlags
 setHaddockMode dynflags = (dopt_set dynflags Opt_Haddock) {

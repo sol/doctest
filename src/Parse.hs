@@ -30,12 +30,9 @@ data Interaction = Interaction Expression ExpectedResult
 -- |
 -- Extract 'DocTest's from all given modules and all modules included by the
 -- given modules.
-getDocTests
-  :: [String]             -- ^ List of GHC flags
-  -> [String]             -- ^ File or module names
-  -> IO [Module DocTest]  -- ^ Extracted 'DocTest's
-getDocTests flags modules = do
-  mods <- extract flags modules
+getDocTests :: [String] -> IO [Module DocTest]  -- ^ Extracted 'DocTest's
+getDocTests args = do
+  mods <- extract args
   return (filter (not . null . moduleContent) $ map parseModule mods)
 
 -- | Convert documentation to `Example`s.
