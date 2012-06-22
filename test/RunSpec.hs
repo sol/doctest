@@ -6,7 +6,6 @@ import           System.Exit
 import           Control.Exception
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           Data.List
-import           Data.Monoid
 
 import           System.IO.Silently
 import           System.IO (stderr)

@@ -7,7 +7,7 @@ module Options (
 ) where
 
 import           Control.Monad (when, unless)
-import           System.Exit (exitSuccess, exitFailure)
+import           System.Exit (exitFailure)
 import           System.IO (hPutStr, stderr)
 
 import           System.Console.GetOpt

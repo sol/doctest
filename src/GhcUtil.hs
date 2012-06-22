@@ -2,7 +2,7 @@
 module GhcUtil (withGhc) where
 
 import           Control.Exception
-import           Control.Monad (void, when)
+import           Control.Monad (when)
 
 import           GHC.Paths (libdir)
 import           GHC hiding (flags)

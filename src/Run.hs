@@ -7,8 +7,10 @@ module Run (
 , stripOptGhc
 #endif
 ) where
+
 import           Data.Monoid
 import           Data.List
+import           Data.Maybe
 import           Control.Monad (when)
 import           System.Exit (exitFailure)
 import           System.IO
@@ -47,12 +49,7 @@ stripOptGhc = go
     go args = case args of
       []                      -> []
       "--optghc" : opt : rest -> opt : go rest
-      opt : rest              -> stripPrefix opt : go rest
-      where
-        prefix = "--optghc="
-        stripPrefix opt
-          | prefix `isPrefixOf` opt = drop (length prefix) opt
-          | otherwise               = opt
+      opt : rest              -> fromMaybe opt (stripPrefix "--optghc=" opt) : go rest
 
 doctest_ :: [String] -> IO Summary
 doctest_ args = do
