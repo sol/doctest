@@ -1,7 +1,7 @@
 Changes in 0.8.0
  - Add support for QuickCheck properties
- - Prefixing GHC options --optghc is no longer necessary, Doctest now directly
-   accepts arbitrary GHC options.
+ - Doctest now directly accepts arbitrary GHC options, prefixing GHC options
+   with --optghc is no longer necessary
 
 Changes in 0.7.0
  - Print source location for failing tests
