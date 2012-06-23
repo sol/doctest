@@ -13,7 +13,7 @@
     pass:
 
     >>> putStr "foo"
-    "foo"
+    foo
 
     >>> putStrLn "foo"
-    "foo"
+    foo
