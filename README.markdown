@@ -35,21 +35,23 @@ Below is a small Haskell module.
 The module contains a Haddock comment with some examples of interaction.
 The examples demonstrate how the module is supposed to be used.
 
-    module Fib where
+```haskell
+module Fib where
 
-    -- | Compute Fibonacci numbers
-    --
-    -- Examples:
-    --
-    -- >>> fib 10
-    -- 55
-    --
-    -- >>> fib 5
-    -- 5
-    fib :: Int -> Int
-    fib 0 = 0
-    fib 1 = 1
-    fib n = fib (n - 1) + fib (n - 2)
+-- | Compute Fibonacci numbers
+--
+-- Examples:
+--
+-- >>> fib 10
+-- 55
+--
+-- >>> fib 5
+-- 5
+fib :: Int -> Int
+fib 0 = 0
+fib 1 = 1
+fib n = fib (n - 1) + fib (n - 2)
+```
 
 (A comment line starting with `>>>` denotes an _expression_.
 All comment lines following an expression denote the _result_ of that expression.
