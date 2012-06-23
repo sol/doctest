@@ -48,6 +48,7 @@ library
     , syb
     , deepseq
     , directory
+    , filepath
     , process
     , ghc-paths   == 0.1.*
     , transformers

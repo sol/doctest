@@ -10,10 +10,16 @@ import           Control.DeepSeq (deepseq, NFData(rnf))
 import           Data.Generics
 
 import           GHC hiding (flags, Module, Located)
+import           MonadUtils (liftIO, MonadIO)
+import           Exception (ExceptionMonad)
+import           System.Directory
+import           System.FilePath
 import           NameSet (NameSet)
 import           Coercion (Coercion)
 import           FastString (unpackFS)
 import           Digraph (flattenSCCs)
+
+import           System.Posix.Internals (c_getpid)
 
 import           GhcUtil (withGhc)
 import           Location hiding (unLoc)
@@ -55,7 +61,7 @@ instance NFData a => NFData (Module a) where
 
 -- | Parse a list of modules.
 parse :: [String] -> IO [TypecheckedModule]
-parse args = withGhc args $ \modules -> do
+parse args = withGhc args $ \modules -> withTempOutputDir $ do
   mapM (`guessTarget` Nothing) modules >>= setTargets
   mods <- depanal [] False
 
@@ -80,6 +86,29 @@ parse args = withGhc args $ \modules -> do
       dflags <- getSessionDynFlags
       _ <- setSessionDynFlags (f dflags)
       return ()
+
+    withTempOutputDir :: Ghc a -> Ghc a
+    withTempOutputDir action = do
+      tmp <- liftIO getTemporaryDirectory
+      x   <- liftIO c_getpid
+      let dir = tmp </> ".doctest-" ++ show x
+      modifySessionDynFlags (setOutputDir dir)
+      gbracket_
+        (liftIO $ createDirectory dir)
+        (liftIO $ removeDirectoryRecursive dir)
+        action
+
+    -- | A variant of 'gbracket' where the return value from the first computation
+    -- is not required.
+    gbracket_ :: ExceptionMonad m => m a -> m b -> m c -> m c
+    gbracket_ before_ after thing = gbracket before_ (const after) (const thing)
+
+    setOutputDir f d = d {
+        objectDir  = Just f
+      , hiDir      = Just f
+      , stubDir    = Just f
+      , includePaths = f : includePaths d
+      }
 
 -- | Extract all docstrings from given list of files/modules.
 --

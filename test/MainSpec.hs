@@ -132,3 +132,7 @@ spec = do
         (cases 1) {sFailures = 1}
       doctest "testCPP" ["-cpp", "-DFOO", "Foo.hs"]
         (cases 1)
+
+    it "template-haskell-bugfix" $ do
+      doctest "template-haskell-bugfix" ["Main.hs"]
+        (cases 1)
