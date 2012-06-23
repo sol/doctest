@@ -39,10 +39,14 @@ newInterpreter flags = do
   unless (executable x) $ do
     fail $ ghc ++ " is not executable!"
 
-  (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc ghc myFlags) {std_in = CreatePipe, std_out = CreatePipe, std_err = UseHandle stdout}
+  (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc ghc myFlags) {std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit}
   setMode stdin_
   setMode stdout_
-  return Interpreter {hIn = stdin_, hOut = stdout_, process = processHandle}
+  let interpreter = Interpreter {hIn = stdin_, hOut = stdout_, process = processHandle}
+  _ <- eval interpreter "import System.IO"
+  _ <- eval interpreter "import GHC.IO.Handle"
+  _ <- eval interpreter "hDuplicateTo stdout stderr"
+  return interpreter
   where
     myFlags = ["-v0", "--interactive", "-ignore-dot-ghci"] ++ flags
 
