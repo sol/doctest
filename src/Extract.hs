@@ -58,8 +58,28 @@ parse :: [String] -> IO [TypecheckedModule]
 parse args = withGhc args $ \modules -> do
   mapM (`guessTarget` Nothing) modules >>= setTargets
   mods <- depanal [] False
-  let sortedMods = flattenSCCs (topSortModuleGraph False mods Nothing)
+
+  mods' <- if needsTemplateHaskell mods then enableCompilation mods else return mods
+
+  let sortedMods = flattenSCCs (topSortModuleGraph False mods' Nothing)
   reverse <$> mapM (parseModule >=> typecheckModule >=> loadModule) sortedMods
+  where
+    -- copied from Haddock/Interface.hs
+    enableCompilation :: ModuleGraph -> Ghc ModuleGraph
+    enableCompilation modGraph = do
+      let enableComp d = d { hscTarget = defaultObjectTarget }
+      modifySessionDynFlags enableComp
+      -- We need to update the DynFlags of the ModSummaries as well.
+      let upd m = m { ms_hspp_opts = enableComp (ms_hspp_opts m) }
+      let modGraph' = map upd modGraph
+      return modGraph'
+
+    -- copied Haddock/GhcUtils.hs
+    modifySessionDynFlags :: (DynFlags -> DynFlags) -> Ghc ()
+    modifySessionDynFlags f = do
+      dflags <- getSessionDynFlags
+      _ <- setSessionDynFlags (f dflags)
+      return ()
 
 -- | Extract all docstrings from given list of files/modules.
 --

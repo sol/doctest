@@ -70,3 +70,6 @@ spec = do
 
     it "strips CR from dos line endings" $ do
       ("dos-line-endings", "Foo.hs") `shouldGive` [Module "Foo" ["\n foo\n bar\n baz"]]
+
+    it "works with a module that splices in an expression from an other module" $ do
+      ("th", "Foo.hs") `shouldGive` [Module "Foo" [" some documentation"], Module "Bar" []]
