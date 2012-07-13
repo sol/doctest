@@ -1,6 +1,7 @@
 module RunSpec (main, spec) where
 
-import           Test.Hspec.ShouldBe hiding (Summary)
+import           Test.Hspec
+import           Test.QuickCheck
 import           System.Exit
 
 import           Control.Exception

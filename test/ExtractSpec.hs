@@ -1,6 +1,6 @@
 module ExtractSpec (main, spec) where
 
-import           Test.Hspec.ShouldBe
+import           Test.Hspec
 import           Test.HUnit
 
 import           Panic (GhcException (..))

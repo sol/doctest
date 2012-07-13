@@ -2,8 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 module ParseSpec (main, spec) where
 
-import           Test.Hspec.ShouldBe
-import           Test.HUnit
+import           Test.Hspec
 import           Data.String.Builder (Builder, build)
 import           Control.Monad.Trans.Writer
 
@@ -25,7 +24,7 @@ prop_ = tell . return . Property . noLocation
 module_ :: String -> Writer [DocTest] () -> Writer [Module DocTest] ()
 module_ name = tell . return . Module name . execWriter
 
-shouldGive :: IO [Module DocTest] -> Writer [Module DocTest] () -> Assertion
+shouldGive :: IO [Module DocTest] -> Writer [Module DocTest] () -> Expectation
 shouldGive action w = do
   r <- map noLoc `fmap` action
   r `shouldBe` execWriter w

@@ -1,6 +1,6 @@
 module InterpreterSpec (main, spec) where
 
-import           Test.Hspec.ShouldBe
+import           Test.Hspec
 
 import           Data.List (isSuffixOf)
 import           System.Process (readProcess)

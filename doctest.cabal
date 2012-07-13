@@ -85,8 +85,8 @@ test-suite spec
     , ghc-paths   == 0.1.*
     , transformers
     , HUnit       == 1.2.*
-    , hspec-discover
-    , hspec-shouldbe
+    , hspec       >= 1.3
+    , QuickCheck
     , stringbuilder
     , silently
     , filepath

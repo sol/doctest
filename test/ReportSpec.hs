@@ -2,9 +2,8 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 module ReportSpec (main, spec) where
 
-import           Test.Hspec.ShouldBe
+import           Test.Hspec
 import           Data.String.Builder
-import           Test.HUnit
 
 import           Data.Monoid
 import           System.IO
@@ -22,7 +21,7 @@ capture = fmap fst . hCapture [stderr] . (`execStateT` ReportState 0 True mempty
 capture_ :: Report a -> IO String
 capture_ = fmap fst . hCapture [stderr] . (`execStateT` ReportState 0 False mempty)
 
-shouldGive :: IO String -> Builder -> Assertion
+shouldGive :: IO String -> Builder -> Expectation
 action `shouldGive` expected = action `shouldReturn` build expected
 
 spec :: Spec

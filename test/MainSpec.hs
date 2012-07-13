@@ -1,6 +1,6 @@
 module MainSpec (main, spec) where
 
-import           Test.Hspec.ShouldBe hiding (Summary)
+import           Test.Hspec
 import           Test.HUnit (assertEqual, Assertion)
 
 import           Control.Exception

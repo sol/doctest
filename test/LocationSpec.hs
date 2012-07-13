@@ -1,6 +1,6 @@
 module LocationSpec (main, spec) where
 
-import           Test.Hspec.ShouldBe
+import           Test.Hspec
 
 import           Location
 import           SrcLoc

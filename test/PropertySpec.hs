@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 module PropertySpec (main, spec) where
 
-import           Test.Hspec.ShouldBe
+import           Test.Hspec
 import           Data.String.Builder
 
 import           Property
