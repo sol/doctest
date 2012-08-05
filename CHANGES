@@ -1,5 +1,7 @@
-Changes in 0.8.0
+Changes in 0.9.0
  - Add support for QuickCheck properties
+
+Changes in 0.8.0
  - Doctest now directly accepts arbitrary GHC options, prefixing GHC options
    with --optghc is no longer necessary
 
