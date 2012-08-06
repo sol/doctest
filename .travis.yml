@@ -1,6 +1,1 @@
 language: haskell
-
-install:
-    - cabal update
-    - cabal install hspec stringbuilder silently
-    - cabal install
