@@ -42,7 +42,7 @@ spec = do
 
     it "reports the value for which a property fails" $ withInterpreter [] $ \repl -> do
       let expression = noLocation "x == 23"
-      runProperty repl expression `shouldReturn` PropertyFailure expression "Falsifiable (after 1 test):  \n0"
+      runProperty repl expression `shouldReturn` PropertyFailure expression "Falsifiable (after 1 test): \n0"
 
     it "reports the values for which a property that takes multiple arguments fails" $ withInterpreter [] $ \repl -> do
       let vals x = case x of (PropertyFailure _ r) -> tail (lines r); _ -> error "Property did not fail!"

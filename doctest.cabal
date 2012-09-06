@@ -86,7 +86,7 @@ test-suite spec
     , transformers
     , HUnit       == 1.2.*
     , hspec       >= 1.3
-    , QuickCheck
+    , QuickCheck  >= 2.5
     , stringbuilder
     , silently
     , filepath
