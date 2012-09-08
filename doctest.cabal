@@ -43,8 +43,8 @@ library
     , Type
     , Util
   build-depends:
-      base        >= 4.0  && < 4.6
-    , ghc         >= 6.12 && < 7.6
+      base        >= 4.0  && < 4.7
+    , ghc         >= 6.12 && < 7.8
     , syb
     , deepseq
     , directory
@@ -61,7 +61,7 @@ executable doctest
   hs-source-dirs:
       driver
   build-depends:
-      base        >= 4.0  && < 4.6
+      base        >= 4.0  && < 4.7
     , doctest
 
 test-suite spec
@@ -76,8 +76,8 @@ test-suite spec
   hs-source-dirs:
       src, test
   build-depends:
-      base        >= 4.0  && < 4.6
-    , ghc         >= 6.12 && < 7.6
+      base        >= 4.0  && < 4.7
+    , ghc         >= 6.12 && < 7.8
     , syb
     , deepseq
     , directory

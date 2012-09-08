@@ -8,7 +8,10 @@ module Run (
 #endif
 ) where
 
-import           Prelude hiding (catch)
+import           Prelude 
+#if defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL__ < 706
+  hiding (catch)
+#endif
 import           Data.Monoid
 import           Data.List
 import           Control.Monad (when)
