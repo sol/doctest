@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module RunSpec (main, spec) where
 
 import           Test.Hspec
@@ -67,7 +68,11 @@ spec = do
 
       it "prints a useful error message" $ do
         (r, _) <- hCapture [stderr] (try action :: IO (Either ExitCode Summary))
+#if __GLASGOW_HASKELL__ < 706
         r `shouldBe` "\nFoo.hs:6:1: parse error (possibly incorrect indentation)\n"
+#else
+        r `shouldBe` "\nFoo.hs:6:1:\n    parse error (possibly incorrect indentation or mismatched brackets)\n"
+#endif
 
   describe "stripOptGhc (an internal function)" $ do
     it "strips --optghc=" $
