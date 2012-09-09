@@ -1,11 +1,7 @@
-{-# LANGUAGE CPP, DeriveDataTypeable, StandaloneDeriving, DeriveFunctor #-}
+{-# LANGUAGE DeriveDataTypeable, StandaloneDeriving, DeriveFunctor #-}
 module Extract (Module(..), extract) where
 
-import           Prelude hiding (mod
-#if defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL__ < 706
-  , catch
-#endif
-  )
+import           Prelude hiding (mod)
 import           Control.Monad
 import           Control.Applicative
 import           Control.Exception

@@ -8,17 +8,13 @@ module Run (
 #endif
 ) where
 
-import           Prelude 
-#if defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL__ < 706
-  hiding (catch)
-#endif
 import           Data.Monoid
 import           Data.List
 import           Control.Monad (when)
 import           System.Exit (exitFailure)
 import           System.IO
 
-import           Control.Exception
+import qualified Control.Exception as E
 import           Panic
 
 import           Parse
@@ -48,13 +44,13 @@ doctest args = do
       when f $ do
         hPutStrLn stderr "WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."
         hFlush stderr
-      r <- doctest_ args_ `catch` \e -> do
+      r <- doctest_ args_ `E.catch` \e -> do
         case fromException e of
           Just (UsageError err) -> do
             hPutStrLn stderr ("doctest: " ++ err)
             hPutStrLn stderr "Try `doctest --help' for more information."
             exitFailure
-          _ -> throw e
+          _ -> E.throw e
       when (not $ isSuccess r) exitFailure
 
 -- |
