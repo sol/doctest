@@ -76,6 +76,8 @@ Alternatively you can pass any GHC options to Doctest, e.g.:
 
     doctest -cpp Foo.hs
 
+[language-pragma]: http://www.haskell.org/ghc/docs/latest/html/users_guide/pragmas.html#language-pragma
+
 ### Cabal integration
 
 Doctest provides both, an executable and a library.  The library exposes a
@@ -115,6 +117,7 @@ You can put examples into [named chunks] [named-chunks], and not refer to them
 in the export list.  That way they will not be part of the generated Haddock
 documentation, but Doctest will still find them.
 
+[named-chunks]: http://www.haskell.org/haddock/doc/html/ch03s05.html
 
 ## Development [![Build Status](https://secure.travis-ci.org/sol/doctest-haskell.png)](http://travis-ci.org/sol/doctest-haskell)
 
@@ -128,10 +131,12 @@ changes.
     cabal configure --enable-tests && cabal build && cabal test
 
 
-### List of Contributors
+### Contributors
 
-See the [list of contributors](https://github.com/sol/doctest-haskell/contributors).
-
-
-[named-chunks]: http://www.haskell.org/haddock/doc/html/ch03s05.html
-[language-pragma]: http://www.haskell.org/ghc/docs/latest/html/users_guide/pragmas.html#language-pragma
+ * Ankit Ahuja
+ * Edward Kmett
+ * Hiroki Hattori
+ * Kazu Yamamoto
+ * Levent Erkok
+ * Sakari Jokinen
+ * Simon Hengel
