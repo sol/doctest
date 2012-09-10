@@ -158,6 +158,10 @@ reportFailure expected actual = do
         l | printQuotes || escapeOutput = map show l_
           | otherwise                   = l_
 
+-- | Run given `DocTest`.
+--
+-- The interpreter state is zeroed with @:reload@ first.  This means that you
+-- can reuse the same 'Interpreter' for several calls to `runDocTest`.
 runDocTest :: Interpreter -> String -> DocTest -> IO DocTestResult
 runDocTest repl module_ docTest = do
   _ <- Interpreter.eval repl   ":reload"
@@ -167,12 +171,8 @@ runDocTest repl module_ docTest = do
     Property p -> runProperty repl p
 
 -- |
--- Execute all expressions from given example in given
--- 'Interpreter' and verify the output.
---
--- The interpreter state is zeroed with @:reload@ before executing the
--- expressions.  This means that you can reuse the same
--- 'Interpreter' for several calls to `runExample`.
+-- Execute all expressions from given example in given 'Interpreter' and verify
+-- the output.
 runExample :: Interpreter -> [Located Interaction] -> IO DocTestResult
 runExample repl = go
   where
