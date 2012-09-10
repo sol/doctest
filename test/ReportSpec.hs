@@ -93,18 +93,18 @@ spec = do
         `shouldReturn` "baz\n"
 
 
-  describe "reportFailure" $ do
+  describe "reportNotEqual" $ do
 
     it "works for one-line test output" $ do
       capture $ do
-        reportFailure ["foo"] ["bar"]
+        reportNotEqual ["foo"] ["bar"]
       `shouldGive` do
         "expected: foo"
         " but got: bar"
 
     it "works for multi-line test output" $ do
       capture $ do
-        reportFailure ["foo", "bar"] ["foo", "baz"]
+        reportNotEqual ["foo", "bar"] ["foo", "baz"]
       `shouldGive` do
         "expected: foo"
         "          bar"
@@ -113,7 +113,7 @@ spec = do
 
     it "quotes output if any output line ends with trailing whitespace" $ do
       capture $ do
-        reportFailure ["foo", "bar   "] ["foo", "baz"]
+        reportNotEqual ["foo", "bar   "] ["foo", "baz"]
       `shouldGive` do
         "expected: \"foo\""
         "          \"bar   \""
@@ -122,7 +122,7 @@ spec = do
 
     it "uses show to format output lines if any output line contains \"unsafe\" characters" $ do
       capture $ do
-        reportFailure ["foo\160bar"] ["foo bar"]
+        reportNotEqual ["foo\160bar"] ["foo bar"]
       `shouldGive` do
         "expected: \"foo\\160bar\""
         " but got: \"foo bar\""

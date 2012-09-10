@@ -8,14 +8,13 @@ module Report (
 , ReportState (..)
 , report
 , report_
-, reportFailure
-, runProperty
-, DocTestResult (..)
+, reportNotEqual
 #endif
 ) where
 
 import           Prelude hiding (putStr, putStrLn, error)
 import           Data.Monoid
+import           Control.Applicative
 import           Control.Monad
 import           Text.Printf (printf)
 import           System.IO (hPutStrLn, hPutStr, stderr, hIsTerminalDevice)
@@ -28,7 +27,6 @@ import           Interpreter (Interpreter)
 import qualified Interpreter
 import           Parse
 import           Location
-import           Type
 import           Property
 
 -- | Summary of a test run.
@@ -50,16 +48,26 @@ instance Monoid Summary where
   (Summary x1 x2 x3 x4) `mappend` (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Run all examples from a list of modules.
-runModules :: Int -> Interpreter -> [Module DocTest] -> IO Summary
-runModules exampleCount repl modules = do
+runModules :: Interpreter -> [Module DocTest] -> IO Summary
+runModules repl modules = do
   isInteractive <- hIsTerminalDevice stderr
-  ReportState _ _ s <- (`execStateT` ReportState 0 isInteractive mempty {sExamples = exampleCount}) $ do
+  ReportState _ _ s <- (`execStateT` ReportState 0 isInteractive mempty {sExamples = c}) $ do
     forM_ modules $ runModule repl
 
     -- report final summary
     gets (show . reportStateSummary) >>= report
 
   return s
+  where
+    c = (sum . map count) modules
+
+-- | Count number of expressions in given module.
+count :: Module DocTest -> Int
+count (Module _ examples) = (sum . map f) examples
+  where
+    f :: DocTest -> Int
+    f (Example x)  = length x
+    f (Property _) = 1
 
 -- | A monad for generating test reports.
 type Report = StateT ReportState IO
@@ -106,33 +114,30 @@ runModule repl (Module name examples) = do
     -- report intermediate summary
     gets (show . reportStateSummary) >>= report_
 
-    r <- liftIO $ runDocTest repl name e
-    case r of
-      Success ->
-        success
-      Error (Located loc expression) err -> do
-        report (printf "### Error in %s: expression `%s'" (show loc) expression)
-        report err
-        error
-      InteractionFailure (Located loc (Interaction expression expected)) actual -> do
-        report (printf "### Failure in %s: expression `%s'" (show loc) expression)
-        reportFailure expected actual
-        failure
-      PropertyFailure (Located loc expression) msg -> do
-        report (printf "### Failure in %s: expression `%s'" (show loc) expression)
-        report msg
-        failure
-  where
-    success = updateSummary (Summary 0 1 0 0)
-    failure = updateSummary (Summary 0 1 0 1)
-    error   = updateSummary (Summary 0 1 1 0)
+    runDocTest repl name e
 
-    updateSummary summary = do
-      ReportState n f s <- get
-      put (ReportState n f $ s `mappend` summary)
+reportFailure :: Location -> Expression -> Report ()
+reportFailure loc expression = do
+  report (printf "### Failure in %s: expression `%s'" (show loc) expression)
+  updateSummary (Summary 0 1 0 1)
 
-reportFailure :: [String] -> [String] -> Report ()
-reportFailure expected actual = do
+reportError :: Location -> Expression -> String -> Report ()
+reportError loc expression err = do
+  report (printf "### Error in %s: expression `%s'" (show loc) expression)
+  report err
+  updateSummary (Summary 0 1 1 0)
+
+reportSuccess :: Report ()
+reportSuccess =
+  updateSummary (Summary 0 1 0 0)
+
+updateSummary :: Summary -> Report ()
+updateSummary summary = do
+  ReportState n f s <- get
+  put (ReportState n f $ s `mappend` summary)
+
+reportNotEqual :: [String] -> [String] -> Report ()
+reportNotEqual expected actual = do
   outputLines "expected: " expected
   outputLines " but got: " actual
   where
@@ -162,29 +167,40 @@ reportFailure expected actual = do
 --
 -- The interpreter state is zeroed with @:reload@ first.  This means that you
 -- can reuse the same 'Interpreter' for several calls to `runDocTest`.
-runDocTest :: Interpreter -> String -> DocTest -> IO DocTestResult
+runDocTest :: Interpreter -> String -> DocTest -> Report ()
 runDocTest repl module_ docTest = do
-  _ <- Interpreter.eval repl   ":reload"
-  _ <- Interpreter.eval repl $ ":m *" ++ module_
+  _ <- liftIO $ Interpreter.eval repl   ":reload"
+  _ <- liftIO $ Interpreter.eval repl $ ":m *" ++ module_
   case docTest of
     Example xs -> runExample repl xs
-    Property p -> runProperty repl p
+    Property (Located loc expression) -> do
+      r <- liftIO $ runProperty repl expression
+      case r of
+        Success ->
+          reportSuccess
+        Error err -> do
+          reportError loc expression err
+        Failure msg -> do
+          reportFailure loc expression
+          report msg
 
 -- |
 -- Execute all expressions from given example in given 'Interpreter' and verify
 -- the output.
-runExample :: Interpreter -> [Located Interaction] -> IO DocTestResult
+runExample :: Interpreter -> [Located Interaction] -> Report ()
 runExample repl = go
   where
-    go (i@(Located loc (Interaction expression expected)) : xs) = do
-      r <- fmap lines `fmap` Interpreter.safeEval repl expression
+    go ((Located loc (Interaction expression expected)) : xs) = do
+      r <- fmap lines <$> liftIO (Interpreter.safeEval repl expression)
       case r of
         Left err -> do
-          return (Error (Located loc expression) err)
+          reportError loc expression err
         Right actual -> do
           if expected /= actual
-            then
-              return (InteractionFailure i actual)
-            else
+            then do
+              reportFailure loc expression
+              reportNotEqual expected actual
+            else do
+              reportSuccess
               go xs
-    go [] = return Success
+    go [] = return ()

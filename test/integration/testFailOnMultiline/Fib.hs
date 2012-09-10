@@ -1,11 +1,13 @@
 module Fib where
 
--- | Calculate Fibonacci number of given 'Num'.
---
--- The following interactions cause `doctest' to fail with an error:
+-- | The following interaction cause `doctest' to fail with an error:
 --
 -- >>> :{
+foo :: Int
+foo = 23
+
+-- | The following interaction cause `doctest' to fail with an error:
 --
 -- >>>       :{
-fib :: (Num t, Num t1) => t -> t1
-fib _ = undefined
+bar :: Int
+bar = 23

@@ -40,7 +40,6 @@ library
     , Property
     , Report
     , Run
-    , Type
     , Util
   build-depends:
       base        >= 4.0  && < 4.7

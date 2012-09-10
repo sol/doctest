@@ -45,31 +45,35 @@ spec = do
       doctest "." ["failing/Foo.hs"]
         (cases 1) {sFailures = 1}
 
+    it "skips subsequent examples from the same group if an example fails" $
+      doctest "." ["failing-multiple/Foo.hs"]
+        (cases 4) {sTried = 2, sFailures = 1}
+
     it "testImport" $ do
       doctest "testImport" ["ModuleA.hs"]
-        (cases 2)
+        (cases 3)
       doctest ".." ["-iintegration/testImport", "integration/testImport/ModuleA.hs"]
-        (cases 2)
+        (cases 3)
 
     it "testCommentLocation" $ do
       doctest "." ["testCommentLocation/Foo.hs"]
-        (cases 10)
+        (cases 11)
 
     it "testPutStr" $ do
       doctest "testPutStr" ["Fib.hs"]
-        (cases 1)
+        (cases 3)
 
-    it "testFailOnMultiline" $ do
+    it "fails on multi-line expressions, introduced with :{" $ do
       doctest "testFailOnMultiline" ["Fib.hs"]
-        (cases 1) {sErrors = 1}
+        (cases 2) {sErrors = 2}
 
     it "testBlankline" $ do
       doctest "testBlankline" ["Fib.hs"]
         (cases 1)
 
-    it "testCombinedExample" $ do
+    it "examples from the same Haddock comment share the same scope" $ do
       doctest "testCombinedExample" ["Fib.hs"]
-        (cases 1)
+        (cases 4)
 
     it "testDocumentationForArguments" $ do
       doctest "testDocumentationForArguments" ["Fib.hs"]
@@ -77,7 +81,7 @@ spec = do
 
     it "template-haskell" $ do
       doctest "template-haskell" ["Foo.hs"]
-        (cases 1)
+        (cases 2)
 
     it "handles source files with CRLF line endings" $ do
       doctest "dos-line-endings" ["Fib.hs"]
@@ -113,19 +117,16 @@ spec = do
 
     it "bugfixOutputToStdErr" $ do
       doctest "bugfixOutputToStdErr" ["Fib.hs"]
-        (cases 1)
+        (cases 2)
 
-    it "bugfixMultipleStatements" $ do
-      doctest "bugfixMultipleStatements" ["Fib.hs"]
-        (cases 1)
 
     it "bugfixImportHierarchical" $ do
       doctest "bugfixImportHierarchical" ["ModuleA.hs", "ModuleB.hs"]
-        (cases 2)
+        (cases 3)
 
     it "bugfixMultipleModules" $ do
       doctest "bugfixMultipleModules" ["ModuleA.hs"]
-        (cases 3)
+        (cases 5)
 
     it "testCPP" $ do
       doctest "testCPP" ["-cpp", "Foo.hs"]
@@ -135,4 +136,4 @@ spec = do
 
     it "template-haskell-bugfix" $ do
       doctest "template-haskell-bugfix" ["Main.hs"]
-        (cases 1)
+        (cases 2)

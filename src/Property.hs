@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 module Property (
   runProperty
+, PropertyResult (..)
 #ifdef TEST
 , freeVariables
 , parseNotInScope
@@ -12,22 +13,27 @@ import           Data.List
 import           Util
 import           Interpreter (Interpreter)
 import qualified Interpreter
-import           Type
-import           Location
 import           Parse
 
-runProperty :: Interpreter -> Located Expression -> IO DocTestResult
-runProperty repl p@(Located _ expression) = do
+-- | The result of evaluating an interaction.
+data PropertyResult =
+    Success
+  | Failure String
+  | Error String
+  deriving (Eq, Show)
+
+runProperty :: Interpreter -> Expression -> IO PropertyResult
+runProperty repl expression = do
   _ <- Interpreter.eval repl "import Test.QuickCheck (quickCheck, (==>))"
   r <- closeTerm expression >>= (Interpreter.safeEval repl . quickCheck)
   case r of
     Left err -> do
-      return (Error p err)
+      return (Error err)
     Right res
       | "OK, passed" `isInfixOf` res -> return Success
       | otherwise -> do
           let msg =  stripEnd (takeWhileEnd (/= '\b') res)
-          return (PropertyFailure p msg)
+          return (Failure msg)
   where
     quickCheck term = "quickCheck (" ++ term ++ ")"
 

@@ -10,6 +10,10 @@ module Fib where
 --
 -- >>> fib n
 -- 55
+--
+-- >>> let x = 10
+-- >>> x
+-- 10
 fib :: Integer -> Integer
 fib 0 = 0
 fib 1 = 1
