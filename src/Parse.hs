@@ -1,7 +1,7 @@
 module Parse (
   Module (..)
 , DocTest (..)
-, Interaction (..)
+, Interaction
 , Expression
 , ExpectedResult
 , getDocTests
@@ -18,29 +18,30 @@ import           Data.Maybe (fromMaybe)
 import           Extract
 import           Location
 
-data DocTest = Example [Located Interaction] | Property (Located Expression)
+data DocTest = Example Expression ExpectedResult | Property Expression
   deriving (Eq, Show)
 
 type Expression = String
 type ExpectedResult = [String]
 
-data Interaction = Interaction Expression ExpectedResult
-  deriving (Eq, Show)
+type Interaction = (Expression, ExpectedResult)
 
 -- |
 -- Extract 'DocTest's from all given modules and all modules included by the
 -- given modules.
-getDocTests :: [String] -> IO [Module DocTest]  -- ^ Extracted 'DocTest's
+getDocTests :: [String] -> IO [Module [Located DocTest]]  -- ^ Extracted 'DocTest's
 getDocTests args = do
-  mods <- extract args
-  return (filter (not . null . moduleContent) $ map parseModule mods)
+  map parseModule `fmap` extract args
 
 -- | Convert documentation to `Example`s.
-parseModule :: Module (Located String) -> Module DocTest
-parseModule (Module name docs) = Module name (properties ++ examples)
+parseModule :: Module (Located String) -> Module [Located DocTest]
+parseModule = fmap parseComment
+
+parseComment :: Located String -> [Located DocTest]
+parseComment c = properties ++ examples
   where
-    examples = (map Example . filter (not . null) . map parseInteractions) docs
-    properties = (map Property . concatMap parseProperties) docs
+    examples   = map (fmap $ uncurry Example) (parseInteractions c)
+    properties = map (fmap          Property) (parseProperties   c)
 
 -- | Extract all properties from given Haddock comment.
 parseProperties :: Located String -> [Located Expression]
@@ -80,10 +81,11 @@ parseInteractions (Located loc input) = go $ zipWith Located (enumerate loc) (li
 -- | Create an `Interaction`, strip superfluous whitespace as appropriate.
 toInteraction :: Located String -> [Located String] -> Located Interaction
 toInteraction (Located loc x) xs = Located loc $
-  Interaction
+  (
     (strip $ drop 3 e)  -- we do not care about leading and trailing
                         -- whitespace in expressions, so drop them
-    result_
+  , result_
+  )
   where
     -- 1. drop trailing whitespace from the prompt, remember the prefix
     (prefix, e) = span isSpace x

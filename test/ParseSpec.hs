@@ -12,31 +12,20 @@ import           Location
 main :: IO ()
 main = hspec spec
 
-ghci :: String -> Builder -> Writer [Located Interaction] ()
-ghci e = tell . return . noLocation . Interaction e . lines . build
+group :: Writer [DocTest] () -> Writer [[DocTest]] ()
+group g = tell [execWriter g]
 
-example :: Writer [Located Interaction] () -> Writer [DocTest] ()
-example = tell . return . Example . execWriter
+ghci :: Expression -> Builder -> Writer [DocTest] ()
+ghci expressions expected = tell [Example expressions $ (lines . build) expected]
 
 prop_ :: Expression -> Writer [DocTest] ()
-prop_ = tell . return . Property . noLocation
+prop_ e = tell [Property e]
 
-module_ :: String -> Writer [DocTest] () -> Writer [Module DocTest] ()
-module_ name = tell . return . Module name . execWriter
+module_ :: String -> Writer [[DocTest]] () -> Writer [Module [DocTest]] ()
+module_ name gs = tell [Module name $ execWriter gs]
 
-shouldGive :: IO [Module DocTest] -> Writer [Module DocTest] () -> Expectation
-shouldGive action w = do
-  r <- map noLoc `fmap` action
-  r `shouldBe` execWriter w
-  where
-    -- replace location information of all interactions of a module with dummy
-    -- location information.
-    noLoc :: Module DocTest -> Module DocTest
-    noLoc = fmap f
-      where
-        f :: DocTest -> DocTest
-        f (Example x)  = Example (map (noLocation . unLoc) x)
-        f (Property x) = (Property . noLocation . unLoc) x
+shouldGive :: IO [Module [Located DocTest]] -> Writer [Module [DocTest]] () -> Expectation
+shouldGive action expected = map (fmap $ map unLoc) `fmap` action `shouldReturn` execWriter expected
 
 spec :: Spec
 spec = do
@@ -44,14 +33,15 @@ spec = do
     it "extracts properties from a module" $ do
       getDocTests ["test/parse/property/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
-          prop_ "foo"
-          prop_ "bar"
-          prop_ "baz"
+          group $ do
+            prop_ "foo"
+            prop_ "bar"
+            prop_ "baz"
 
     it "extracts examples from a module" $ do
       getDocTests ["test/parse/simple/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
-          example $ do
+          group $ do
             ghci "putStrLn \"foo\""
               "foo"
             ghci "putStr \"bar\""
@@ -62,7 +52,7 @@ spec = do
     it "extracts examples from documentation for non-exported names" $ do
       getDocTests ["test/parse/non-exported/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
-          example $ do
+          group $ do
             ghci "putStrLn \"foo\""
               "foo"
             ghci "putStr \"bar\""
@@ -73,10 +63,10 @@ spec = do
     it "extracts multiple examples from a module" $ do
       getDocTests ["test/parse/multiple-examples/Foo.hs"] `shouldGive` do
         module_ "Foo" $ do
-          example $ do
+          group $ do
             ghci "foo"
               "23"
-          example $ do
+          group $ do
             ghci "bar"
               "42"
 
@@ -91,18 +81,18 @@ spec = do
       parse_ $ do
         ">>> foo"
         "23"
-      `shouldBe` [Interaction "foo" ["23"]]
+      `shouldBe` [("foo", ["23"])]
 
     it "drops whitespace as appropriate" $ do
       parse_ $ do
         "    >>> foo   "
         "    23"
-      `shouldBe` [Interaction "foo" ["23"]]
+      `shouldBe` [("foo", ["23"])]
 
     it "parses an interaction without a result" $ do
       parse_ $ do
         ">>> foo"
-      `shouldBe` [Interaction "foo" []]
+      `shouldBe` [("foo", [])]
 
     it "works with a complex example" $ do
       parse_ $ do
@@ -118,7 +108,7 @@ spec = do
         "23"
         ""
         "baz"
-      `shouldBe` [Interaction "foo" ["23"], Interaction "baz" [], Interaction "bar" ["23"]]
+      `shouldBe` [("foo", ["23"]), ("baz", []), ("bar", ["23"])]
 
     it "attaches location information to parsed interactions" $ do
       let loc = Located . Location "Foo.hs"
@@ -135,7 +125,7 @@ spec = do
         "10"
         ""
         "11"
-      r `shouldBe` [loc 26 $ Interaction "4" ["5"], loc 29 $ Interaction "7" [], loc 31 $ Interaction "9" ["10"]]
+      r `shouldBe` [loc 26 $ ("4", ["5"]), loc 29 $ ("7", []), loc 31 $ ("9", ["10"])]
 
   describe " parseProperties (an internal function)" $ do
     let parse_ = map unLoc . parseProperties . noLocation . build

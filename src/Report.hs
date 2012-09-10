@@ -48,7 +48,7 @@ instance Monoid Summary where
   (Summary x1 x2 x3 x4) `mappend` (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Run all examples from a list of modules.
-runModules :: Interpreter -> [Module DocTest] -> IO Summary
+runModules :: Interpreter -> [Module [Located DocTest]] -> IO Summary
 runModules repl modules = do
   isInteractive <- hIsTerminalDevice stderr
   ReportState _ _ s <- (`execStateT` ReportState 0 isInteractive mempty {sExamples = c}) $ do
@@ -62,12 +62,8 @@ runModules repl modules = do
     c = (sum . map count) modules
 
 -- | Count number of expressions in given module.
-count :: Module DocTest -> Int
-count (Module _ examples) = (sum . map f) examples
-  where
-    f :: DocTest -> Int
-    f (Example x)  = length x
-    f (Property _) = 1
+count :: Module [Located DocTest] -> Int
+count (Module _ tests) = sum (map length tests)
 
 -- | A monad for generating test reports.
 type Report = StateT ReportState IO
@@ -107,14 +103,14 @@ overwrite msg = do
   liftIO (hPutStr stderr str)
 
 -- | Run all examples from given module.
-runModule :: Interpreter -> Module DocTest -> Report ()
+runModule :: Interpreter -> Module [Located DocTest] -> Report ()
 runModule repl (Module name examples) = do
   forM_ examples $ \e -> do
 
     -- report intermediate summary
     gets (show . reportStateSummary) >>= report_
 
-    runDocTest repl name e
+    runTestGroup repl name e
 
 reportFailure :: Location -> Expression -> Report ()
 reportFailure loc expression = do
@@ -163,34 +159,47 @@ reportNotEqual expected actual = do
         l | printQuotes || escapeOutput = map show l_
           | otherwise                   = l_
 
--- | Run given `DocTest`.
+-- | Run given test group.
 --
 -- The interpreter state is zeroed with @:reload@ first.  This means that you
--- can reuse the same 'Interpreter' for several calls to `runDocTest`.
-runDocTest :: Interpreter -> String -> DocTest -> Report ()
-runDocTest repl module_ docTest = do
-  _ <- liftIO $ Interpreter.eval repl   ":reload"
-  _ <- liftIO $ Interpreter.eval repl $ ":m *" ++ module_
-  case docTest of
-    Example xs -> runExample repl xs
-    Property (Located loc expression) -> do
-      r <- liftIO $ runProperty repl expression
-      case r of
-        Success ->
-          reportSuccess
-        Error err -> do
-          reportError loc expression err
-        Failure msg -> do
-          reportFailure loc expression
-          report msg
+-- can reuse the same 'Interpreter' for several test groups.
+runTestGroup :: Interpreter -> String -> [Located DocTest] -> Report ()
+runTestGroup repl module_ tests = do
+  liftIO clearScope
+  runExampleGroup repl examples
+
+  forM_ properties $ \(loc, expression) -> do
+    r <- liftIO $ do
+      clearScope
+      runProperty repl expression
+    case r of
+      Success ->
+        reportSuccess
+      Error err -> do
+        reportError loc expression err
+      Failure msg -> do
+        reportFailure loc expression
+        report msg
+  where
+    properties = [(loc, p) | Located loc (Property p) <- tests]
+
+    examples :: [Located Interaction]
+    examples = [Located loc (e, r) | Located loc (Example e r) <- tests]
+
+    clearScope = do
+      -- NOTE: It is important do the :reload first!  There was some odd bug
+      -- with a previous version of GHC (7.4.1?).
+      _ <- Interpreter.eval repl   ":reload"
+      _ <- Interpreter.eval repl $ ":m *" ++ module_
+      return ()
 
 -- |
 -- Execute all expressions from given example in given 'Interpreter' and verify
 -- the output.
-runExample :: Interpreter -> [Located Interaction] -> Report ()
-runExample repl = go
+runExampleGroup :: Interpreter -> [Located Interaction] -> Report ()
+runExampleGroup repl = go
   where
-    go ((Located loc (Interaction expression expected)) : xs) = do
+    go ((Located loc (expression, expected)) : xs) = do
       r <- fmap lines <$> liftIO (Interpreter.safeEval repl expression)
       case r of
         Left err -> do
