@@ -67,6 +67,25 @@ You may produce Haddock documentation for that module with:
 
     haddock -h Fib.hs -o doc/
 
+### Example groups
+
+Examples from a single Haddock comment are grouped together and share the same
+scope.  E.g. the following works:
+
+-- |
+-- >>> let x = 23
+-- >>> x + 42
+-- 65
+
+If an example fails, subsequent examples from the same group are skiped.  E.g. for
+
+-- |
+-- >>> let x = 23
+-- >>> let n = x + y
+-- >>> print n
+
+`print n` is not tried, because `let n = x + y` fails (`y` is not in scope!).
+
 ### Using GHC extensions
 
 The easiest way to tell Doctest about GHC extensions is to use [LANGUAGE
