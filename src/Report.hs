@@ -49,9 +49,7 @@ instance Monoid Summary where
   mempty = Summary 0 0 0 0
   (Summary x1 x2 x3 x4) `mappend` (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
--- |
--- Run all examples from given modules, return true if there were
--- errors/failures.
+-- | Run all examples from a list of modules.
 runModules :: Int -> Interpreter -> [Module DocTest] -> IO Summary
 runModules exampleCount repl modules = do
   isInteractive <- hIsTerminalDevice stderr
