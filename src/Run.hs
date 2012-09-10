@@ -31,13 +31,10 @@ import qualified Interpreter
 -- This can be used to create a Cabal test suite that runs doctest for your
 -- project.
 doctest :: [String] -> IO ()
-doctest args = do
-  case args of
-    ["--help"] -> do
-      putStr usage
-    ["--version"] ->
-      printVersion
-    _ -> do
+doctest args
+  | "--help"    `elem` args = putStr usage
+  | "--version" `elem` args = printVersion
+  | otherwise = do
       let (f, args_) = stripOptGhc args
       when f $ do
         hPutStrLn stderr "WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."
