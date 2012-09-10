@@ -152,9 +152,9 @@ eval repl expr = do
   putExpression repl expr
   getResult repl
 
--- | Evaluate an expression; return a Left value on executions.
+-- | Evaluate an expression; return a Left value on exceptions.
 --
--- Exceptions may e.g. be caused on unterminated multiline expressions.
+-- An exception may e.g. be caused on unterminated multiline expressions.
 safeEval :: Interpreter -> String -> IO (Either String String)
 safeEval repl expression = (Right `fmap` Interpreter.eval repl expression) `catches` [
   -- Re-throw AsyncException, otherwise execution will not terminate on
