@@ -86,6 +86,20 @@ If an example fails, subsequent examples from the same group are skiped.  E.g. f
 
 `print n` is not tried, because `let n = x + y` fails (`y` is not in scope!).
 
+### Setup code
+
+You can put setup code in a [named chunk][named-chunks] with the name `$setup`.
+The setup code is run before each example group.  If the setup code produces
+any errors/failures, all tests from that module are skiped.
+
+### Hiding examples from Haddock
+
+You can put examples into [named chunks] [named-chunks], and not refer to them
+in the export list.  That way they will not be part of the generated Haddock
+documentation, but Doctest will still find them.
+
+[named-chunks]: http://www.haskell.org/haddock/doc/html/ch03s05.html
+
 ### Using GHC extensions
 
 The easiest way to tell Doctest about GHC extensions is to use [LANGUAGE
@@ -129,14 +143,6 @@ And a corresponding Cabal test suite section like this:
       ghc-options:   -threaded
       main-is:       doctests.hs
       build-depends: base, doctest >= 0.8
-
-### Hiding examples from Haddock
-
-You can put examples into [named chunks] [named-chunks], and not refer to them
-in the export list.  That way they will not be part of the generated Haddock
-documentation, but Doctest will still find them.
-
-[named-chunks]: http://www.haskell.org/haddock/doc/html/ch03s05.html
 
 ## Development [![Build Status](https://secure.travis-ci.org/sol/doctest-haskell.png)](http://travis-ci.org/sol/doctest-haskell)
 
