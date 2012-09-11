@@ -73,6 +73,17 @@ spec = do
     it "returns an empty list, if documentation contains no examples" $ do
       getDocTests ["test/parse/no-examples/Fib.hs"] >>= (`shouldBe` [])
 
+    it "sets setup code to Nothing, if it does not contain any tests" $ do
+      getDocTests ["test/parse/setup-empty/Foo.hs"] `shouldGive` do
+        module_ "Foo" $ do
+          group $ do
+            ghci "foo"
+              "23"
+
+    it "keeps modules that only contain setup code" $ do
+      getDocTests ["test/parse/setup-only/Foo.hs"] `shouldGive` do
+        tell [Module "Foo" (Just [Example "foo" ["23"]]) []]
+
   describe "parseInteractions (an internal function)" $ do
 
     let parse_ = map unLoc . parseInteractions . noLocation . build

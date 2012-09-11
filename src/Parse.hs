@@ -13,7 +13,8 @@ module Parse (
 
 import           Data.Char (isSpace)
 import           Data.List
-import           Data.Maybe (fromMaybe)
+import           Data.Maybe
+import           Control.Applicative
 
 import           Extract
 import           Location
@@ -31,11 +32,18 @@ type Interaction = (Expression, ExpectedResult)
 -- given modules.
 getDocTests :: [String] -> IO [Module [Located DocTest]]  -- ^ Extracted 'DocTest's
 getDocTests args = do
-  map parseModule `fmap` extract args
+  filter (not . isEmpty) . map parseModule <$> extract args
+  where
+    isEmpty (Module _ setup tests) = null tests && isNothing setup
 
 -- | Convert documentation to `Example`s.
 parseModule :: Module (Located String) -> Module [Located DocTest]
-parseModule = fmap parseComment
+parseModule m = case parseComment <$> m of
+  Module name setup tests -> Module name setup_ (filter (not . null) tests)
+    where
+      setup_ = case setup of
+        Just [] -> Nothing
+        _       -> setup
 
 parseComment :: Located String -> [Located DocTest]
 parseComment c = properties ++ examples
