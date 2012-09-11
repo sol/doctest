@@ -116,6 +116,10 @@ spec = do
       doctest "property-bool-with-type-signature" ["Foo.hs"]
         (cases 1)
 
+    it "runs $setup before each property" $ do
+      doctest "property-setup" ["Foo.hs"]
+        (cases 3)
+
   describe "doctest (regression tests)" $ do
     it "bugfixWorkingDirectory" $ do
       doctest "bugfixWorkingDirectory" ["Fib.hs"]
