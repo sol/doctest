@@ -91,6 +91,10 @@ spec = do
       doctest "setup" ["Foo.hs"]
         (cases 2)
 
+    it "skips subsequent tests from a module, if $setup fails" $ do
+      doctest "setup-skip-on-failure" ["Foo.hs"]
+        (cases 3) {sTried = 1, sFailures = 1}
+
   describe "doctest as a runner for QuickCheck properties" $ do
     it "runs a boolean property" $ do
       doctest "property-bool" ["Foo.hs"]

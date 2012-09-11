@@ -106,10 +106,18 @@ overwrite msg = do
 -- | Run all examples from given module.
 runModule :: Interpreter -> Module [Located DocTest] -> Report ()
 runModule repl (Module module_ setup examples) = do
+
+  Summary _ _ e0 f0 <- gets reportStateSummary
+
   forM_ setup $
     runTestGroup repl reload
-  forM_ examples $
-    runTestGroup repl setup_
+
+  Summary _ _ e1 f1 <- gets reportStateSummary
+
+  -- only run tests, if seutp does not produce any errors/failures
+  when (e0 == e1 && f0 == f1) $
+    forM_ examples $
+      runTestGroup repl setup_
   where
     reload :: IO ()
     reload = do
