@@ -15,10 +15,11 @@ module Report (
 import           Prelude hiding (putStr, putStrLn, error)
 import           Data.Monoid
 import           Control.Applicative
-import           Control.Monad
+import           Control.Monad hiding (forM_)
 import           Text.Printf (printf)
 import           System.IO (hPutStrLn, hPutStr, stderr, hIsTerminalDevice)
 import           Data.Char
+import           Data.Foldable (forM_)
 
 import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
@@ -63,7 +64,7 @@ runModules repl modules = do
 
 -- | Count number of expressions in given module.
 count :: Module [Located DocTest] -> Int
-count (Module _ tests) = sum (map length tests)
+count (Module _ setup tests) = sum (map length tests) + maybe 0 length setup
 
 -- | A monad for generating test reports.
 type Report = StateT ReportState IO
@@ -104,13 +105,25 @@ overwrite msg = do
 
 -- | Run all examples from given module.
 runModule :: Interpreter -> Module [Located DocTest] -> Report ()
-runModule repl (Module name examples) = do
-  forM_ examples $ \e -> do
+runModule repl (Module module_ setup examples) = do
+  forM_ setup $
+    runTestGroup repl reload
+  forM_ examples $
+    runTestGroup repl setup_
+  where
+    reload :: IO ()
+    reload = do
+      -- NOTE: It is important do the :reload first!  There was some odd bug
+      -- with a previous version of GHC (7.4.1?).
+      void $ Interpreter.eval repl   ":reload"
+      void $ Interpreter.eval repl $ ":m *" ++ module_
 
-    -- report intermediate summary
-    gets (show . reportStateSummary) >>= report_
-
-    runTestGroup repl name e
+    setup_ :: IO ()
+    setup_ = do
+      reload
+      forM_ setup $ \l -> forM_ l $ \(Located _ x) -> case x of
+        Property _  -> return ()
+        Example e _ -> void $ Interpreter.eval repl e
 
 reportFailure :: Location -> Expression -> Report ()
 reportFailure loc expression = do
@@ -163,14 +176,18 @@ reportNotEqual expected actual = do
 --
 -- The interpreter state is zeroed with @:reload@ first.  This means that you
 -- can reuse the same 'Interpreter' for several test groups.
-runTestGroup :: Interpreter -> String -> [Located DocTest] -> Report ()
-runTestGroup repl module_ tests = do
-  liftIO clearScope
+runTestGroup :: Interpreter -> IO () -> [Located DocTest] -> Report ()
+runTestGroup repl setup tests = do
+
+  -- report intermediate summary
+  gets (show . reportStateSummary) >>= report_
+
+  liftIO setup
   runExampleGroup repl examples
 
   forM_ properties $ \(loc, expression) -> do
     r <- liftIO $ do
-      clearScope
+      setup
       runProperty repl expression
     case r of
       Success ->
@@ -185,13 +202,6 @@ runTestGroup repl module_ tests = do
 
     examples :: [Located Interaction]
     examples = [Located loc (e, r) | Located loc (Example e r) <- tests]
-
-    clearScope = do
-      -- NOTE: It is important do the :reload first!  There was some odd bug
-      -- with a previous version of GHC (7.4.1?).
-      _ <- Interpreter.eval repl   ":reload"
-      _ <- Interpreter.eval repl $ ":m *" ++ module_
-      return ()
 
 -- |
 -- Execute all expressions from given example in given 'Interpreter' and verify

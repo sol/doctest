@@ -22,7 +22,7 @@ prop_ :: Expression -> Writer [DocTest] ()
 prop_ e = tell [Property e]
 
 module_ :: String -> Writer [[DocTest]] () -> Writer [Module [DocTest]] ()
-module_ name gs = tell [Module name $ execWriter gs]
+module_ name gs = tell [Module name Nothing $ execWriter gs]
 
 shouldGive :: IO [Module [Located DocTest]] -> Writer [Module [DocTest]] () -> Expectation
 shouldGive action expected = map (fmap $ map unLoc) `fmap` action `shouldReturn` execWriter expected

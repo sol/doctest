@@ -87,6 +87,10 @@ spec = do
       doctest "dos-line-endings" ["Fib.hs"]
         (cases 1)
 
+    it "runs $setup before each test group" $ do
+      doctest "setup" ["Foo.hs"]
+        (cases 2)
+
   describe "doctest as a runner for QuickCheck properties" $ do
     it "runs a boolean property" $ do
       doctest "property-bool" ["Foo.hs"]
