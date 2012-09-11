@@ -72,17 +72,21 @@ You may produce Haddock documentation for that module with:
 Examples from a single Haddock comment are grouped together and share the same
 scope.  E.g. the following works:
 
+```haskell
 -- |
 -- >>> let x = 23
 -- >>> x + 42
 -- 65
+```
 
 If an example fails, subsequent examples from the same group are skiped.  E.g. for
 
+```haskell
 -- |
 -- >>> let x = 23
 -- >>> let n = x + y
 -- >>> print n
+```
 
 `print n` is not tried, because `let n = x + y` fails (`y` is not in scope!).
 
@@ -90,7 +94,21 @@ If an example fails, subsequent examples from the same group are skiped.  E.g. f
 
 You can put setup code in a [named chunk][named-chunks] with the name `$setup`.
 The setup code is run before each example group.  If the setup code produces
-any errors/failures, all tests from that module are skiped.
+any errors/failures, all tests from that module are skipped.
+
+Here is an example:
+
+```haskell
+module Foo where
+-- $setup
+-- >>> let x = 23
+
+-- |
+-- >>> foo + x
+-- 65
+foo :: Int
+foo = 42
+```
 
 ### Hiding examples from Haddock
 
