@@ -1,6 +1,9 @@
 Changes in 1.0.0
  - Add support for QuickCheck properties
 
+Changes in 0.9.1
+  - Fix an issue with GHC 7.6.1 and type families
+
 Changes in 0.9.0
   - Add support for setup code (see README).
   - There is no distinction between example/interaction anymore.  Each
