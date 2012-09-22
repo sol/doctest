@@ -76,3 +76,6 @@ spec = do
 
     it "works with a module that splices in an expression from an other module" $ do
       ("th", "Foo.hs") `shouldGive` [Module "Foo" Nothing [" some documentation"], Module "Bar" Nothing []]
+
+    it "works for type families and GHC 7.6.1" $ do
+      ("type-families", "Foo.hs") `shouldGive` [Module "Foo" Nothing []]

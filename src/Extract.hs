@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, StandaloneDeriving, DeriveFunctor #-}
+{-# LANGUAGE CPP, DeriveDataTypeable, StandaloneDeriving, DeriveFunctor #-}
 module Extract (Module(..), extract) where
 
 import           Prelude hiding (mod, concat)
@@ -185,6 +185,11 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
 
   -- undefined before type checking
   `extQ` (ignore :: Selector Coercion)
+
+#if __GLASGOW_HASKELL__ >= 706
+  -- hswb_kvs and hswb_tvs may be error thunks
+  `extQ` (ignore :: Selector (HsWithBndrs [LHsType RdrName]))
+#endif
   )
   where
     fromLHsDecl :: Selector (LHsDecl RdrName)
