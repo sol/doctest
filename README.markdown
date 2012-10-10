@@ -110,6 +110,45 @@ foo :: Int
 foo = 42
 ```
 
+### QuickCheck properties
+
+Haddock (since velsion 2.13.0) has markup support for properties.  Doctest can
+verify properties with QuickCheck.  A simple property looks like this:
+
+```haskell
+-- |
+-- prop> \xs -> sort xs == (sort . sort) (xs :: [Int])
+```
+
+The lambda abstraction is optional and can be omitted:
+
+```haskell
+-- |
+-- prop> sort xs == (sort . sort) (xs :: [Int])
+```
+
+A complete example that uses setup code is bellow:
+
+```haskell
+module Fib where
+
+-- $setup
+-- >>> import Control.Applicative
+-- >>> import Test.QuickCheck
+-- >>> newtype Small = Small Int deriving Show
+-- >>> instance Arbitrary Small where arbitrary = Small . (`mod` 10) <$> arbitrary
+
+-- | Compute Fibonacci numbers
+--
+-- The following property holds:
+--
+-- prop> \(Small n) -> fib n == fib (n + 2) - fib (n + 1)
+fib :: Int -> Int
+fib 0 = 0
+fib 1 = 1
+fib n = fib (n - 1) + fib (n - 2)
+```
+
 ### Hiding examples from Haddock
 
 You can put examples into [named chunks] [named-chunks], and not refer to them
