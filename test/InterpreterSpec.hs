@@ -4,7 +4,10 @@ module InterpreterSpec (main, spec) where
 import           Test.Hspec
 
 import           Data.List (isSuffixOf)
+
+#ifndef mingw32_HOST_OS
 import           System.Process (readProcess)
+#endif
 
 import qualified Interpreter
 import           Interpreter (safeEval)
