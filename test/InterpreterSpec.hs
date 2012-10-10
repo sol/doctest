@@ -64,6 +64,10 @@ spec = do
       ghci "import System.IO" `shouldEvaluateTo` ""
       ghci "hPutStrLn stderr \"foo\"" `shouldEvaluateTo` "foo\n"
 
+    it "captures stderr (Unicode)" $ withInterpreter $ \ghci -> do
+      ghci "import System.IO" `shouldEvaluateTo` ""
+      ghci "hPutStrLn stderr \"λ\"" `shouldEvaluateTo` "λ\n"
+
     it "shows exceptions (undefined)" $ withInterpreter $ \ghci -> do
       ghci "undefined" `shouldEvaluateTo` "*** Exception: Prelude.undefined\n"
 

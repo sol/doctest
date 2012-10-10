@@ -46,6 +46,12 @@ newInterpreter flags = do
   _ <- eval interpreter "import System.IO"
   _ <- eval interpreter "import GHC.IO.Handle"
   _ <- eval interpreter "hDuplicateTo stdout stderr"
+
+  -- this is required on systems that don't use utf8 as default encoding (e.g.
+  -- Windows)
+  _ <- eval interpreter "hSetEncoding stdout utf8"
+  _ <- eval interpreter "hSetEncoding stderr utf8"
+
   return interpreter
   where
     myFlags = ["-v0", "--interactive", "-ignore-dot-ghci"] ++ flags
