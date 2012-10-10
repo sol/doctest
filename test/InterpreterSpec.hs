@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module InterpreterSpec (main, spec) where
 
 import           Test.Hspec
@@ -21,8 +22,12 @@ spec :: Spec
 spec = do
   describe "Interpreter" $ do
     it "terminates on SIGINT" $ do
+#ifdef mingw32_HOST_OS
+      pending
+#else
       s <- readProcess "test/interpreter/termination/test_script.sh" [] ""
       s `shouldBe` "success\n"
+#endif
 
   describe "eval" $ do
     it "shows literals" $ withInterpreter $ \ghci -> do
