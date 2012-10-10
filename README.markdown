@@ -127,7 +127,7 @@ The lambda abstraction is optional and can be omitted:
 -- prop> sort xs == (sort . sort) (xs :: [Int])
 ```
 
-A complete example that uses setup code is bellow:
+A complete example that uses setup code is below:
 
 ```haskell
 module Fib where
