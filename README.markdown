@@ -112,7 +112,7 @@ foo = 42
 
 ### QuickCheck properties
 
-Haddock (since velsion 2.13.0) has markup support for properties.  Doctest can
+Haddock (since version 2.13.0) has markup support for properties.  Doctest can
 verify properties with QuickCheck.  A simple property looks like this:
 
 ```haskell
