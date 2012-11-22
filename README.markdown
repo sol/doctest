@@ -220,5 +220,6 @@ changes.
  * Hiroki Hattori
  * Kazu Yamamoto
  * Levent Erkok
+ * Michael Snoyman
  * Sakari Jokinen
  * Simon Hengel
