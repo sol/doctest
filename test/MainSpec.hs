@@ -95,6 +95,10 @@ spec = do
       doctest "setup-skip-on-failure" ["Foo.hs"]
         (cases 3) {sTried = 1, sFailures = 1}
 
+    it "works with additional object files" $ do
+      doctest "with-cbits" ["Bar.hs", "../../../dist/build/spec/spec-tmp/test/integration/with-cbits/foo.o"]
+        (cases 1)
+
   describe "doctest as a runner for QuickCheck properties" $ do
     it "runs a boolean property" $ do
       doctest "property-bool" ["Foo.hs"]

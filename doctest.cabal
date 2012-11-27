@@ -77,6 +77,8 @@ test-suite spec
       -DTEST
   hs-source-dirs:
       src, test
+  c-sources:
+      test/integration/with-cbits/foo.c
   build-depends:
       base        >= 4.0  && < 4.7
     , ghc         >= 6.12 && < 7.8

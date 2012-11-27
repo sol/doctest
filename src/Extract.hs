@@ -5,7 +5,7 @@ import           Prelude hiding (mod, concat)
 import           Control.Monad
 import           Control.Applicative
 import           Control.Exception
-import           Data.List (partition)
+import           Data.List (partition, isSuffixOf)
 import           Data.Maybe
 import           Data.Foldable (concat)
 
@@ -65,7 +65,11 @@ instance NFData a => NFData (Module a) where
 
 -- | Parse a list of modules.
 parse :: [String] -> IO [TypecheckedModule]
-parse args = withGhc args $ \modules -> withTempOutputDir $ do
+parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
+
+  -- ignore additional object files
+  let modules = filter (not . isSuffixOf ".o") modules_
+
   mapM (`guessTarget` Nothing) modules >>= setTargets
   mods <- depanal [] False
 
