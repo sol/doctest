@@ -12,6 +12,7 @@ import           Data.List
 import           Control.Monad (when)
 import           System.Exit (exitFailure)
 import           System.IO
+import           System.Environment (getEnvironment)
 
 import qualified Control.Exception as E
 import           Panic
@@ -35,11 +36,20 @@ doctest args
   | "--help"    `elem` args = putStr usage
   | "--version" `elem` args = printVersion
   | otherwise = do
+      -- Look up the PACKAGE_SANDBOX environment variable and, if present, add
+      -- it to the list of package databases GHC searches. Intended to make
+      -- testing from inside sandboxes such as cabal-dev simpler.
+      env <- getEnvironment
+      let addPackageConf =
+            case lookup "PACKAGE_SANDBOX" env of
+              Nothing -> id
+              Just p  -> \rest -> "-package-conf" : p : rest
+
       let (f, args_) = stripOptGhc args
       when f $ do
         hPutStrLn stderr "WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."
         hFlush stderr
-      r <- doctest_ args_ `E.catch` \e -> do
+      r <- doctest_ (addPackageConf args_) `E.catch` \e -> do
         case fromException e of
           Just (UsageError err) -> do
             hPutStrLn stderr ("doctest: " ++ err)
