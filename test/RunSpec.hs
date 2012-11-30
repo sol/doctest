@@ -6,7 +6,8 @@ import           Test.QuickCheck
 import           System.Exit
 
 import           Control.Exception
-import           System.Directory (getCurrentDirectory, setCurrentDirectory)
+import           System.Cmd
+import           System.Directory (getCurrentDirectory, setCurrentDirectory, removeDirectoryRecursive)
 import           Data.List
 
 import qualified Control.Exception as E
@@ -18,9 +19,6 @@ import           System.IO (stderr)
 import qualified Help
 
 import           Run
-
-import           System.Cmd
-import           System.Directory
 
 withCurrentDirectory :: FilePath -> IO a -> IO a
 withCurrentDirectory workingDir action = do
