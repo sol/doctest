@@ -9,17 +9,31 @@ import           Control.Exception
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           Data.List
 
+import qualified Control.Exception as E
+import           System.Environment.Compat
+import           System.SetEnv
+
 import           System.IO.Silently
 import           System.IO (stderr)
 import qualified Help
 
 import           Run
 
+import           System.Cmd
+import           System.Directory
+
 withCurrentDirectory :: FilePath -> IO a -> IO a
 withCurrentDirectory workingDir action = do
   bracket getCurrentDirectory setCurrentDirectory $ \_ -> do
     setCurrentDirectory workingDir
     action
+
+withEnv :: String -> String -> IO a -> IO a
+withEnv k v action = E.bracket save restore $ \_ -> do
+  setEnv k v >> action
+  where
+    save    = lookupEnv k
+    restore = maybe (unsetEnv k) (setEnv k)
 
 main :: IO ()
 main = hspec spec
@@ -34,7 +48,7 @@ spec = do
       (r, ()) <- capture (doctest ["--help"])
       r `shouldBe` Help.usage
 
-    it "prints resion on --version" $ do
+    it "prints version on --version" $ do
       (r, ()) <- capture (doctest ["--version"])
       lines r `shouldSatisfy` any (isPrefixOf "doctest version ")
 
@@ -58,6 +72,21 @@ spec = do
           "doctest: unrecognized option `--foo'"
         , "Try `doctest --help' for more information."
         ]
+
+    it "respects PACKAGE_SANDBOX" $ do
+      withCurrentDirectory "test/integration/custom-package-conf/foo" $ do
+        ExitSuccess <- rawSystem "ghc-pkg" ["init", "../packages"]
+        ExitSuccess <- rawSystem "cabal" ["configure", "--disable-optimization", "--disable-library-profiling", "--package-db=../packages"]
+        ExitSuccess <- rawSystem "cabal" ["build"]
+        ExitSuccess <- rawSystem "cabal" ["register", "--inplace"]
+        return ()
+
+      withEnv "PACKAGE_SANDBOX" "test/integration/custom-package-conf/packages" $ do
+        hCapture_ [stderr] (doctest ["test/integration/custom-package-conf/Bar.hs"])
+          `shouldReturn` "Examples: 2  Tried: 2  Errors: 0  Failures: 0\n"
+
+      removeDirectoryRecursive "test/integration/custom-package-conf/packages/"
+      removeDirectoryRecursive "test/integration/custom-package-conf/foo/dist/"
 
   describe "doctest_" $ do
     context "on parse error" $ do

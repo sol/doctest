@@ -93,6 +93,8 @@ test-suite spec
     , QuickCheck  >= 2.5
     , stringbuilder >= 0.2
     , silently
+    , setenv
+    , base-compat
     , filepath
 
 test-suite doctests
