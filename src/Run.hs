@@ -36,12 +36,13 @@ doctest args
   | "--help"    `elem` args = putStr usage
   | "--version" `elem` args = printVersion
   | otherwise = do
-      -- Look up the PACKAGE_SANDBOX environment variable and, if present, add
-      -- it to the list of package databases GHC searches. Intended to make
-      -- testing from inside sandboxes such as cabal-dev simpler.
+      -- Look up the HASKELL_PACKAGE_SANDBOX environment variable and, if
+      -- present, add it to the list of package databases GHC searches.
+      -- Intended to make testing from inside sandboxes such as cabal-dev
+      -- simpler.
       env <- getEnvironment
       let addPackageConf =
-            case lookup "PACKAGE_SANDBOX" env of
+            case lookup "HASKELL_PACKAGE_SANDBOX" env of
               Nothing -> id
               Just p  -> \rest -> "-package-conf" : p : rest
 

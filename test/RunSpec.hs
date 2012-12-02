@@ -71,7 +71,7 @@ spec = do
         , "Try `doctest --help' for more information."
         ]
 
-    it "respects PACKAGE_SANDBOX" $ do
+    it "respects HASKELL_PACKAGE_SANDBOX" $ do
       withCurrentDirectory "test/integration/custom-package-conf/foo" $ do
         ExitSuccess <- rawSystem "ghc-pkg" ["init", "../packages"]
         ExitSuccess <- rawSystem "cabal" ["configure", "--disable-optimization", "--disable-library-profiling", "--package-db=../packages"]
@@ -79,7 +79,7 @@ spec = do
         ExitSuccess <- rawSystem "cabal" ["register", "--inplace"]
         return ()
 
-      withEnv "PACKAGE_SANDBOX" "test/integration/custom-package-conf/packages" $ do
+      withEnv "HASKELL_PACKAGE_SANDBOX" "test/integration/custom-package-conf/packages" $ do
         hCapture_ [stderr] (doctest ["test/integration/custom-package-conf/Bar.hs"])
           `shouldReturn` "Examples: 2  Tried: 2  Errors: 0  Failures: 0\n"
 
