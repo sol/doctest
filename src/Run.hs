@@ -49,10 +49,9 @@ doctest args
       -- Intended to make testing from inside sandboxes such as cabal-dev
       -- simpler.
       packageConf <- lookup "HASKELL_PACKAGE_SANDBOX" <$> getEnvironment
-      let addPackageConf =
-            case packageConf of
-              Nothing -> id
-              Just p  -> \rest -> ghcPackageDbFlag : p : rest
+      let addPackageConf = case packageConf of
+            Nothing -> id
+            Just p  -> \rest -> ghcPackageDbFlag : p : rest
 
       let (f, args_) = stripOptGhc args
       when f $ do
