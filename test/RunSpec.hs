@@ -11,7 +11,7 @@ import           System.Directory (getCurrentDirectory, setCurrentDirectory, rem
 import           Data.List
 
 import qualified Control.Exception as E
-import           System.Environment.Compat
+import           System.Environment
 import           System.SetEnv
 
 import           System.IO.Silently

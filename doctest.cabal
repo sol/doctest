@@ -80,7 +80,7 @@ test-suite spec
   c-sources:
       test/integration/with-cbits/foo.c
   build-depends:
-      base        >= 4.0  && < 4.7
+      base-compat >= 0.2
     , ghc         >= 6.12 && < 7.8
     , syb
     , deepseq
@@ -94,7 +94,6 @@ test-suite spec
     , stringbuilder >= 0.2
     , silently
     , setenv
-    , base-compat
     , filepath
 
 test-suite doctests
