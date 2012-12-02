@@ -64,7 +64,7 @@ doctest args
             hPutStrLn stderr ("doctest: " ++ err)
             hPutStrLn stderr "Try `doctest --help' for more information."
             exitFailure
-          _ -> E.throw e
+          _ -> E.throwIO e
       when (not $ isSuccess r) exitFailure
 
 isSuccess :: Summary -> Bool
