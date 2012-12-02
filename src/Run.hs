@@ -23,6 +23,7 @@ import           Help
 import           Report
 import qualified Interpreter
 
+ghcPackageDbFlag :: String
 #if __GLASGOW_HASKELL__ >= 706
 ghcPackageDbFlag = "-package-db"
 #else
