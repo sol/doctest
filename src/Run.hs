@@ -14,6 +14,7 @@ import           System.Exit (exitFailure)
 import           System.IO
 import           System.Environment (getEnvironment)
 
+import           Control.Applicative
 import qualified Control.Exception as E
 import           Panic
 
@@ -40,9 +41,9 @@ doctest args
       -- present, add it to the list of package databases GHC searches.
       -- Intended to make testing from inside sandboxes such as cabal-dev
       -- simpler.
-      env <- getEnvironment
+      packageConf <- lookup "HASKELL_PACKAGE_SANDBOX" <$> getEnvironment
       let addPackageConf =
-            case lookup "HASKELL_PACKAGE_SANDBOX" env of
+            case packageConf of
               Nothing -> id
               Just p  -> \rest -> "-package-conf" : p : rest
 
