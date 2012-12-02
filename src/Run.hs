@@ -23,6 +23,12 @@ import           Help
 import           Report
 import qualified Interpreter
 
+#if __GLASGOW_HASKELL__ >= 706
+ghcPackageDbFlag = "-package-db"
+#else
+ghcPackageDbFlag = "-package-conf"
+#endif
+
 -- | Run doctest with given list of arguments.
 --
 -- Example:
@@ -45,7 +51,7 @@ doctest args
       let addPackageConf =
             case packageConf of
               Nothing -> id
-              Just p  -> \rest -> "-package-conf" : p : rest
+              Just p  -> \rest -> ghcPackageDbFlag : p : rest
 
       let (f, args_) = stripOptGhc args
       when f $ do

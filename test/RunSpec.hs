@@ -26,6 +26,9 @@ withCurrentDirectory workingDir action = do
     setCurrentDirectory workingDir
     action
 
+rmDir :: FilePath -> IO ()
+rmDir dir = removeDirectoryRecursive dir `catch` (const $ return () :: IOException -> IO ())
+
 withEnv :: String -> String -> IO a -> IO a
 withEnv k v action = E.bracket save restore $ \_ -> do
   setEnv k v >> action
@@ -83,8 +86,9 @@ spec = do
         hCapture_ [stderr] (doctest ["test/integration/custom-package-conf/Bar.hs"])
           `shouldReturn` "Examples: 2  Tried: 2  Errors: 0  Failures: 0\n"
 
-      removeDirectoryRecursive "test/integration/custom-package-conf/packages/"
-      removeDirectoryRecursive "test/integration/custom-package-conf/foo/dist/"
+      `finally` do
+        rmDir "test/integration/custom-package-conf/packages/"
+        rmDir "test/integration/custom-package-conf/foo/dist/"
 
   describe "doctest_" $ do
     context "on parse error" $ do
