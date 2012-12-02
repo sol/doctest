@@ -3,6 +3,7 @@ module Interpreter (
 , eval
 , safeEval
 , withInterpreter
+, ghc
 ) where
 
 import           System.IO

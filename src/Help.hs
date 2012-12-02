@@ -6,6 +6,7 @@ module Help (
 import           Paths_doctest (version)
 import           Data.Version (showVersion)
 import           Config as GHC
+import           Interpreter (ghc)
 
 usage :: String
 usage = unlines [
@@ -23,3 +24,4 @@ printVersion :: IO ()
 printVersion = do
   putStrLn ("doctest version " ++ showVersion version)
   putStrLn ("using version " ++ GHC.cProjectVersion ++ " of the GHC API")
+  putStrLn ("using " ++ ghc)

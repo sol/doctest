@@ -1,5 +1,6 @@
 Changes in 0.9.4
   - Respect HASKELL_PACKAGE_SANDBOX (#39)
+  - Print path to ghc on --version
 
 Changes in 0.9.3
  - Properly handle additional object files (#38)
