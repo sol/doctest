@@ -114,14 +114,14 @@ runModule repl (Module module_ setup examples) = do
 
   Summary _ _ e1 f1 <- gets reportStateSummary
 
-  -- only run tests, if seutp does not produce any errors/failures
+  -- only run tests, if setup does not produce any errors/failures
   when (e0 == e1 && f0 == f1) $
     forM_ examples $
       runTestGroup repl setup_
   where
     reload :: IO ()
     reload = do
-      -- NOTE: It is important do the :reload first!  There was some odd bug
+      -- NOTE: It is important to do the :reload first!  There was some odd bug
       -- with a previous version of GHC (7.4.1?).
       void $ Interpreter.eval repl   ":reload"
       void $ Interpreter.eval repl $ ":m *" ++ module_
