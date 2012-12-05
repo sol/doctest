@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, DeriveDataTypeable, StandaloneDeriving, DeriveFunctor #-}
+{-# LANGUAGE CPP, DeriveDataTypeable, DeriveFunctor #-}
 module Extract (Module(..), extract) where
 
 import           Prelude hiding (mod, concat)
@@ -57,8 +57,6 @@ data Module a = Module {
 , moduleSetup   :: Maybe a
 , moduleContent :: [a]
 } deriving (Eq, Functor)
-
-deriving instance Show a => Show (Module a)
 
 instance NFData a => NFData (Module a) where
   rnf (Module name setup content) = name `deepseq` setup `deepseq` content `deepseq` ()

@@ -8,6 +8,8 @@ import           Control.Monad.Trans.Writer
 import           Parse
 import           Location
 
+import           Orphans ()
+
 main :: IO ()
 main = hspec spec
 
