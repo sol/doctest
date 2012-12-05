@@ -46,8 +46,8 @@ library
     , Util
   build-depends:
       base          == 4.*
-    , ghc           >= 6.12 && < 7.8
-    , syb
+    , ghc           >= 7.0 && < 7.8
+    , syb           >= 0.3 && < 0.4
     , deepseq
     , directory
     , filepath
