@@ -6,7 +6,7 @@ import Text.Printf
 
 -- | Report an error.
 --
--- >>> :set -fth
+-- >>> :set -XTemplateHaskell
 -- >>> $(logError "Something bad happened!")
 -- ERROR <interactive>: Something bad happened!
 logError :: String -> Q Exp
