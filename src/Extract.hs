@@ -191,6 +191,9 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
 #if __GLASGOW_HASKELL__ >= 706
   -- hswb_kvs and hswb_tvs may be error thunks
   `extQ` (ignore :: Selector (HsWithBndrs [LHsType RdrName]))
+  `extQ` (ignore :: Selector (HsWithBndrs [LHsType Name]))
+  `extQ` (ignore :: Selector (HsWithBndrs (LHsType RdrName)))
+  `extQ` (ignore :: Selector (HsWithBndrs (LHsType Name)))
 #endif
   )
   where

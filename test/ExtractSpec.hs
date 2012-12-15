@@ -70,8 +70,11 @@ spec = do
     it "works with foreign imports" $ do
       ("regression", "ForeignImport.hs") `shouldGive` [Module "ForeignImport" Nothing []]
 
-    it "works with rewrite rules" $ do
+    it "works for rewrite rules" $ do
       ("regression", "RewriteRules.hs") `shouldGive` [Module "RewriteRules" Nothing [" doc for foo"]]
+
+    it "works for rewrite rules with type signatures" $ do
+      ("regression", "RewriteRulesWithSigs.hs") `shouldGive` [Module "RewriteRulesWithSigs" Nothing [" doc for foo"]]
 
     it "strips CR from dos line endings" $ do
       ("dos-line-endings", "Foo.hs") `shouldGive` [Module "Foo" Nothing ["\n foo\n bar\n baz"]]
