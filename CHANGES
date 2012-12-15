@@ -1,4 +1,4 @@
-next
+Changes in 0.9.5
   - Fix a GHC panic with GHC 7.6.1 (#41)
 
 Changes in 0.9.4
