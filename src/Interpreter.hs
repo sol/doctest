@@ -15,7 +15,7 @@ import           Control.Exception hiding (handle)
 import           Data.Char
 import           Data.List
 
-import           GHC.Paths (ghc)
+import           Paths (ghc)
 
 -- | Truly random marker, used to separate expressions.
 --
