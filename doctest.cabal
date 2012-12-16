@@ -44,6 +44,7 @@ library
     , Report
     , Run
     , Util
+    , Paths
   build-depends:
       base          == 4.*
     , ghc           >= 7.0 && < 7.8

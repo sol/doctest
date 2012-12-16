@@ -2,7 +2,7 @@
 module GhcUtil (withGhc) where
 
 import           Control.Exception
-import           GHC.Paths (libdir)
+import           Paths (libdir)
 import           GHC hiding (flags)
 import           DynFlags (dopt_set)
 import           Panic (ghcError)
