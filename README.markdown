@@ -79,7 +79,8 @@ scope.  E.g. the following works:
 -- 65
 ```
 
-If an example fails, subsequent examples from the same group are skiped.  E.g. for
+If an example fails, subsequent examples from the same group are skipped.  E.g.
+for
 
 ```haskell
 -- |
