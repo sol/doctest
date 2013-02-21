@@ -24,6 +24,9 @@ action `shouldEvaluateTo` expected = action >>= (`shouldBe` expected)
 spec :: Spec
 spec = do
   describe "Interpreter" $ do
+    it "knows whether it works" $ do
+        (Interpreter.interpreterSupported >> return ()) `shouldReturn` ()
+   
     it "terminates on SIGINT" $ do
 #ifdef mingw32_HOST_OS
       pending
