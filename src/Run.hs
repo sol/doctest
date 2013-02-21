@@ -9,8 +9,8 @@ module Run (
 ) where
 
 import           Data.List
-import           Control.Monad (when)
-import           System.Exit (exitFailure)
+import           Control.Monad (when, unless)
+import           System.Exit (exitFailure, exitSuccess)
 import           System.IO
 import           System.Environment (getEnvironment)
 
@@ -52,6 +52,11 @@ doctest args
       let addPackageConf = case packageConf of
             Nothing -> id
             Just p  -> \rest -> ghcPackageDbFlag : p : rest
+      
+      i <- Interpreter.interpreterSupported
+      unless i $ do
+        hPutStrLn stderr "WARNING: GHC does not support --interactive, skipping tests"
+        exitSuccess
 
       let (f, args_) = stripOptGhc args
       when f $ do
