@@ -1,5 +1,5 @@
 name:             doctest
-version:          0.9.5
+version:          0.9.5.1
 synopsis:         Test interactive Haskell examples
 description:      The doctest program checks examples in source code comments.
                   It is modeled after doctest for Python
@@ -12,7 +12,7 @@ bug-reports:      https://github.com/sol/doctest-haskell/issues
 homepage:         https://github.com/sol/doctest-haskell#readme
 license:          MIT
 license-file:     LICENSE
-copyright:        (c) 2009-2012 Simon Hengel
+copyright:        (c) 2009-2013 Simon Hengel
 author:           Simon Hengel <sol@typeful.net>
 maintainer:       Simon Hengel <sol@typeful.net>
 build-type:       Simple
