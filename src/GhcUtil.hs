@@ -4,8 +4,12 @@ module GhcUtil (withGhc) where
 import           Control.Exception
 import           GHC.Paths (libdir)
 import           GHC hiding (flags)
+#if __GLASGOW_HASKELL__ < 707
 import           DynFlags (dopt_set)
-import           Panic (ghcError)
+#else
+import           DynFlags (gopt_set)
+#endif
+import           Panic (throwGhcException)
 
 import           MonadUtils (liftIO)
 import           System.Exit (exitFailure)
@@ -59,11 +63,15 @@ handleDynamicFlags flags = do
   let srcs = map unLoc locSrcs
       unknown_opts = [ f | f@('-':_) <- srcs ]
   case unknown_opts of
-    opt : _ -> ghcError (UsageError ("unrecognized option `"++ opt ++ "'"))
+    opt : _ -> throwGhcException (UsageError ("unrecognized option `"++ opt ++ "'"))
     _       -> return srcs
 
 setHaddockMode :: DynFlags -> DynFlags
+#if __GLASGOW_HASKELL__ < 707
 setHaddockMode dynflags = (dopt_set dynflags Opt_Haddock) {
+#else
+setHaddockMode dynflags = (gopt_set dynflags Opt_Haddock) {
+#endif
       hscTarget = HscNothing
     , ghcMode   = CompManager
     , ghcLink   = NoLink

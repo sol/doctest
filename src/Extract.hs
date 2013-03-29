@@ -13,6 +13,10 @@ import           Control.DeepSeq (deepseq, NFData(rnf))
 import           Data.Generics
 
 import           GHC hiding (flags, Module, Located)
+#if __GLASGOW_HASKELL__ < 707
+#else
+import           DynFlags
+#endif
 import           MonadUtils (liftIO, MonadIO)
 import           Exception (ExceptionMonad)
 import           System.Directory
@@ -79,7 +83,12 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
     -- copied from Haddock/Interface.hs
     enableCompilation :: ModuleGraph -> Ghc ModuleGraph
     enableCompilation modGraph = do
+#if __GLASGOW_HASKELL__ < 707
       let enableComp d = d { hscTarget = defaultObjectTarget }
+#else
+      let enableComp d = let platform = targetPlatform d
+                         in d { hscTarget = defaultObjectTarget platform }
+#endif
       modifySessionDynFlags enableComp
       -- We need to update the DynFlags of the ModSummaries as well.
       let upd m = m { ms_hspp_opts = enableComp (ms_hspp_opts m) }
