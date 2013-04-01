@@ -1,3 +1,6 @@
+Changes in 0.9.6
+  - Fail gracefully if GHCi is not supported (#46)
+
 Changes in 0.9.5
   - Fix a GHC panic with GHC 7.6.1 (#41)
 
