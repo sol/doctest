@@ -5,6 +5,10 @@ module Interpreter (
 , withInterpreter
 , ghc
 , interpreterSupported
+
+-- exported for testing
+, ghcInfo
+, haveInterpreterKey
 ) where
 
 import           System.IO
@@ -12,6 +16,7 @@ import           System.Process
 import           System.Exit
 import           System.Directory (getPermissions, executable)
 import           Control.Monad (when, unless)
+import           Control.Applicative
 import           Control.Exception hiding (handle)
 import           Data.Char
 import           Data.List
@@ -32,6 +37,12 @@ data Interpreter = Interpreter {
   , process :: ProcessHandle
   }
 
+haveInterpreterKey :: String
+haveInterpreterKey = "Have interpreter"
+
+ghcInfo :: IO [(String, String)]
+ghcInfo = read <$> readProcess ghc ["--info"] []
+
 interpreterSupported :: IO Bool
 interpreterSupported = do
   -- in a perfect world this permission check should never fail, but I know of
@@ -39,10 +50,8 @@ interpreterSupported = do
   x <- getPermissions ghc
   unless (executable x) $ do
     fail $ ghc ++ " is not executable!"
-    
-  info <- readProcess ghc ["--info"] []
-  return $ maybe False (=="YES") $ lookup "Have interpreter" (read info)
 
+  maybe False (== "YES") . lookup haveInterpreterKey <$> ghcInfo
 
 newInterpreter :: [String] -> IO Interpreter
 newInterpreter flags = do
@@ -94,7 +103,7 @@ closeInterpreter repl = do
   e <- waitForProcess $ process repl
   hClose $ hOut repl
 
-  when (e /= ExitSuccess) $ error $ "Interpreter exited with an error: " ++ show e 
+  when (e /= ExitSuccess) $ error $ "Interpreter exited with an error: " ++ show e
   return ()
 
 putExpression :: Interpreter -> String -> IO ()

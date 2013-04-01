@@ -4,13 +4,14 @@ module InterpreterSpec (main, spec) where
 import           Test.Hspec
 
 import           Data.List (isSuffixOf)
+import           Control.Applicative
 
 #ifndef mingw32_HOST_OS
 import           System.Process (readProcess)
 #endif
 
 import qualified Interpreter
-import           Interpreter (safeEval)
+import           Interpreter (safeEval, haveInterpreterKey, ghcInfo)
 
 main :: IO ()
 main = hspec spec
@@ -34,6 +35,12 @@ spec = do
       s <- readProcess "test/interpreter/termination/test_script.sh" [] ""
       s `shouldBe` "success\n"
 #endif
+
+  describe "ghcInfo" $ do
+    it ("includes " ++ show haveInterpreterKey) $ do
+      info <- ghcInfo
+      lookup haveInterpreterKey info `shouldSatisfy`
+        (||) <$> (== Just "YES") <*> (== Just "NO")
 
   describe "eval" $ do
     it "shows literals" $ withInterpreter $ \ghci -> do
