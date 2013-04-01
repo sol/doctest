@@ -219,6 +219,7 @@ changes.
  * Ankit Ahuja
  * Edward Kmett
  * Hiroki Hattori
+ * Joachim Breitner
  * Kazu Yamamoto
  * Levent Erkok
  * Michael Snoyman
