@@ -4,6 +4,7 @@ module Interpreter (
 , safeEval
 , withInterpreter
 , ghc
+, interpreterSupported
 ) where
 
 import           System.IO
@@ -31,15 +32,20 @@ data Interpreter = Interpreter {
   , process :: ProcessHandle
   }
 
-newInterpreter :: [String] -> IO Interpreter
-newInterpreter flags = do
-
+interpreterSupported :: IO Bool
+interpreterSupported = do
   -- in a perfect world this permission check should never fail, but I know of
   -- at least one case where it did..
   x <- getPermissions ghc
   unless (executable x) $ do
     fail $ ghc ++ " is not executable!"
+    
+  info <- readProcess ghc ["--info"] []
+  return $ maybe False (=="YES") $ lookup "Have interpreter" (read info)
 
+
+newInterpreter :: [String] -> IO Interpreter
+newInterpreter flags = do
   (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc ghc myFlags) {std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit}
   setMode stdin_
   setMode stdout_
