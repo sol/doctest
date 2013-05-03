@@ -73,6 +73,11 @@ spec = do
       ghci "putStrLn \"foo\" >> putStrLn \"bar\" >> putStrLn \"baz\""
         `shouldEvaluateTo` "foo\nbar\nbaz\n"
 
+    it "treats lines with spaces only as blank" $ withInterpreter $ \ghci -> do
+      ghci "putStrLn \" \"" `shouldEvaluateTo` "\n"
+      ghci "putStrLn \"foo\" >> putStrLn \"  \" >> putStrLn \"baz\""
+        `shouldEvaluateTo` "foo\n\nbaz\n"
+
     it "captures stderr" $ withInterpreter $ \ghci -> do
       ghci "import System.IO" `shouldEvaluateTo` ""
       ghci "hPutStrLn stderr \"foo\"" `shouldEvaluateTo` "foo\n"

@@ -160,10 +160,11 @@ getResult repl = do
       return $ stripMarker line
     else do
       result <- getResult repl
-      return $ line ++ '\n' : result
+      return $ stripSpacesOnly line ++ '\n' : result
   where
     stdout_ = hOut repl
     stripMarker l = take (length l - length marker) l
+    stripSpacesOnly line = if all isSpace line then "" else line
 
 -- | Evaluate an expresion
 eval
