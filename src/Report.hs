@@ -8,7 +8,7 @@ module Report (
 , ReportState (..)
 , report
 , report_
-, reportNotEqual
+, formatNotEqual
 #endif
 ) where
 
@@ -153,12 +153,17 @@ updateSummary summary = do
   ReportState n f s <- get
   put (ReportState n f $ s `mappend` summary)
 
-reportNotEqual :: [String] -> [String] -> Report ()
-reportNotEqual expected actual = do
-  outputLines "expected: " expected
-  outputLines " but got: " actual
+data Result = Equal | NotEqual [String]
+
+mkResult :: [String] -> [String] -> Result
+mkResult expected actual
+  | expected == actual = Equal
+  | otherwise = NotEqual (formatNotEqual expected actual)
   where
 
+formatNotEqual :: [String] -> [String] -> [String]
+formatNotEqual expected actual = outputLines "expected: " expected ++ outputLines " but got: " actual
+  where
     -- print quotes if any line ends with trailing whitespace
     printQuotes = any isSpace (map last . filter (not . null) $ expected ++ actual)
 
@@ -169,16 +174,15 @@ reportNotEqual expected actual = do
     isSafe :: Char -> Bool
     isSafe c = c == ' ' || (isPrint c && (not . isSpace) c)
 
+    outputLines :: String -> [String] -> [String]
     outputLines message l_ = case l of
-      x:xs -> do
-        report (message ++ x)
-        let padding = replicate (length message) ' '
-        forM_ xs $ \y -> report (padding ++ y)
-      []   ->
-        report message
+      x:xs -> (message ++ x) : map (padding ++) xs
+      []   -> [message]
       where
         l | printQuotes || escapeOutput = map show l_
           | otherwise                   = l_
+
+        padding = replicate (length message) ' '
 
 -- | Run given test group.
 --
@@ -222,12 +226,11 @@ runExampleGroup repl = go
       case r of
         Left err -> do
           reportError loc expression err
-        Right actual -> do
-          if expected /= actual
-            then do
-              reportFailure loc expression
-              reportNotEqual expected actual
-            else do
-              reportSuccess
-              go xs
+        Right actual -> case mkResult expected actual of
+          NotEqual err -> do
+            reportFailure loc expression
+            mapM_ report err
+          Equal -> do
+            reportSuccess
+            go xs
     go [] = return ()

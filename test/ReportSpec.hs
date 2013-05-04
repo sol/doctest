@@ -2,7 +2,6 @@
 module ReportSpec (main, spec) where
 
 import           Test.Hspec
-import           Data.String.Builder
 
 import           Data.Monoid
 import           System.IO
@@ -19,9 +18,6 @@ capture = fmap fst . hCapture [stderr] . (`execStateT` ReportState 0 True mempty
 -- like capture, but with interactivity set to False
 capture_ :: Report a -> IO String
 capture_ = fmap fst . hCapture [stderr] . (`execStateT` ReportState 0 False mempty)
-
-shouldGive :: IO String -> Builder -> Expectation
-action `shouldGive` expected = action `shouldReturn` build expected
 
 spec :: Spec
 spec = do
@@ -92,36 +88,32 @@ spec = do
         `shouldReturn` "baz\n"
 
 
-  describe "reportNotEqual" $ do
+  describe "formatNotEqual" $ do
 
     it "works for one-line test output" $ do
-      capture $ do
-        reportNotEqual ["foo"] ["bar"]
-      `shouldGive` do
-        "expected: foo"
-        " but got: bar"
+      formatNotEqual ["foo"] ["bar"] `shouldBe` [
+          "expected: foo"
+        , " but got: bar"
+        ]
 
     it "works for multi-line test output" $ do
-      capture $ do
-        reportNotEqual ["foo", "bar"] ["foo", "baz"]
-      `shouldGive` do
+      formatNotEqual ["foo", "bar"] ["foo", "baz"] `shouldBe` [
         "expected: foo"
-        "          bar"
-        " but got: foo"
-        "          baz"
+        , "          bar"
+        , " but got: foo"
+        , "          baz"
+        ]
 
     it "quotes output if any output line ends with trailing whitespace" $ do
-      capture $ do
-        reportNotEqual ["foo", "bar   "] ["foo", "baz"]
-      `shouldGive` do
+      formatNotEqual ["foo", "bar   "] ["foo", "baz"] `shouldBe` [
         "expected: \"foo\""
-        "          \"bar   \""
-        " but got: \"foo\""
-        "          \"baz\""
+        , "          \"bar   \""
+        , " but got: \"foo\""
+        , "          \"baz\""
+        ]
 
     it "uses show to format output lines if any output line contains \"unsafe\" characters" $ do
-      capture $ do
-        reportNotEqual ["foo\160bar"] ["foo bar"]
-      `shouldGive` do
-        "expected: \"foo\\160bar\""
-        " but got: \"foo bar\""
+      formatNotEqual ["foo\160bar"] ["foo bar"] `shouldBe` [
+          "expected: \"foo\\160bar\""
+        , " but got: \"foo bar\""
+        ]
