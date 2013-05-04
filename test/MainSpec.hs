@@ -99,6 +99,10 @@ spec = do
       doctest "with-cbits" ["Bar.hs", "../../../dist/build/spec/spec-tmp/test/integration/with-cbits/foo.o"]
         (cases 1)
 
+    it "ignores trailing whitespace when matching test output" $ do
+      doctest "trailing-whitespace" ["Foo.hs"]
+        (cases 1)
+
   describe "doctest as a runner for QuickCheck properties" $ do
     it "runs a boolean property" $ do
       doctest "property-bool" ["Foo.hs"]
@@ -134,7 +138,6 @@ spec = do
     it "bugfixOutputToStdErr" $ do
       doctest "bugfixOutputToStdErr" ["Fib.hs"]
         (cases 2)
-
 
     it "bugfixImportHierarchical" $ do
       doctest "bugfixImportHierarchical" ["ModuleA.hs", "ModuleB.hs"]

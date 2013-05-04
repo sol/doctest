@@ -1,3 +1,6 @@
+Changes in 0.9.7
+ - Ignore trailing whitespace when matching example output
+
 Changes in 0.9.6
  - Fail gracefully if GHCi is not supported (#46)
 
