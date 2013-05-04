@@ -222,6 +222,7 @@ changes.
  * Joachim Breitner
  * Kazu Yamamoto
  * Levent Erkok
+ * Matvey Aksenov
  * Michael Snoyman
  * Sakari Jokinen
  * Simon Hengel
