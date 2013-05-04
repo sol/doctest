@@ -41,7 +41,8 @@ library
     , Parse
     , Paths_doctest
     , Property
-    , Report
+    , Runner
+    , Runner.Example
     , Run
     , Util
   build-depends:

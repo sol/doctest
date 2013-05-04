@@ -6,7 +6,7 @@ import           Test.HUnit (assertEqual, Assertion)
 import           Control.Exception
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           System.FilePath
-import           Report (Summary(..))
+import           Runner (Summary(..))
 import           Run hiding (doctest)
 import           System.IO.Silently
 import           System.IO

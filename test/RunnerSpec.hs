@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module ReportSpec (main, spec) where
+module RunnerSpec (main, spec) where
 
 import           Test.Hspec
 
@@ -7,7 +7,7 @@ import           Data.Monoid
 import           System.IO
 import           System.IO.Silently (hCapture)
 import           Control.Monad.Trans.State
-import           Report
+import           Runner
 
 main :: IO ()
 main = hspec spec
@@ -86,34 +86,3 @@ spec = do
           report_ "foobar"
           report  "baz"
         `shouldReturn` "baz\n"
-
-
-  describe "formatNotEqual" $ do
-
-    it "works for one-line test output" $ do
-      formatNotEqual ["foo"] ["bar"] `shouldBe` [
-          "expected: foo"
-        , " but got: bar"
-        ]
-
-    it "works for multi-line test output" $ do
-      formatNotEqual ["foo", "bar"] ["foo", "baz"] `shouldBe` [
-        "expected: foo"
-        , "          bar"
-        , " but got: foo"
-        , "          baz"
-        ]
-
-    it "quotes output if any output line ends with trailing whitespace" $ do
-      formatNotEqual ["foo", "bar   "] ["foo", "baz"] `shouldBe` [
-        "expected: \"foo\""
-        , "          \"bar   \""
-        , " but got: \"foo\""
-        , "          \"baz\""
-        ]
-
-    it "uses show to format output lines if any output line contains \"unsafe\" characters" $ do
-      formatNotEqual ["foo\160bar"] ["foo bar"] `shouldBe` [
-          "expected: \"foo\\160bar\""
-        , " but got: \"foo bar\""
-        ]

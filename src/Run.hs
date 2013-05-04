@@ -20,7 +20,7 @@ import           Panic
 
 import           Parse
 import           Help
-import           Report
+import           Runner
 import qualified Interpreter
 
 ghcPackageDbFlag :: String

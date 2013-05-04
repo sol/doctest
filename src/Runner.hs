@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-module Report (
+module Runner (
   runModules
 , Summary(..)
 
@@ -8,7 +8,6 @@ module Report (
 , ReportState (..)
 , report
 , report_
-, formatNotEqual
 #endif
 ) where
 
@@ -18,7 +17,6 @@ import           Control.Applicative
 import           Control.Monad hiding (forM_)
 import           Text.Printf (printf)
 import           System.IO (hPutStrLn, hPutStr, stderr, hIsTerminalDevice)
-import           Data.Char
 import           Data.Foldable (forM_)
 
 import           Control.Monad.Trans.State
@@ -29,6 +27,7 @@ import qualified Interpreter
 import           Parse
 import           Location
 import           Property
+import           Runner.Example
 
 -- | Summary of a test run.
 data Summary = Summary {
@@ -152,37 +151,6 @@ updateSummary :: Summary -> Report ()
 updateSummary summary = do
   ReportState n f s <- get
   put (ReportState n f $ s `mappend` summary)
-
-data Result = Equal | NotEqual [String]
-
-mkResult :: [String] -> [String] -> Result
-mkResult expected actual
-  | expected == actual = Equal
-  | otherwise = NotEqual (formatNotEqual expected actual)
-  where
-
-formatNotEqual :: [String] -> [String] -> [String]
-formatNotEqual expected actual = outputLines "expected: " expected ++ outputLines " but got: " actual
-  where
-    -- print quotes if any line ends with trailing whitespace
-    printQuotes = any isSpace (map last . filter (not . null) $ expected ++ actual)
-
-    -- use show to escape special characters in output lines if any output line
-    -- contains any unsafe character
-    escapeOutput = any (not . isSafe) (concat $ expected ++ actual)
-
-    isSafe :: Char -> Bool
-    isSafe c = c == ' ' || (isPrint c && (not . isSpace) c)
-
-    outputLines :: String -> [String] -> [String]
-    outputLines message l_ = case l of
-      x:xs -> (message ++ x) : map (padding ++) xs
-      []   -> [message]
-      where
-        l | printQuotes || escapeOutput = map show l_
-          | otherwise                   = l_
-
-        padding = replicate (length message) ' '
 
 -- | Run given test group.
 --
