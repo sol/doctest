@@ -3,10 +3,11 @@ module GhcUtil (withGhc) where
 
 import           Control.Exception
 import           GHC.Paths (libdir)
-import           GHC hiding (flags)
 #if __GLASGOW_HASKELL__ < 707
+import           GHC hiding (flags)
 import           DynFlags (dopt_set)
 #else
+import           GHC
 import           DynFlags (gopt_set)
 #endif
 import           Panic (throwGhcException)

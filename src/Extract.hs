@@ -12,12 +12,14 @@ import           Data.Foldable (concat)
 import           Control.DeepSeq (deepseq, NFData(rnf))
 import           Data.Generics
 
-import           GHC hiding (flags, Module, Located)
 #if __GLASGOW_HASKELL__ < 707
-#else
-import           DynFlags
-#endif
+import           GHC hiding (flags, Module, Located)
 import           MonadUtils (liftIO, MonadIO)
+#else
+import           GHC hiding (Module, Located)
+import           DynFlags
+import           MonadUtils (liftIO)
+#endif
 import           Exception (ExceptionMonad)
 import           System.Directory
 import           System.FilePath
