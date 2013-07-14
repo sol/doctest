@@ -67,5 +67,6 @@ parseNotInScope = nub . map extractVariable . filter ("Not in scope: " `isInfixO
     extractVariable = unquote . takeWhileEnd (/= ' ')
 
     -- | Remove quotes from given name, if any.
-    unquote ('`':xs) = init xs
-    unquote xs       = xs
+    unquote ('`':xs)     = init xs
+    unquote ('\8219':xs) = init xs -- GHC 7.7 or later
+    unquote xs           = xs

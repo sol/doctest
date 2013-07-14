@@ -6,13 +6,17 @@ import           Test.QuickCheck
 import           System.Exit
 
 import           Control.Exception
+#if __GLASGOW_HASKELL__ < 707
 import           System.Cmd
+#else
+import           System.Process
+#endif
 import           System.Directory (getCurrentDirectory, setCurrentDirectory, removeDirectoryRecursive)
 import           Data.List
 
 import qualified Control.Exception as E
 import           System.Environment
-import           System.SetEnv
+import           System.SetEnv as S
 
 import           System.IO.Silently
 import           System.IO (stderr)
@@ -31,10 +35,10 @@ rmDir dir = removeDirectoryRecursive dir `catch` (const $ return () :: IOExcepti
 
 withEnv :: String -> String -> IO a -> IO a
 withEnv k v action = E.bracket save restore $ \_ -> do
-  setEnv k v >> action
+  S.setEnv k v >> action
   where
     save    = lookupEnv k
-    restore = maybe (unsetEnv k) (setEnv k)
+    restore = maybe (S.unsetEnv k) (S.setEnv k)
 
 main :: IO ()
 main = hspec spec
