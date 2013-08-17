@@ -6,13 +6,19 @@ import           Test.QuickCheck
 import           System.Exit
 
 import           Control.Exception
+#if __GLASGOW_HASKELL__ < 707
 import           System.Cmd
+#else
+import           System.Process
+#endif
 import           System.Directory (getCurrentDirectory, setCurrentDirectory, removeDirectoryRecursive)
 import           Data.List
 
 import qualified Control.Exception as E
 import           System.Environment
+#if !MIN_VERSION_base(4,7,0)
 import           System.SetEnv
+#endif
 
 import           System.IO.Silently
 import           System.IO (stderr)
