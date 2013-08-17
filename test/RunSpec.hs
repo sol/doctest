@@ -16,7 +16,9 @@ import           Data.List
 
 import qualified Control.Exception as E
 import           System.Environment
-import           System.SetEnv as S
+#if !MIN_VERSION_base(4,7,0)
+import           System.SetEnv
+#endif
 
 import           System.IO.Silently
 import           System.IO (stderr)
@@ -35,10 +37,10 @@ rmDir dir = removeDirectoryRecursive dir `catch` (const $ return () :: IOExcepti
 
 withEnv :: String -> String -> IO a -> IO a
 withEnv k v action = E.bracket save restore $ \_ -> do
-  S.setEnv k v >> action
+  setEnv k v >> action
   where
     save    = lookupEnv k
-    restore = maybe (S.unsetEnv k) (S.setEnv k)
+    restore = maybe (unsetEnv k) (setEnv k)
 
 main :: IO ()
 main = hspec spec
