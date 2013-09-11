@@ -101,7 +101,15 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
     modifySessionDynFlags :: (DynFlags -> DynFlags) -> Ghc ()
     modifySessionDynFlags f = do
       dflags <- getSessionDynFlags
+#if __GLASGOW_HASKELL__ < 707
       _ <- setSessionDynFlags (f dflags)
+#else
+      -- GHCi 7.7 now uses dynamic linking.
+      let dflags' = case lookup "GHC Dynamic" (compilerInfo dflags) of
+            Just "YES" -> gopt_set dflags Opt_BuildDynamicToo
+            _          -> dflags
+      _ <- setSessionDynFlags (f dflags')
+#endif
       return ()
 
     withTempOutputDir :: Ghc a -> Ghc a
