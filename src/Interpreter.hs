@@ -74,6 +74,11 @@ newInterpreter flags = do
   _ <- eval interpreter "hSetEncoding stdout utf8"
   _ <- eval interpreter "hSetEncoding stderr utf8"
 
+  -- v_opt_C_ready of GHCi 7.7 is True. So, parseStaticFlags fails
+  _ <- eval interpreter "import StaticFlags (v_opt_C_ready)"
+  _ <- eval interpreter "import Data.IORef (writeIORef)"
+  _ <- eval interpreter "writeIORef v_opt_C_ready False"
+
   return interpreter
   where
     myFlags = ["-v0", "--interactive", "-ignore-dot-ghci"] ++ flags
