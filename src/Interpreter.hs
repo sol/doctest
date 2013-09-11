@@ -22,6 +22,7 @@ import           Data.Char
 import           Data.List
 
 import           GHC.Paths (ghc)
+import           Sandbox (getSandboxArguments)
 
 -- | Truly random marker, used to separate expressions.
 --
@@ -55,6 +56,9 @@ interpreterSupported = do
 
 newInterpreter :: [String] -> IO Interpreter
 newInterpreter flags = do
+  sandboxFlags <- getSandboxArguments
+  let myFlags = ghciFlags ++ flags ++ sandboxFlags
+  -- get examples from Haddock comments
   (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc ghc myFlags) {std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit}
   setMode stdin_
   setMode stdout_
@@ -81,8 +85,7 @@ newInterpreter flags = do
 
   return interpreter
   where
-    myFlags = ["-v0", "--interactive", "-ignore-dot-ghci"] ++ flags
-
+    ghciFlags = ["-v0", "--interactive", "-ignore-dot-ghci"]
     setMode handle = do
       hSetBinaryMode handle False
       hSetBuffering handle LineBuffering
