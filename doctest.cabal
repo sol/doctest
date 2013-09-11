@@ -92,7 +92,7 @@ test-suite spec
     , transformers
 
     , HUnit
-    , hspec         >= 1.3
+    , hspec         >= 1.5.1
     , QuickCheck    >= 2.5
     , stringbuilder >= 0.4
     , silently      >= 1.2.4
