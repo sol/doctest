@@ -1,15 +1,11 @@
 module Sandbox (getSandboxArguments) where
 
 import Control.Applicative ((<$>))
-import Data.List (intercalate)
-import Distribution.Simple.Program (ghcProgram)
-import Distribution.Simple.Program.Types (programName, programFindVersion)
-import Distribution.System (buildPlatform)
-import qualified Distribution.Text as Text (display)
-import Distribution.Verbosity (silent)
-import Distribution.Version (versionBranch, Version)
+import Data.Char (isSpace)
+import Data.List (isPrefixOf, tails)
 import System.Directory (getCurrentDirectory, doesFileExist, doesDirectoryExist)
-import System.FilePath ((</>), takeDirectory)
+import System.FilePath ((</>), takeDirectory, takeFileName)
+import Control.Exception (handle, SomeException)
 
 configFile :: String
 configFile = "cabal.sandbox.config"
@@ -17,18 +13,24 @@ configFile = "cabal.sandbox.config"
 sandboxDir :: String
 sandboxDir = ".cabal-sandbox"
 
+pkgDbKey :: String
+pkgDbKey = "package-db:"
+
+pkgDbKeyLen :: Int
+pkgDbKeyLen = length pkgDbKey
+
 getSandboxArguments :: IO [String]
 getSandboxArguments = do
     mdir <- getCurrentDirectory >>= getSandboxDir
     case mdir of
-        Nothing   -> return []
-        Just sdir -> sandboxArguments sdir
+        Nothing           -> return []
+        Just (sdir,sconf) -> sandboxArguments sdir sconf
 
-getSandboxDir :: FilePath -> IO (Maybe FilePath)
+getSandboxDir :: FilePath -> IO (Maybe (FilePath,FilePath))
 getSandboxDir dir = do
     exist <- doesSandboxExist dir
     if exist then
-        return $ Just (dir </> sandboxDir)
+        return $ Just (dir </> sandboxDir, dir </> configFile)
       else do
         let dir' = takeDirectory dir
         if dir == dir' then
@@ -42,36 +44,34 @@ doesSandboxExist dir = do
     dirExist <- doesDirectoryExist $ dir </> sandboxDir
     return (fileExist && dirExist)
 
-sandboxArguments :: FilePath -> IO [String]
-sandboxArguments sdir = do
-    (strVer, ver) <- getGHCVersion
-    let pkgDb = packageConfName strVer
-        (pkgDbOpt,noUserPkgDbOpt)
-          | ver >= 705 = ("-package-db",  "-no-user-package-db")
-          | otherwise  = ("-package-conf","-no-user-package-conf")
+sandboxArguments :: FilePath -> FilePath -> IO [String]
+sandboxArguments sdir sconf = handle handler $ do
+    pkgDb <- getPackageDbDir sconf
+    let ver = extractGhcVer pkgDb
+    let (pkgDbOpt,noUserPkgDbOpt)
+          | ver < 706 = ("-package-conf","-no-user-package-conf")
+          | otherwise = ("-package-db",  "-no-user-package-db")
         pkgDbPath = sdir </> pkgDb
         libPath   = sdir </> "lib"
         impOpt = "-i" ++ libPath
     return [noUserPkgDbOpt, pkgDbOpt, pkgDbPath, impOpt]
-
-packageConfName :: String-> FilePath
-packageConfName strver = Text.display buildPlatform
-                      ++ "-ghc-"
-                      ++ strver
-                      ++ "-packages.conf.d"
-
-getGHCVersion :: IO (String, Int)
-getGHCVersion = toTupple <$> getGHC
   where
-    toTupple v
-      | length vs < 2 = (verstr, 0)
-      | otherwise     = (verstr, ver)
-      where
-        vs = versionBranch v
-        ver = (vs !! 0) * 100 + (vs !! 1)
-        verstr = intercalate "." . map show $ vs
+    handler :: SomeException -> IO [String]
+    handler _ = return []
 
-getGHC :: IO Version
-getGHC = do
-    Just v <- programFindVersion ghcProgram silent (programName ghcProgram)
-    return v
+getPackageDbDir :: FilePath -> IO FilePath
+getPackageDbDir sconf = do
+    ls <- lines <$> readFile sconf
+    let [target] = filter ("package-db:" `isPrefixOf`) ls
+    return $ extractValue target
+  where
+    extractValue = fst . break isSpace . dropWhile isSpace . drop pkgDbKeyLen
+
+extractGhcVer :: String -> Int
+extractGhcVer dir = ver
+  where
+    file = takeFileName dir
+    findVer = drop 4 . head . filter ("ghc-" `isPrefixOf`) . tails
+    (verStr1,_:left) = break (== '.') $ findVer file
+    (verStr2,_)      = break (== '.') left
+    ver = read verStr1 * 100 + read verStr2
