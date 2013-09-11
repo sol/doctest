@@ -14,10 +14,10 @@ import           Panic (throwGhcException)
 
 import           MonadUtils (liftIO)
 import           System.Exit (exitFailure)
-
-#if __GLASGOW_HASKELL__ < 702
 import           StaticFlags (v_opt_C_ready)
 import           Data.IORef (writeIORef)
+
+#if __GLASGOW_HASKELL__ < 702
 #else
 import           StaticFlags (saveStaticFlagGlobals, restoreStaticFlagGlobals)
 #endif
@@ -46,6 +46,7 @@ handleSrcErrors action' = flip handleSourceError action' $ \err -> do
 -- | Run a GHC action in Haddock mode
 withGhc :: [String] -> ([String] -> Ghc a) -> IO a
 withGhc flags action = bracketStaticFlags $ do
+  writeIORef v_opt_C_ready False
   flags_ <- handleStaticFlags flags
 
   runGhc (Just libdir) $ do
