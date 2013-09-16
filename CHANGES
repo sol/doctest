@@ -1,3 +1,6 @@
+Changes in 0.9.8
+ - Support for GHC HEAD (7.7)
+
 Changes in 0.9.7
  - Ignore trailing whitespace when matching example output
 
