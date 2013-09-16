@@ -27,7 +27,7 @@ spec = do
 
     it "runs an implicitly quantified property even with GHC 7.4" $
 #if __GLASGOW_HASKELL__ == 702
-      pending "This triggers a bug in GHC 7.2.*."
+      pendingWith "This triggers a bug in GHC 7.2.*."
       -- try e.g.
       -- >>> 23
       -- >>> :t is
