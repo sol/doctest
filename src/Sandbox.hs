@@ -67,6 +67,10 @@ getPackageDbDir sconf = do
   where
     extractValue = fst . break isSpace . dropWhile isSpace . drop pkgDbKeyLen
 
+-- | Extracting GHC version from the path of package db.
+--
+-- >>> extractGhcVer "/foo/bar/i386-osx-ghc-7.6.3-packages.conf.d"
+-- 706
 extractGhcVer :: String -> Int
 extractGhcVer dir = ver
   where
