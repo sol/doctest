@@ -5,7 +5,14 @@ set -o errexit
 cd `dirname $0`
 
 mkdir -p build
-ghc -v0 --make -i../../../src -threaded -odir build -hidir build test_program.hs
+
+pkgconf='../../../.cabal-sandbox/*-packages.conf.d'
+if [ -d $pkgconf ]; then
+  ghc -v0 --make -i../../../src -threaded -odir build -hidir build -package-db $pkgconf test_program.hs
+else
+  ghc -v0 --make -i../../../src -threaded -odir build -hidir build test_program.hs
+fi
+
 ./test_program > /dev/null &
 
 PID=$!
