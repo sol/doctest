@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Sandbox (getSandboxArguments, getPackageDbDir) where
 
 import Control.Applicative ((<$>))
@@ -41,7 +43,10 @@ getSandboxConfigFile dir = do
 -- | Extract a package db directory from the sandbox config file.
 --   Exception is thrown if the sandbox config file is broken.
 getPackageDbDir :: FilePath -> IO FilePath
-getPackageDbDir sconf = extractValue . parse <$> readFile sconf
+getPackageDbDir sconf = do
+    -- Be strict to ensure that an error can be caught.
+    !path <- extractValue . parse <$> readFile sconf
+    return path
   where
     parse = head . filter ("package-db:" `isPrefixOf`) . lines
     extractValue = fst . break isSpace . dropWhile isSpace . drop pkgDbKeyLen
