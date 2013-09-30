@@ -95,6 +95,9 @@ parseInteractions (Located loc input) = go $ zipWith Located (enumerate loc) (li
       [] -> []
 
 -- | Create an `Interaction`, strip superfluous whitespace as appropriate.
+--
+-- also merge lines between :{ and :}, preserving whitespace inside
+-- the block (since this is useful for avoiding {;}).
 toInteraction :: Located String -> [Located String] -> Located Interaction
 toInteraction (Located loc x) xs = Located loc $
   (
@@ -105,29 +108,31 @@ toInteraction (Located loc x) xs = Located loc $
   where
     -- 1. drop trailing whitespace from the prompt, remember the prefix
     (prefix, e) = span isSpace x
+    (ePrompt, eRest) = splitAt 3 e
 
     -- 2. drop, if possible, the exact same sequence of whitespace
     -- characters from each result line
     --
     -- 3. interpret lines that only contain the string "<BLANKLINE>" as an
     -- empty line
-    result_ = map (substituteBlankLine . tryStripPrefix prefix . unLoc) xs'
+    getResult pfx xs' = map (substituteBlankLine . tryStripPrefix pfx . unLoc) xs'
       where
         tryStripPrefix pre ys = fromMaybe ys $ stripPrefix pre ys
 
         substituteBlankLine "<BLANKLINE>" = ""
         substituteBlankLine line          = line
 
+    
+    cleanBody line = fromMaybe (unLoc line)
+                    (stripPrefix ePrompt (dropWhile isSpace (unLoc line)))
 
-    cleanBody = drop 3 . dropWhile isSpace . unLoc
-
-    (cleanedE, xs')
+    (cleanedE, result_)
             | (body , endLine : rest) <- break
                     ( (==) [":}"] . take 1 . words . cleanBody)
                     xs
-                = (unlines (drop 3 e : map cleanBody body ++ [cleanBody endLine]),
-                        rest)
-            | otherwise = (drop 3 e, xs)
+                = (unlines (eRest : map cleanBody body ++ [cleanBody endLine]),
+                        getResult (takeWhile isSpace (unLoc endLine)) rest)
+            | otherwise = (eRest, getResult prefix xs)
 
 -- | Remove leading and trailing whitespace.
 strip :: String -> String
