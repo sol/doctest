@@ -130,7 +130,8 @@ toInteraction (Located loc x) xs = Located loc $
             | (body , endLine : rest) <- break
                     ( (==) [":}"] . take 1 . words . cleanBody)
                     xs
-                = (unlines (eRest : map cleanBody body ++ [cleanBody endLine]),
+                = (unlines (eRest : map cleanBody body ++
+                                [dropWhile isSpace (cleanBody endLine)]),
                         getResult (takeWhile isSpace (unLoc endLine)) rest)
             | otherwise = (eRest, getResult prefix xs)
 
