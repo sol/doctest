@@ -139,6 +139,30 @@ spec = do
         "11"
       r `shouldBe` [loc 26 $ ("4", ["5"]), loc 29 $ ("7", []), loc 31 $ ("9", ["10"])]
 
+    it "basic multiline" $ do
+      parse_ $ do
+        ">>> :{ first"
+        " next"
+        "some"
+        ":}"
+        "output"
+      `shouldBe` [(":{ first\n next\nsome\n:}", ["output"])]
+
+    it "multiline align output" $ do
+      parse_ $ do
+        ">>> :{ first"
+        "  :}"
+        "  output"
+      `shouldBe` [(":{ first\n:}", ["output"])]
+
+    it "multiline align output with >>>" $ do
+      parse_ $ do
+        " >>> :{ first"
+        " >>> :}"
+        " output"
+      `shouldBe` [(":{ first\n:}", ["output"])]
+
+
   describe " parseProperties (an internal function)" $ do
     let parse_ = map unLoc . parseProperties . noLocation . build
 
