@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternGuards #-}
 module Parse (
   Module (..)
 , DocTest (..)
@@ -18,6 +19,7 @@ import           Control.Applicative
 
 import           Extract
 import           Location
+
 
 data DocTest = Example Expression ExpectedResult | Property Expression
   deriving (Eq, Show)
@@ -77,9 +79,15 @@ parseInteractions (Located loc input) = go $ zipWith Located (enumerate loc) (li
     isEndOfInteraction :: Located String -> Bool
     isEndOfInteraction x = isPrompt x || isBlankLine x
 
+
     go :: [Located String] -> [Located Interaction]
     go xs = case dropWhile (not . isPrompt) xs of
-      prompt:rest ->
+      prompt:rest 
+       | ":{" : _ <- words (drop 3 (dropWhile isSpace (unLoc prompt))),
+         (ys,zs) <- break isBlankLine rest ->
+          toInteraction prompt ys : go zs
+       
+       | otherwise ->
         let
           (ys,zs) = break isEndOfInteraction rest
         in
@@ -90,7 +98,7 @@ parseInteractions (Located loc input) = go $ zipWith Located (enumerate loc) (li
 toInteraction :: Located String -> [Located String] -> Located Interaction
 toInteraction (Located loc x) xs = Located loc $
   (
-    (strip $ drop 3 e)  -- we do not care about leading and trailing
+    (strip   cleanedE)  -- we do not care about leading and trailing
                         -- whitespace in expressions, so drop them
   , result_
   )
@@ -103,13 +111,25 @@ toInteraction (Located loc x) xs = Located loc $
     --
     -- 3. interpret lines that only contain the string "<BLANKLINE>" as an
     -- empty line
-    result_ = map (substituteBlankLine . tryStripPrefix prefix . unLoc) xs
+    result_ = map (substituteBlankLine . tryStripPrefix prefix . unLoc) xs'
       where
         tryStripPrefix pre ys = fromMaybe ys $ stripPrefix pre ys
 
         substituteBlankLine "<BLANKLINE>" = ""
         substituteBlankLine line          = line
 
+
+    cleanBody = drop 3 . dropWhile isSpace . unLoc
+
+    (cleanedE, xs')
+            | (body , endLine : rest) <- break
+                    ( (==) [":}"] . take 1 . words . cleanBody)
+                    xs
+                = (unlines (drop 3 e : map cleanBody body ++ [cleanBody endLine]),
+                        rest)
+            | otherwise = (drop 3 e, xs)
+
 -- | Remove leading and trailing whitespace.
 strip :: String -> String
 strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
+
