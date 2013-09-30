@@ -111,6 +111,51 @@ foo :: Int
 foo = 42
 ```
 
+
+### Multi-line input
+GHCi supports commands which span multiple lines, and the same syntax works for doctest:
+
+```haskell
+-- |
+-- >>> :{
+--  let
+--    x = 1
+--    y = 2
+--  in x + y + multiline
+-- :}
+-- 6
+multiline = 3
+```
+
+Note that `>>>` can be left of for the lines following the first: this so that
+haddock does not strip leading whitespace. The expected output has whitespace
+stripped relative to the :}.
+
+Some peculiarities on the ghci side mean that whitespace at the very start is lost.
+This breaks the example `broken`, since the the x and y are aligned from ghci's
+perspective.  A workaround is to avoid leading space, or add a newline such
+that the indentation does not matter:
+
+```haskell
+{- | >>> {:
+let x = 1
+    y = 2
+  in x + y + works
+:}
+3
+-}
+works = 3
+
+{- | >>> {:
+ let x = 1
+     y = 2
+  in x + y + broken
+:}
+3
+-}
+broken = 3
+```
+
 ### QuickCheck properties
 
 Haddock (since version 2.13.0) has markup support for properties.  Doctest can

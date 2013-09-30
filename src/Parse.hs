@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternGuards #-}
 module Parse (
   Module (..)
 , DocTest (..)
@@ -18,6 +19,7 @@ import           Control.Applicative
 
 import           Extract
 import           Location
+
 
 data DocTest = Example Expression ExpectedResult | Property Expression
   deriving (Eq, Show)
@@ -77,9 +79,15 @@ parseInteractions (Located loc input) = go $ zipWith Located (enumerate loc) (li
     isEndOfInteraction :: Located String -> Bool
     isEndOfInteraction x = isPrompt x || isBlankLine x
 
+
     go :: [Located String] -> [Located Interaction]
     go xs = case dropWhile (not . isPrompt) xs of
-      prompt:rest ->
+      prompt:rest 
+       | ":{" : _ <- words (drop 3 (dropWhile isSpace (unLoc prompt))),
+         (ys,zs) <- break isBlankLine rest ->
+          toInteraction prompt ys : go zs
+       
+       | otherwise ->
         let
           (ys,zs) = break isEndOfInteraction rest
         in
@@ -87,29 +95,47 @@ parseInteractions (Located loc input) = go $ zipWith Located (enumerate loc) (li
       [] -> []
 
 -- | Create an `Interaction`, strip superfluous whitespace as appropriate.
+--
+-- also merge lines between :{ and :}, preserving whitespace inside
+-- the block (since this is useful for avoiding {;}).
 toInteraction :: Located String -> [Located String] -> Located Interaction
 toInteraction (Located loc x) xs = Located loc $
   (
-    (strip $ drop 3 e)  -- we do not care about leading and trailing
+    (strip   cleanedE)  -- we do not care about leading and trailing
                         -- whitespace in expressions, so drop them
   , result_
   )
   where
     -- 1. drop trailing whitespace from the prompt, remember the prefix
     (prefix, e) = span isSpace x
+    (ePrompt, eRest) = splitAt 3 e
 
     -- 2. drop, if possible, the exact same sequence of whitespace
     -- characters from each result line
     --
     -- 3. interpret lines that only contain the string "<BLANKLINE>" as an
     -- empty line
-    result_ = map (substituteBlankLine . tryStripPrefix prefix . unLoc) xs
+    getResult pfx xs' = map (substituteBlankLine . tryStripPrefix pfx . unLoc) xs'
       where
         tryStripPrefix pre ys = fromMaybe ys $ stripPrefix pre ys
 
         substituteBlankLine "<BLANKLINE>" = ""
         substituteBlankLine line          = line
 
+    
+    cleanBody line = fromMaybe (unLoc line)
+                    (stripPrefix ePrompt (dropWhile isSpace (unLoc line)))
+
+    (cleanedE, result_)
+            | (body , endLine : rest) <- break
+                    ( (==) [":}"] . take 1 . words . cleanBody)
+                    xs
+                = (unlines (eRest : map cleanBody body ++
+                                [dropWhile isSpace (cleanBody endLine)]),
+                        getResult (takeWhile isSpace (unLoc endLine)) rest)
+            | otherwise = (eRest, getResult prefix xs)
+
 -- | Remove leading and trailing whitespace.
 strip :: String -> String
 strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
+
