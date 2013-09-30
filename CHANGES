@@ -1,3 +1,6 @@
+Changes in 0.9.9
+ - Add support for multi-line statements
+
 Changes in 0.9.8
  - Support for GHC HEAD (7.7)
 
