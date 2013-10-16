@@ -1,9 +1,9 @@
 {-# LANGUAGE CPP #-}
 module GhcUtil (withGhc) where
 
-import           Control.Exception
 import           GHC.Paths (libdir)
 #if __GLASGOW_HASKELL__ < 707
+import           Control.Exception
 import           GHC hiding (flags)
 import           DynFlags (dopt_set)
 #else
@@ -14,12 +14,12 @@ import           Panic (throwGhcException)
 
 import           MonadUtils (liftIO)
 import           System.Exit (exitFailure)
-import           StaticFlags (v_opt_C_ready)
-import           Data.IORef (writeIORef)
 
 #if __GLASGOW_HASKELL__ < 702
-#else
+#elif __GLASGOW_HASKELL__ < 707
 import           StaticFlags (saveStaticFlagGlobals, restoreStaticFlagGlobals)
+#else
+import           StaticFlags (discardStaticFlags)
 #endif
 
 
@@ -29,8 +29,10 @@ bracketStaticFlags :: IO a -> IO a
 -- GHC < 7.2 does not provide saveStaticFlagGlobals/restoreStaticFlagGlobals,
 -- so we need to modifying v_opt_C_ready directly
 bracketStaticFlags action = action `finally` writeIORef v_opt_C_ready False
-#else
+#elif __GLASGOW_HASKELL__ < 707
 bracketStaticFlags action = bracket saveStaticFlagGlobals restoreStaticFlagGlobals (const action)
+#else
+bracketStaticFlags action = action
 #endif
 
 -- Catch GHC source errors, print them and exit.
@@ -46,14 +48,17 @@ handleSrcErrors action' = flip handleSourceError action' $ \err -> do
 -- | Run a GHC action in Haddock mode
 withGhc :: [String] -> ([String] -> Ghc a) -> IO a
 withGhc flags action = bracketStaticFlags $ do
-  writeIORef v_opt_C_ready False
   flags_ <- handleStaticFlags flags
 
   runGhc (Just libdir) $ do
     handleDynamicFlags flags_ >>= handleSrcErrors . action
 
 handleStaticFlags :: [String] -> IO [Located String]
+#if __GLASGOW_HASKELL__ < 707
 handleStaticFlags flags = fst `fmap` parseStaticFlags (map noLoc flags)
+#else
+handleStaticFlags flags = return $ map noLoc $ discardStaticFlags flags
+#endif
 
 handleDynamicFlags :: GhcMonad m => [Located String] -> m [String]
 handleDynamicFlags flags = do
