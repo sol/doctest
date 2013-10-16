@@ -16,6 +16,8 @@ import           MonadUtils (liftIO)
 import           System.Exit (exitFailure)
 
 #if __GLASGOW_HASKELL__ < 702
+import           StaticFlags (v_opt_C_ready)
+import           Data.IORef (writeIORef)
 #elif __GLASGOW_HASKELL__ < 707
 import           StaticFlags (saveStaticFlagGlobals, restoreStaticFlagGlobals)
 #else
