@@ -9,8 +9,6 @@ import           DynFlags (dopt_set)
 #else
 import           GHC
 import           DynFlags (gopt_set)
-import           Data.IORef (writeIORef)
-import           StaticFlags (v_opt_C_ready)
 #endif
 import           Panic (throwGhcException)
 
@@ -50,9 +48,6 @@ handleSrcErrors action' = flip handleSourceError action' $ \err -> do
 -- | Run a GHC action in Haddock mode
 withGhc :: [String] -> ([String] -> Ghc a) -> IO a
 withGhc flags action = bracketStaticFlags $ do
-#if __GLASGOW_HASKELL__ >= 707
-  writeIORef v_opt_C_ready False
-#endif
   flags_ <- handleStaticFlags flags
 
   runGhc (Just libdir) $ do
@@ -62,7 +57,7 @@ handleStaticFlags :: [String] -> IO [Located String]
 #if __GLASGOW_HASKELL__ < 707
 handleStaticFlags flags = fst `fmap` parseStaticFlags (map noLoc flags)
 #else
-handleStaticFlags flags = fst `fmap` parseStaticFlags (map noLoc (discardStaticFlags flags))
+handleStaticFlags flags = return $ map noLoc $ discardStaticFlags flags
 #endif
 
 handleDynamicFlags :: GhcMonad m => [Located String] -> m [String]
