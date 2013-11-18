@@ -82,7 +82,7 @@ test-suite spec
   c-sources:
       test/integration/with-cbits/foo.c
   build-depends:
-      base-compat   >= 0.2.1
+      base
     , ghc
     , syb
     , deepseq

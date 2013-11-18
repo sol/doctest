@@ -5,7 +5,8 @@ import           Test.Hspec
 import           Test.QuickCheck
 import           System.Exit
 
-import           Control.Exception
+import           Control.Applicative
+import qualified Control.Exception as E
 #if __GLASGOW_HASKELL__ < 707
 import           System.Cmd
 #else
@@ -14,7 +15,6 @@ import           System.Process
 import           System.Directory (getCurrentDirectory, setCurrentDirectory, removeDirectoryRecursive)
 import           Data.List
 
-import qualified Control.Exception as E
 import           System.Environment
 #if !MIN_VERSION_base(4,7,0)
 import           System.SetEnv
@@ -28,18 +28,18 @@ import           Run
 
 withCurrentDirectory :: FilePath -> IO a -> IO a
 withCurrentDirectory workingDir action = do
-  bracket getCurrentDirectory setCurrentDirectory $ \_ -> do
+  E.bracket getCurrentDirectory setCurrentDirectory $ \_ -> do
     setCurrentDirectory workingDir
     action
 
 rmDir :: FilePath -> IO ()
-rmDir dir = removeDirectoryRecursive dir `catch` (const $ return () :: IOException -> IO ())
+rmDir dir = removeDirectoryRecursive dir `E.catch` (const $ return () :: E.IOException -> IO ())
 
 withEnv :: String -> String -> IO a -> IO a
 withEnv k v action = E.bracket save restore $ \_ -> do
   setEnv k v >> action
   where
-    save    = lookupEnv k
+    save    = lookup k <$> getEnvironment
     restore = maybe (unsetEnv k) (setEnv k)
 
 main :: IO ()
@@ -73,7 +73,7 @@ spec = do
         ]
 
     it "prints error message on invalid option" $ do
-      (r, e) <- hCapture [stderr] . try $ doctest ["--foo", "test/integration/test-options/Foo.hs"]
+      (r, e) <- hCapture [stderr] . E.try $ doctest ["--foo", "test/integration/test-options/Foo.hs"]
       e `shouldBe` Left (ExitFailure 1)
       r `shouldBe` unlines [
           "doctest: unrecognized option `--foo'"
@@ -92,7 +92,7 @@ spec = do
         hCapture_ [stderr] (doctest ["test/integration/custom-package-conf/Bar.hs"])
           `shouldReturn` "Examples: 2  Tried: 2  Errors: 0  Failures: 0\n"
 
-      `finally` do
+      `E.finally` do
         rmDir "test/integration/custom-package-conf/packages/"
         rmDir "test/integration/custom-package-conf/foo/dist/"
 
@@ -104,7 +104,7 @@ spec = do
         hSilence [stderr] action `shouldThrow` (== ExitFailure 1)
 
       it "prints a useful error message" $ do
-        (r, _) <- hCapture [stderr] (try action :: IO (Either ExitCode Summary))
+        (r, _) <- hCapture [stderr] (E.try action :: IO (Either ExitCode Summary))
 #if __GLASGOW_HASKELL__ < 706
         r `shouldBe` "\nFoo.hs:6:1: parse error (possibly incorrect indentation)\n"
 #else
