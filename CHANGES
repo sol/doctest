@@ -1,3 +1,6 @@
+Changes in 0.9.10
+ - Add support for the upcoming GHC 7.8 release
+
 Changes in 0.9.9
  - Add support for multi-line statements
 
