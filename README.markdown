@@ -261,6 +261,7 @@ changes.
 
 ## Contributors
 
+ * Adam Vogt
  * Ankit Ahuja
  * Edward Kmett
  * Hiroki Hattori
