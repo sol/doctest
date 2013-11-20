@@ -12,5 +12,5 @@ import Text.Printf
 logError :: String -> Q Exp
 logError msg = do
   loc <- location
-  let s = printf "ERROR %s: %s" (loc_filename loc) msg
+  let s = (printf "ERROR %s: %s" (loc_filename loc) msg) :: String
   [| putStrLn s |]
