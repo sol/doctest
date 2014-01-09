@@ -12,10 +12,10 @@ import           Location
                  (Located (Located)
                  , Location (Location,UnhelpfulLocation))  
 import           Parse (DocTest)
-import           Data.List (partition,isPrefixOf,stripPrefix,filter,null)
+import           Data.List (isPrefixOf,stripPrefix)
 import           Data.Monoid (Monoid (mempty,mappend))
 import           Control.Applicative ((<$>),(<*>),pure)
-import           Data.Either (Either,either)
+--import           Data.Either (Either,either)
 import           Control.Monad.Trans.State 
                  ( StateT (StateT)
                  , get
