@@ -214,6 +214,14 @@ Alternatively you can pass any GHC options to Doctest, e.g.:
 
 [language-pragma]: http://www.haskell.org/ghc/docs/latest/html/users_guide/pragmas.html#language-pragma
 
+### Running specific tests
+
+You can choose to run a subset of your doctests in a project by specifying one or more --dt--select flags.s
+
+    doctest --dt-select=Foo       src/*.hs # All tests in the Foo module
+    doctest --dt-select=Foo:22    src/*.hs # Doctest on line 22 of module Foo
+    doctest --dt-select=Foo:22-25 src/*.hs # Doctest between lines 22 and 25 inclusive.
+
 ### Cabal integration
 
 Doctest provides both, an executable and a library.  The library exposes a
