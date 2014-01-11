@@ -23,7 +23,7 @@ doctest :: FilePath   -- ^ current directory of `doctest` process
         -> Summary    -- ^ expected test result
         -> Assertion
 doctest workingDir args summary = do
-  r <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctest_ args)
+  r <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctest_ [] args )
   assertEqual label summary r
   where
     label = workingDir ++ " " ++ show args

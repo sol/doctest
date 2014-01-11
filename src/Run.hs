@@ -104,7 +104,7 @@ doctest_ :: [TestSelector] -> [String] -> IO Summary
 doctest_ testSelectors args = do
 
   -- get examples from Haddock comments
-  modules <- (filterModules testSelectors) <$> getDocTests args
+  modules <- filterModules testSelectors <$> getDocTests args
 
   Interpreter.withInterpreter args $ \repl -> do
     runModules repl modules

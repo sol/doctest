@@ -98,7 +98,7 @@ spec = do
 
   describe "doctest_" $ do
     context "on parse error" $ do
-      let action = withCurrentDirectory "test/integration/parse-error" (doctest_ ["Foo.hs"])
+      let action = withCurrentDirectory "test/integration/parse-error" (doctest_ [] ["Foo.hs"])
 
       it "aborts with (ExitFailure 1)" $ do
         hSilence [stderr] action `shouldThrow` (== ExitFailure 1)

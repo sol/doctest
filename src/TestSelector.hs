@@ -15,15 +15,11 @@ import           Parse (DocTest)
 import           Data.List (isPrefixOf,stripPrefix)
 import           Data.Monoid (Monoid (mempty,mappend))
 import           Control.Applicative ((<$>),(<*>),pure)
---import           Data.Either (Either,either)
 import           Control.Monad.Trans.State 
                  ( StateT (StateT)
-                 , get
                  , modify
                  , evalStateT
                  , runStateT )
-import           Data.Tuple (swap)
-import           Data.Maybe (maybe)
 import           Data.Char (isDigit)
 
 type GhcArg = String
@@ -56,11 +52,11 @@ extractTestSelectors = foldl accumSelector $ Right mempty
   where     
     accumSelector :: ArgParserEither Args -> String -> ArgParserEither Args
     accumSelector a arg = 
-      mappend <$> a <*> if isPrefixOf prefix arg 
+      mappend <$> a <*> if prefix `isPrefixOf` arg 
                         then fmap (\ts -> Args [ts] []) $ parseTestSelector arg
                         else pure $ Args [] [arg]
     parseTestSelector :: String -> ArgParserEither TestSelector
-    parseTestSelector s = (flip evalStateT) s $ do
+    parseTestSelector s = flip evalStateT s $ do
       expectText prefix
       modName  <- spanParse (/= ':') "Module name"
       parseDrop 1 
@@ -97,16 +93,30 @@ extractTestSelectors = foldl accumSelector $ Right mempty
 prefix :: String    
 prefix = "--dt-select="
 
-filterModules :: [TestSelector] -> [Module [Located DocTest]] -> [Module [Located DocTest]]
-filterModules ss = filter (not . null . moduleContent) . map (filterModuleContent ss)
+filterModules :: 
+  [TestSelector] -> 
+  [Module [Located DocTest]] -> 
+  [Module [Located DocTest]]
+filterModules ss = 
+  filter (not . null . moduleContent) . map (filterModuleContent ss)
 
-filterModuleContent :: [TestSelector] -> Module [Located DocTest] -> Module [Located DocTest] 
+filterModuleContent :: 
+  [TestSelector] -> 
+  Module [Located DocTest] -> 
+  Module [Located DocTest] 
 filterModuleContent [] m = m
-filterModuleContent ss m = filterLines $ filter ((moduleName m ==) . selectModule ) ss
+filterModuleContent ss m = filterContent applicableSelectors 
   where 
-    filterLines ss' = m { moduleContent = filter (not . null) $ map (filter $ filterDocTest ss') $ moduleContent m }
-    filterDocTest :: [TestSelector] -> Located DocTest -> Bool
-    filterDocTest _ (Located (UnhelpfulLocation _) _) = False
-    filterDocTest ss' (Located (Location _ line) _) = 
-      any (\s -> line == lineStart s ) ss'
+   applicableSelectors = filter ((moduleName m ==) . selectModule ) ss
+   filterContent ss' = m { moduleContent = filteredContent ss' }
+   
+   filteredContent ss' = 
+     filter (not . null) $ map (filter $ filterDocTest ss') $ moduleContent m
+     
+   filterDocTest _ (Located (UnhelpfulLocation _) _) = False
+   filterDocTest ss' (Located (Location _ l) _) = any (selectorMatches l) ss'
+
+   selectorMatches line (TestSelector _ s Nothing)  = line == s 
+   selectorMatches line (TestSelector _ s (Just e)) = line >= s && line <= e
+
 
