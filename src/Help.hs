@@ -18,10 +18,12 @@ usage = unlines [
         , "Options:"
         , "  --help      display this help and exit"
         , "  --version   output version information and exit"
-        , "  --dt-select=<Module>:<firstLine>[-lastLine] "
+        , "  --dt-select=<Module>:[<firstLine>[-lastLine]]"
         , "              Selectively run doctests based on Module and line"
         , "              numbers. Can specify more than one of this option."
-        , "              e.g: --dt-select=Foo:13 --dt-select=Bar:13-15"
+        , "              e.g: --dt-select=Foo       All tests in Foo"
+        , "                   --dt-select=Foo:13    Foo line 13 " 
+        , "                   --dt-select=Bar:13-15 Foo lines 13-15"
         ]
 
 printVersion :: IO ()

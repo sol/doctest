@@ -22,14 +22,29 @@ spec = do
       extractTestSelectors 
         [ "--dt-select=foo:21" ,"bar"] 
         `shouldBe` 
-        (Right $ Args [TestSelector "foo" 21 Nothing] ["bar"])      
-        
+        (Right $ Args [TestSelector "foo" $ SingleLine 21] ["bar"])      
+
     it "should return a selector with start and end line num" $ 
       extractTestSelectors 
         [ "--dt-select=foo:21-23"] 
         `shouldBe` 
-        (Right $ Args [TestSelector "foo" 21 (Just 23)] [])              
-        
+        (Right $ Args [TestSelector "foo" $ LineRange 21 23] [])              
+    
+    it "should return AllLines lineSelector if no line numbers given" $
+      extractTestSelectors [ "--dt-select=foo" , "rest"] 
+      `shouldBe`
+      (Right $ Args [TestSelector "foo" AllLines] ["rest"])
+      
+    it "should return left if just line numbers given" $
+      extractTestSelectors [ "--dt-select=21-23"]
+      `shouldBe`
+      (Left $ ArgParserError "Module name starting with a letter" "21-23")
+
+    it "should return left if no module given" $
+      extractTestSelectors [ "--dt-select="]
+      `shouldBe`
+      (Left $ ArgParserError "Module name starting with a letter" "")
+
   describe "filterModuleContent" $ do
     let loc1 = Located (Location "" 13) (Property " ")
         loc2 = Located (Location "" 22) (Property " ")
@@ -41,19 +56,24 @@ spec = do
       filterModuleContent [] testModule `shouldBe` testModule 
 
     it "should filter everything with a selector that doesn't apply" $ 
-      filterModuleContent [TestSelector "bar" 22 Nothing] testModule
+      filterModuleContent [TestSelector "bar" AllLines] testModule
       `shouldBe` 
       testModule { moduleContent = [] }       
       
     it "should keep the stuff that is selected" $ 
-      filterModuleContent [TestSelector "foo" 22 Nothing] testModule
+      filterModuleContent [TestSelector "foo" $ SingleLine 22] testModule
       `shouldBe` 
       testModule { moduleContent = [[loc2]] }
       
     it "should filter a range" $
-      filterModuleContent [TestSelector "foo" 13 (Just 22)] testModule
+      filterModuleContent [TestSelector "foo" $ LineRange 13 22] testModule
       `shouldBe`
       testModule { moduleContent = [[loc1,loc2]] }
+      
+    it "should include all lines of a AllLines lineselected module" $
+      filterModuleContent [TestSelector "foo" AllLines] testModule
+      `shouldBe`
+      testModule { moduleContent = [[loc1,loc2,loc3]]} 
 
   describe "filterModules" $ do 
     let loc1 = Located (Location "" 13) (Property " ")
@@ -66,24 +86,24 @@ spec = do
       filterModules [] testModules `shouldBe` testModules
 
     it "should filter stuff" $  
-      filterModules [TestSelector "foo" 22 Nothing] testModules
+      filterModules [TestSelector "foo" $ SingleLine 22] testModules
       `shouldBe`
       [testModule1 {moduleContent = [[loc2]] }]
       
     it "should filter fine with two selectors" $  
       filterModules [
-        TestSelector "foo" 22 Nothing
-        , TestSelector "bar" 13 Nothing]  testModules
+        TestSelector "foo" $ SingleLine 22
+        , TestSelector "bar" $ SingleLine 13]  testModules
       `shouldBe`
       [testModule1 {moduleContent = [[loc2]] }
       , testModule2 {moduleContent = [[loc1]] } ]
 
     it "should filter a range" $
-      filterModules [ TestSelector "foo" 13 (Just 22) ] testModules
+      filterModules [ TestSelector "foo" $ LineRange 13 22] testModules
       `shouldBe`
       [testModule1]
 
     it "should remove modules which become empty" $ 
-      filterModules [TestSelector "foo" 22 Nothing] testModules
+      filterModules [TestSelector "foo" $ SingleLine 22] testModules
       `shouldBe`
       [testModule1 {moduleContent = [[loc2]]}]     
