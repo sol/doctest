@@ -62,7 +62,7 @@ executable doctest
   main-is:
       Main.hs
   ghc-options:
-      -Wall 
+      -Wall -threaded
   hs-source-dirs:
       driver
   build-depends:
