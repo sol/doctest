@@ -44,6 +44,27 @@ spec = do
       extractTestSelectors [ "--dt-select="]
       `shouldBe`
       (Left $ ArgParserError "Module name starting with a letter" "")
+      
+    it "should return left if no equals given" $
+      extractTestSelectors [ "--dt-select"]
+      `shouldBe`
+      (Left $ ArgParserError "=" "")
+      
+    it "should return left if --dt-select=<Module>: given" $
+      extractTestSelectors [ "--dt-select=Foo:"]
+      `shouldBe`
+      lineSelectorParseError ":"
+
+
+    it "should return left if start line isn't a number" $
+      extractTestSelectors [ "--dt-select=Foo:bar" ]
+      `shouldBe`
+      lineSelectorParseError ":bar"
+      
+    it "should return left if start line isn't a number" $
+      extractTestSelectors [ "--dt-select=Foo:1-foo" ]
+      `shouldBe`
+      lineSelectorParseError ":1-foo"
 
   describe "filterModuleContent" $ do
     let loc1 = Located (Location "" 13) (Property " ")
@@ -74,6 +95,16 @@ spec = do
       filterModuleContent [TestSelector "foo" AllLines] testModule
       `shouldBe`
       testModule { moduleContent = [[loc1,loc2,loc3]]} 
+      
+    it "should include all lines from start to the specified line" $
+      filterModuleContent [TestSelector "foo" $ FromStart 22] testModule
+      `shouldBe`
+      testModule { moduleContent = [[loc1,loc2]] }
+      
+    it "should include all lines from start to the specified line" $
+      filterModuleContent [TestSelector "foo" $ FromEnd 22] testModule
+      `shouldBe`
+      testModule { moduleContent = [[loc2,loc3]] }
 
   describe "filterModules" $ do 
     let loc1 = Located (Location "" 13) (Property " ")
@@ -107,3 +138,8 @@ spec = do
       filterModules [TestSelector "foo" $ SingleLine 22] testModules
       `shouldBe`
       [testModule1 {moduleContent = [[loc2]]}]     
+
+lineSelectorParseError :: String -> Either ArgParserError a 
+lineSelectorParseError = 
+  Left . ArgParserError "<Empty>|:<LineNum>|:-<EndLine>|:<StartLine>-|:<StartLine>-<EndLine>" 
+

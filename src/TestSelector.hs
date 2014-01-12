@@ -22,6 +22,7 @@ import           Control.Monad.Trans.State
                  , runStateT )
 import           Data.Char (isDigit,isLetter)
 import           Data.Maybe (fromMaybe)
+import           Data.Either (rights)
 
 type GhcArg = String
 data Args = Args [TestSelector] [GhcArg] deriving (Show,Eq)
@@ -36,7 +37,12 @@ data TestSelector = TestSelector {
   } deriving (Show,Eq)
 
 data LineSelector = 
-  AllLines | SingleLine Int | LineRange Int Int deriving (Show,Eq)
+  AllLines | 
+  SingleLine Int | 
+  FromStart Int | 
+  FromEnd Int | 
+  LineRange Int Int 
+  deriving (Show,Eq)
 
 data ArgParserError = ArgParserError { 
   expected :: String,
@@ -63,18 +69,56 @@ extractTestSelectors = foldl accumSelector $ Right mempty
       mappend <$> a <*> if prefix `isPrefixOf` arg 
                         then fmap (\ts -> Args [ts] []) $ parseTestSelector arg
                         else pure $ Args [] [arg]
+                        
     parseTestSelector :: String -> ArgParserEither TestSelector
     parseTestSelector s = flip evalStateT s $ do
       expectText prefix
+      expectText "="
+      modNm   <- parseModule
+      lineSel <- firstMatch [
+        parseLineRange
+        , parseFromStart
+        , parseFromEnd
+        , parseSingleLine
+        , parseAllLines
+        ]
+        "<Empty>|:<LineNum>|:-<EndLine>|:<StartLine>-|:<StartLine>-<EndLine>"
+      return $ TestSelector modNm lineSel
+
+    parseAllLines = const AllLines <$> expectEof
+    parseLineRange = do
+      start <- parseLineStart
+      end   <- parseLineEnd
+      expectEof
+      return $ LineRange start end
+      
+    parseFromStart = do
+      expectText ":"
+      end   <- parseLineEnd
+      expectEof
+      return $ FromStart end
+
+    parseFromEnd = do
+      start <- parseLineStart
+      expectText "-"
+      expectEof
+      return $ FromStart start
+      
+    parseSingleLine = do 
+      start <- parseLineStart
+      expectEof
+      return $ SingleLine start
+
+    parseModule = do
       modStart <- expect isLetter "Module name starting with a letter"
       modRest  <- fromMaybe "" <$> tryParse (spanParse (/= ':') "Module name")
-      ls <- tryParse parseLineStart
-      le <- tryParse parseLineEnd
-      return $ TestSelector (modStart : modRest) $ makeLineSelector ls le
+      return (modStart:modRest)
 
-    makeLineSelector Nothing _         = AllLines
-    makeLineSelector (Just s) Nothing  = SingleLine s
-    makeLineSelector (Just s) (Just e) = LineRange s e
+    firstMatch ps desc = StateT $ \s ->
+      maybe 
+        (Left $ ArgParserError desc s)
+        Right 
+        ( headMaybe . rights . map (`runStateT` s) $ ps)
 
     expect :: (Char -> Bool) -> String -> ArgParser Char
     expect p d = StateT $ \s -> 
@@ -83,6 +127,8 @@ extractTestSelectors = foldl accumSelector $ Right mempty
         (\c -> if p c then Right (c,tail s) else Left $ ArgParserError d s)
         (headMaybe s)
 
+    expectEof = StateT $ \s -> 
+      if null s then Right ((),s) else Left $ ArgParserError "" s  
 
     headMaybe []     = Nothing
     headMaybe (x:_) = Just x
@@ -116,7 +162,7 @@ extractTestSelectors = foldl accumSelector $ Right mempty
         (runStateT p s) 
 
 prefix :: String    
-prefix = "--dt-select="
+prefix = "--dt-select"
 
 filterModules :: 
   [TestSelector] -> 
@@ -143,6 +189,8 @@ filterModuleContent ss m = filterContent applicableSelectors
 
    selectorMatches _ (TestSelector _ AllLines)        = True
    selectorMatches l (TestSelector _ (SingleLine s))  = l == s 
+   selectorMatches l (TestSelector _ (FromStart e))   = l <= e
+   selectorMatches l (TestSelector _ (FromEnd s))     = l >= s
    selectorMatches l (TestSelector _ (LineRange s e)) = l >= s && l <= e
 
 
