@@ -10,6 +10,10 @@ import           Interpreter (withInterpreter)
 main :: IO ()
 main = hspec spec
 
+isFailure :: PropertyResult -> Bool
+isFailure (Failure _) = True
+isFailure _ = False
+
 spec :: Spec
 spec = do
   describe "runProperty" $ do
@@ -50,6 +54,9 @@ spec = do
     it "reports the values for which a property that takes multiple arguments fails" $ withInterpreter [] $ \repl -> do
       let vals x = case x of (Failure r) -> tail (lines r); _ -> error "Property did not fail!"
       vals `fmap` runProperty repl "x == True && y == 10 && z == \"foo\"" `shouldReturn` ["False", "0", show ("" :: String)]
+
+    it "defaults ambiguous type variables to Integer" $ withInterpreter [] $ \repl -> do
+      runProperty repl "reverse xs == xs" >>= (`shouldSatisfy` isFailure)
 
   describe "freeVariables" $ do
     it "finds a free variables in a term" $ withInterpreter [] $ \repl -> do
