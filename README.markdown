@@ -271,6 +271,6 @@ changes.
  * Levent Erkok
  * Matvey Aksenov
  * Michael Snoyman
+ * Nick Smallbone
  * Sakari Jokinen
  * Simon Hengel
- * Nick Smallbone
