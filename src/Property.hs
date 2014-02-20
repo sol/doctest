@@ -24,8 +24,11 @@ data PropertyResult =
 
 runProperty :: Interpreter -> Expression -> IO PropertyResult
 runProperty repl expression = do
-  _ <- Interpreter.eval repl "import Test.QuickCheck (quickCheck, (==>))"
-  r <- closeTerm expression >>= (Interpreter.safeEval repl . quickCheck)
+  _ <- Interpreter.eval repl "import Test.QuickCheck ((==>))"
+  _ <- Interpreter.eval repl "import Test.QuickCheck.All (polyQuickCheck)"
+  _ <- Interpreter.eval repl ":set -XTemplateHaskell"
+  r <- freeVariables repl expression >>=
+       (Interpreter.safeEval repl . quickCheck expression)
   case r of
     Left err -> do
       return (Error err)
@@ -35,16 +38,9 @@ runProperty repl expression = do
           let msg =  stripEnd (takeWhileEnd (/= '\b') res)
           return (Failure msg)
   where
-    quickCheck term = "quickCheck (" ++ term ++ ")"
-
-    -- | Find all free variables in given term, and close it by abstrating over
-    -- them.
-    closeTerm :: String -> IO String
-    closeTerm term = do
-      r <- freeVariables repl (quickCheck term)
-      case r of
-        []   -> return term
-        vars -> return ("\\" ++ unwords vars ++ "-> (" ++ term ++ ")")
+    quickCheck term vars =
+      "let doctest_prop " ++ unwords vars ++ " = " ++ term ++
+      " in $(polyQuickCheck 'doctest_prop)"
 
 -- | Find all free variables in given term.
 --
