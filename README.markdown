@@ -273,3 +273,4 @@ changes.
  * Michael Snoyman
  * Sakari Jokinen
  * Simon Hengel
+ * Nick Smallbone
