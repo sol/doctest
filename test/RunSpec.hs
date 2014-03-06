@@ -15,10 +15,7 @@ import           System.Process
 import           System.Directory (getCurrentDirectory, setCurrentDirectory, removeDirectoryRecursive)
 import           Data.List
 
-import           System.Environment
-#if !MIN_VERSION_base(4,7,0)
-import           System.SetEnv
-#endif
+import           System.Environment.Compat
 
 import           System.IO.Silently
 import           System.IO (stderr)
