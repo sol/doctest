@@ -92,7 +92,7 @@ test-suite spec
     , ghc-paths
     , transformers
 
-    , base-compat   >= 0.4.1
+    , base-compat   >= 0.4.2
     , HUnit
     , hspec         >= 1.5.1
     , QuickCheck    >= 2.5
