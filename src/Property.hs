@@ -26,6 +26,7 @@ runProperty :: Interpreter -> Expression -> IO PropertyResult
 runProperty repl expression = do
   _ <- Interpreter.eval repl "import Test.QuickCheck ((==>))"
   _ <- Interpreter.eval repl "import Test.QuickCheck.All (polyQuickCheck)"
+  _ <- Interpreter.eval repl "import Language.Haskell.TH (mkName)"
   _ <- Interpreter.eval repl ":set -XTemplateHaskell"
   r <- freeVariables repl expression >>=
        (Interpreter.safeEval repl . quickCheck expression)
@@ -39,8 +40,8 @@ runProperty repl expression = do
           return (Failure msg)
   where
     quickCheck term vars =
-      "let doctest_prop " ++ unwords vars ++ " = " ++ term ++
-      " in $(polyQuickCheck 'doctest_prop)"
+      "let doctest_prop " ++ unwords vars ++ " = " ++ term ++ "\n" ++
+      "$(polyQuickCheck (mkName \"doctest_prop\"))"
 
 -- | Find all free variables in given term.
 --
