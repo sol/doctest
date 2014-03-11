@@ -90,7 +90,7 @@ spec = do
 
     it "gives an error message for identifiers that are not in scope" $ withInterpreter $ \ghci -> do
 #if __GLASGOW_HASKELL__ >= 707
-      ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: \8219foo\8217\n")
+      ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: \8216foo\8217\n")
 #else
       ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: `foo'\n")
 #endif
