@@ -65,6 +65,6 @@ parseNotInScope = nub . map extractVariable . filter ("Not in scope: " `isInfixO
     -- | Remove quotes from given name, if any.
     unquote ('`':xs)     = init xs
 #if __GLASGOW_HASKELL__ >= 707
-    unquote ('\8219':xs) = init xs
+    unquote ('\8216':xs) = init xs
 #endif
     unquote xs           = xs
