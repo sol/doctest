@@ -1,4 +1,4 @@
-Next
+Changes in 0.9.11
  - Defaults ambiguous type variables to Integer (#74)
 
 Changes in 0.9.10
