@@ -22,6 +22,11 @@ import           Parse
 import           Help
 import           Runner
 import qualified Interpreter
+import           TestSelector 
+                 ( extractTestSelectors
+                 , filterModules
+                 , Args (Args)
+                 , TestSelector )
 
 ghcPackageDbFlag :: String
 #if __GLASGOW_HASKELL__ >= 706
@@ -58,18 +63,25 @@ doctest args
         hPutStrLn stderr "WARNING: GHC does not support --interactive, skipping tests"
         exitSuccess
 
-      let (f, args_) = stripOptGhc args
-      when f $ do
-        hPutStrLn stderr "WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."
-        hFlush stderr
-      r <- doctest_ (addPackageConf args_) `E.catch` \e -> do
-        case fromException e of
-          Just (UsageError err) -> do
-            hPutStrLn stderr ("doctest: " ++ err)
-            hPutStrLn stderr "Try `doctest --help' for more information."
-            exitFailure
-          _ -> E.throwIO e
-      when (not $ isSuccess r) exitFailure
+      either  
+        (usageError . show)
+        (\ (Args selectors ghcArgs) -> do
+          let (f  , args_) = stripOptGhc ghcArgs
+
+          when f $ do
+            hPutStrLn stderr "WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."
+            hFlush stderr
+          r <- doctest_ selectors (addPackageConf args_) `E.catch` \e -> do
+            case fromException e of
+              Just (UsageError err) -> usageError err
+              _ -> E.throwIO e
+          when (not $ isSuccess r) exitFailure)
+       (extractTestSelectors args)
+    where
+      usageError err = do
+        hPutStrLn stderr ("doctest: " ++ err)
+        hPutStrLn stderr "Try `doctest --help' for more information."
+        exitFailure
 
 isSuccess :: Summary -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
@@ -88,11 +100,11 @@ stripOptGhc = go
       "--optghc" : opt : rest -> (True, opt : snd (go rest))
       opt : rest              -> maybe (fmap (opt :)) (\x (_, xs) -> (True, x :xs)) (stripPrefix "--optghc=" opt) (go rest)
 
-doctest_ :: [String] -> IO Summary
-doctest_ args = do
+doctest_ :: [TestSelector] -> [String] -> IO Summary
+doctest_ testSelectors args = do
 
   -- get examples from Haddock comments
-  modules <- getDocTests args
+  modules <- filterModules testSelectors <$> getDocTests args
 
   Interpreter.withInterpreter args $ \repl -> do
     runModules repl modules
