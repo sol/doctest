@@ -210,9 +210,62 @@ pragmas] [language-pragma] in your source files.
 
 Alternatively you can pass any GHC options to Doctest, e.g.:
 
-    doctest -cpp Foo.hs
+    doctest -XCPP Foo.hs
 
 [language-pragma]: http://www.haskell.org/ghc/docs/latest/html/users_guide/pragmas.html#language-pragma
+
+#### OverloadedStrings example
+
+It should be noted that Doctest behaves like ghci.
+Let's say you want to use the [OverloadedStrings] [overloaded-strings]
+[LANGUAGE pragma] [language-pragma]. In this case, the [LANGUAGE pragmas] [language-pragma]
+allows you to use [OverloadedStrings] [overloaded-strings] in the source file.
+If you want to use them in examples, too, you have to explicitly say so.
+
+There are three ways to deal with this:
+
+1.  Pass ```-XOverloadedStrings``` to doctest
+
+2.  Make it part of your example
+
+    ```Haskell
+    -- | Xpto function
+    --
+    -- This is meant to be used with GHC's `OverloadedStrings` extension:
+    --
+    -- >>> :set -XOverloadedStrings
+    -- 
+    -- >>> xpto "what?"
+    -- "what?:xpto!"
+    xpto :: Text -> Text
+    xpto = (<> ":xtpo!")
+    ```
+
+3.  Putting it into a ```$setup``` hook
+
+    ```Haskell
+    -- $setup
+    -- The code examples in this module require GHC's `OverloadedStrings`
+    -- extension:
+    --
+    -- >>> :set -XOverloadedStrings
+    
+    -- | Xpto function
+    -- >>> xpto "what?"
+    -- "what?:xpto!"
+    xpto :: Text -> Text
+    xpto = (<> ":xtpo!")
+    ```
+
+Note that a ```$setup``` hook is also a named chunk, 
+so you can refer to it in the module header 
+(that way making it part of the module documentation).
+
+The third (3) option may be preferable, as it puts you in the 
+flexible position to show/hide the dependency of your code examples
+on OverloadedStrings (as you deem fit).
+
+[overloaded-strings]: http://www.haskell.org/ghc/docs/7.8.2/html/users_guide/type-class-extensions.html#overloaded-strings
 
 ### Cabal integration
 
