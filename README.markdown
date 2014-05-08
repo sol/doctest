@@ -320,6 +320,7 @@ changes.
  * Edward Kmett
  * Hiroki Hattori
  * Joachim Breitner
+ * João Cristóvão
  * Kazu Yamamoto
  * Levent Erkok
  * Matvey Aksenov
