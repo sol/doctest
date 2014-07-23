@@ -142,7 +142,7 @@ let x = 1
     y = 2
   in x + y + works
 :}
-3
+6
 -}
 works = 3
 
