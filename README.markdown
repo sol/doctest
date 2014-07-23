@@ -273,7 +273,7 @@ There are three ways to deal with this:
     -- >>> xpto "what?"
     -- "what?:xpto!"
     xpto :: Text -> Text
-    xpto = (<> ":xtpo!")
+    xpto = (<> ":xpto!")
     ```
 
 3.  Putting it into a ```$setup``` hook
