@@ -156,6 +156,41 @@ works = 3
 broken = 3
 ```
 
+### Multi-line output
+If there are no blank lines in the output, multiple lines are handled
+automatically.
+
+```haskell
+-- | >>> putStr "Hello\nWorld!"
+-- Hello
+-- World!
+```
+
+If however the output contains blank lines, they must be noted
+explicitly with `<BLANKLINE>`. For example,
+
+```haskell
+import Data.List ( intercalate )
+
+-- | Double-space a paragraph.
+--
+--   Examples:
+--
+--   >>> let s1 = "\"Every one of whom?\""
+--   >>> let s2 = "\"Every one of whom do you think?\""
+--   >>> let s3 = "\"I haven't any idea.\""
+--   >>> let paragraph = unlines [s1,s2,s3]
+--   >>> putStrLn $ doubleSpace paragraph
+--   "Every one of whom?"
+--   <BLANKLINE>
+--   "Every one of whom do you think?"
+--   <BLANKLINE>
+--   "I haven't any idea."
+--
+doubleSpace :: String -> String
+doubleSpace = (intercalate "\n\n") . lines
+```
+
 ### QuickCheck properties
 
 Haddock (since version 2.13.0) has markup support for properties.  Doctest can
