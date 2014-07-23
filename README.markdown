@@ -102,7 +102,7 @@ Here is an example:
 ```haskell
 module Foo where
 -- $setup
--- >>> let x = 23
+-- >>> let x = 23 :: Int
 
 -- |
 -- >>> foo + x
