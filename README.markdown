@@ -254,7 +254,7 @@ There are three ways to deal with this:
     -- >>> xpto "what?"
     -- "what?:xpto!"
     xpto :: Text -> Text
-    xpto = (<> ":xtpo!")
+    xpto = (<> ":xpto!")
     ```
 
 Note that a ```$setup``` hook is also a named chunk, 
