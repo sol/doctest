@@ -137,7 +137,7 @@ perspective.  A workaround is to avoid leading space, or add a newline such
 that the indentation does not matter:
 
 ```haskell
-{- | >>> {:
+{- | >>> :{
 let x = 1
     y = 2
   in x + y + works
@@ -146,7 +146,7 @@ let x = 1
 -}
 works = 3
 
-{- | >>> {:
+{- | >>> :{
  let x = 1
      y = 2
   in x + y + broken
