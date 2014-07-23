@@ -102,7 +102,7 @@ Here is an example:
 ```haskell
 module Foo where
 -- $setup
--- >>> let x = 23
+-- >>> let x = 23 :: Int
 
 -- |
 -- >>> foo + x
@@ -137,16 +137,16 @@ perspective.  A workaround is to avoid leading space, or add a newline such
 that the indentation does not matter:
 
 ```haskell
-{- | >>> {:
+{- | >>> :{
 let x = 1
     y = 2
   in x + y + works
 :}
-3
+6
 -}
 works = 3
 
-{- | >>> {:
+{- | >>> :{
  let x = 1
      y = 2
   in x + y + broken
@@ -154,6 +154,41 @@ works = 3
 3
 -}
 broken = 3
+```
+
+### Multi-line output
+If there are no blank lines in the output, multiple lines are handled
+automatically.
+
+```haskell
+-- | >>> putStr "Hello\nWorld!"
+-- Hello
+-- World!
+```
+
+If however the output contains blank lines, they must be noted
+explicitly with `<BLANKLINE>`. For example,
+
+```haskell
+import Data.List ( intercalate )
+
+-- | Double-space a paragraph.
+--
+--   Examples:
+--
+--   >>> let s1 = "\"Every one of whom?\""
+--   >>> let s2 = "\"Every one of whom do you think?\""
+--   >>> let s3 = "\"I haven't any idea.\""
+--   >>> let paragraph = unlines [s1,s2,s3]
+--   >>> putStrLn $ doubleSpace paragraph
+--   "Every one of whom?"
+--   <BLANKLINE>
+--   "Every one of whom do you think?"
+--   <BLANKLINE>
+--   "I haven't any idea."
+--
+doubleSpace :: String -> String
+doubleSpace = (intercalate "\n\n") . lines
 ```
 
 ### QuickCheck properties
@@ -238,7 +273,7 @@ There are three ways to deal with this:
     -- >>> xpto "what?"
     -- "what?:xpto!"
     xpto :: Text -> Text
-    xpto = (<> ":xtpo!")
+    xpto = (<> ":xpto!")
     ```
 
 3.  Putting it into a ```$setup``` hook
@@ -254,7 +289,7 @@ There are three ways to deal with this:
     -- >>> xpto "what?"
     -- "what?:xpto!"
     xpto :: Text -> Text
-    xpto = (<> ":xtpo!")
+    xpto = (<> ":xpto!")
     ```
 
 Note that a ```$setup``` hook is also a named chunk, 
