@@ -6,10 +6,10 @@ description:      The doctest program checks examples in source code comments.
                   (<http://docs.python.org/library/doctest.html>).
                   .
                   Documentation is at
-                  <https://github.com/sol/doctest-haskell#readme>.
+                  <https://github.com/sol/doctest#readme>.
 category:         Testing
-bug-reports:      https://github.com/sol/doctest-haskell/issues
-homepage:         https://github.com/sol/doctest-haskell#readme
+bug-reports:      https://github.com/sol/doctest/issues
+homepage:         https://github.com/sol/doctest#readme
 license:          MIT
 license-file:     LICENSE
 copyright:        (c) 2009-2013 Simon Hengel
@@ -23,7 +23,7 @@ extra-source-files: example/example.cabal
 
 source-repository head
   type: git
-  location: https://github.com/sol/doctest-haskell
+  location: https://github.com/sol/doctest
 
 library
   exposed-modules:

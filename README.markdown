@@ -335,7 +335,7 @@ And a corresponding Cabal test suite section like this:
       main-is:       doctests.hs
       build-depends: base, doctest >= 0.8
 
-## Development [![Build Status](https://secure.travis-ci.org/sol/doctest-haskell.png)](http://travis-ci.org/sol/doctest-haskell)
+## Development [![Build Status](https://secure.travis-ci.org/sol/doctest.png)](http://travis-ci.org/sol/doctest)
 
 Join in at `#hspec` on freenode.
 

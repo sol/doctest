@@ -49,7 +49,7 @@ instance Show ExtractError where
       , ""
       , "This is most likely a bug in doctest."
       , ""
-      , "Please report it here: https://github.com/sol/doctest-haskell/issues/new"
+      , "Please report it here: https://github.com/sol/doctest/issues/new"
       ]
     where
       msg = case fromException e of
