@@ -359,6 +359,7 @@ changes.
  * Kazu Yamamoto
  * Levent Erkok
  * Matvey Aksenov
+ * Michael Orlitzky
  * Michael Snoyman
  * Nick Smallbone
  * Sakari Jokinen
