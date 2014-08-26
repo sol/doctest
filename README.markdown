@@ -269,7 +269,7 @@ There are three ways to deal with this:
     -- This is meant to be used with GHC's `OverloadedStrings` extension:
     --
     -- >>> :set -XOverloadedStrings
-    -- 
+    --
     -- >>> xpto "what?"
     -- "what?:xpto!"
     xpto :: Text -> Text
@@ -284,7 +284,7 @@ There are three ways to deal with this:
     -- extension:
     --
     -- >>> :set -XOverloadedStrings
-    
+
     -- | Xpto function
     -- >>> xpto "what?"
     -- "what?:xpto!"
@@ -292,11 +292,11 @@ There are three ways to deal with this:
     xpto = (<> ":xpto!")
     ```
 
-Note that a ```$setup``` hook is also a named chunk, 
-so you can refer to it in the module header 
+Note that a ```$setup``` hook is also a named chunk,
+so you can refer to it in the module header
 (that way making it part of the module documentation).
 
-The third (3) option may be preferable, as it puts you in the 
+The third (3) option may be preferable, as it puts you in the
 flexible position to show/hide the dependency of your code examples
 on OverloadedStrings (as you deem fit).
 
