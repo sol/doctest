@@ -74,7 +74,7 @@ test-suite spec
   type:
       exitcode-stdio-1.0
   ghc-options:
-      -Wall -Werror -threaded
+      -Wall -threaded
   cpp-options:
       -DTEST
   hs-source-dirs:
@@ -106,7 +106,7 @@ test-suite doctests
   type:
       exitcode-stdio-1.0
   ghc-options:
-      -Wall -Werror -threaded
+      -Wall -threaded
   hs-source-dirs:
       test
   build-depends:
