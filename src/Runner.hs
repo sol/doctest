@@ -12,7 +12,11 @@ module Runner (
 ) where
 
 import           Prelude hiding (putStr, putStrLn, error)
+
+#if __GLASGOW_HASKELL__ < 710
 import           Data.Monoid
+#endif
+
 import           Control.Applicative
 import           Control.Monad hiding (forM_)
 import           Text.Printf (printf)
