@@ -6,20 +6,34 @@ module Runner.Example (
 import           Data.Char
 import           Util
 
+import           Parse
+
 data Result = Equal | NotEqual [String]
   deriving (Eq, Show)
 
-mkResult :: [String] -> [String] -> Result
-mkResult expected_ actual_
-  | expected == actual = Equal
+mkResult :: ExpectedResult -> [String] -> Result
+mkResult expected actual
+  | expected `matches` actual = Equal
   | otherwise = NotEqual (formatNotEqual expected actual)
   where
-    expected = map stripEnd expected_
-    actual   = map stripEnd actual_
+    matches :: ExpectedResult -> [String] -> Bool
+    matches [] [] = True
+    matches [] _  = False
+    matches _  [] = False
+    matches (PlainResultLine x : xs) (y:ys) =
+        stripEnd x == stripEnd y && xs `matches` ys
+    matches zs@(WildCardLine : xs) (_:ys) =
+        xs `matches` ys || zs `matches` ys
 
-formatNotEqual :: [String] -> [String] -> [String]
-formatNotEqual expected actual = formatLines "expected: " expected ++ formatLines " but got: " actual
+
+formatNotEqual :: ExpectedResult -> [String] -> [String]
+formatNotEqual expected_ actual = formatLines "expected: " expected ++ formatLines " but got: " actual
   where
+    expected :: [String]
+    expected = map (\x -> case x of
+        PlainResultLine str -> str
+        WildCardLine -> "..." ) expected_
+
     -- use show to escape special characters in output lines if any output line
     -- contains any unsafe character
     escapeOutput

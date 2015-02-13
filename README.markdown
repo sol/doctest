@@ -191,6 +191,18 @@ doubleSpace :: String -> String
 doubleSpace = (intercalate "\n\n") . lines
 ```
 
+### Matching arbitrary output
+Any lines containing only three dots (`...`) will match one or more lines with
+arbitrary content. For instance,
+
+```haskell
+-- |
+-- >>> putStrLn "foo\nbar\nbaz"
+-- foo
+-- ...
+-- baz
+```
+
 ### QuickCheck properties
 
 Haddock (since version 2.13.0) has markup support for properties.  Doctest can
@@ -356,6 +368,7 @@ changes.
  * Hiroki Hattori
  * Joachim Breitner
  * João Cristóvão
+ * Julian Arni
  * Kazu Yamamoto
  * Levent Erkok
  * Matvey Aksenov

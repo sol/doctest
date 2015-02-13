@@ -17,7 +17,7 @@ group :: Writer [DocTest] () -> Writer [[DocTest]] ()
 group g = tell [execWriter g]
 
 ghci :: Expression -> Builder -> Writer [DocTest] ()
-ghci expressions expected = tell [Example expressions $ (lines . build) expected]
+ghci expressions expected = tell [Example expressions $ (map PlainResultLine . lines . build) expected]
 
 prop_ :: Expression -> Writer [DocTest] ()
 prop_ e = tell [Property e]
@@ -162,6 +162,14 @@ spec = do
         " output"
       `shouldBe` [(":{ first\n:}", ["output"])]
 
+    context "when a result line contains ellipsis" $ do
+      it "parses it into WildCardLine" $ do
+        parse_ $ do
+          " >>> action"
+          " foo"
+          " ..."
+          " bar"
+        `shouldBe` [("action", ["foo", WildCardLine, "bar"])]
 
   describe " parseProperties (an internal function)" $ do
     let parse_ = map unLoc . parseProperties . noLocation . build

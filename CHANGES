@@ -1,3 +1,9 @@
+Changes in 0.9.13
+ - Add ellipsis as wildcard
+
+Changes in 0.9.12
+ - Add support for GHC 7.10
+
 Changes in 0.9.11
  - Defaults ambiguous type variables to Integer (#74)
 
