@@ -1,16 +1,19 @@
 {-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Parse (
   Module (..)
 , DocTest (..)
 , Interaction
 , Expression
 , ExpectedResult
-, ResultLine (..)
+, ExpectedLine (..)
+, LineChunk (..)
 , getDocTests
 
 -- * exported for testing
 , parseInteractions
 , parseProperties
+, mkLineChunks
 ) where
 
 import           Data.Char (isSpace)
@@ -26,16 +29,23 @@ import           Location
 data DocTest = Example Expression ExpectedResult | Property Expression
   deriving (Eq, Show)
 
-data ResultLine = PlainResultLine String | WildCardLine
+data LineChunk = LineChunk String | WildCardChunk
   deriving (Show, Eq)
 
-instance IsString ResultLine where
-    fromString = PlainResultLine
+instance IsString LineChunk where
+    fromString = LineChunk
+
+data ExpectedLine = ExpectedLine [LineChunk] | WildCardLine
+  deriving (Show, Eq)
+
+instance IsString ExpectedLine where
+    fromString = ExpectedLine . return . LineChunk
 
 type Expression = String
-type ExpectedResult = [ResultLine]
+type ExpectedResult = [ExpectedLine]
 
 type Interaction = (Expression, ExpectedResult)
+
 
 -- |
 -- Extract 'DocTest's from all given modules and all modules included by the
@@ -111,7 +121,7 @@ toInteraction (Located loc x) xs = Located loc $
   (
     (strip   cleanedE)  -- we do not care about leading and trailing
                         -- whitespace in expressions, so drop them
-  , map mkResultLine result_
+  , map mkExpectedLine result_
   )
   where
     -- 1. drop trailing whitespace from the prompt, remember the prefix
@@ -138,13 +148,23 @@ toInteraction (Located loc x) xs = Located loc $
 tryStripPrefix :: String -> String -> String
 tryStripPrefix prefix ys = fromMaybe ys $ stripPrefix prefix ys
 
-mkResultLine :: String -> ResultLine
-mkResultLine x = case x of
-    "<BLANKLINE>" -> PlainResultLine ""
+mkExpectedLine :: String -> ExpectedLine
+mkExpectedLine x = case x of
+    "<BLANKLINE>" -> ""
     "..." -> WildCardLine
-    _ -> PlainResultLine x
+    _ -> ExpectedLine $ mkLineChunks x
+
+mkLineChunks :: String -> [LineChunk]
+mkLineChunks = finish . foldr go (0, [], [])
+  where
+    go :: Char -> (Int, String, [LineChunk]) -> (Int, String, [LineChunk])
+    go '.' (count, acc, res) = if count == 2
+          then (0,  "", [WildCardChunk, LineChunk acc] ++ res)
+          else (count + 1, acc, res)
+    go c   (count, acc, res) = (0, c : replicate count '.' ++ acc, res)
+    finish (count, acc, res) = LineChunk (replicate count '.' ++ acc) : res
+
 
 -- | Remove leading and trailing whitespace.
 strip :: String -> String
 strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
-

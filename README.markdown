@@ -203,6 +203,15 @@ arbitrary content. For instance,
 -- baz
 ```
 
+If a line contains three dots and additional content, the three dots will match
+anything *within that line*:
+
+```haskell
+-- |
+-- >>> putStrLn "foo bar baz"
+-- foo ... baz
+```
+
 ### QuickCheck properties
 
 Haddock (since version 2.13.0) has markup support for properties.  Doctest can

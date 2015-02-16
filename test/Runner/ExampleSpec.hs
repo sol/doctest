@@ -2,6 +2,7 @@
 module Runner.ExampleSpec (main, spec) where
 
 import           Control.Applicative
+import           Data.String
 import           Test.Hspec
 import           Test.QuickCheck
 
@@ -21,7 +22,7 @@ instance Arbitrary Line where
 
 lineToExpected :: [Line] -> ExpectedResult
 lineToExpected = map $ \x -> case x of
-                                 PlainLine str -> PlainResultLine str
+                                 PlainLine str -> fromString str
                                  WildCardLines _ -> WildCardLine
 
 lineToActual :: [Line] -> [String]
@@ -34,7 +35,7 @@ spec = do
   describe "mkResult" $ do
     it "returns Equal when output matches" $ do
       property $ \xs -> do
-        mkResult (map PlainResultLine xs) xs `shouldBe` Equal
+        mkResult (map fromString xs) xs `shouldBe` Equal
 
     it "ignores trailing whitespace" $ do
       mkResult ["foo\t"] ["foo  "] `shouldBe` Equal
@@ -46,6 +47,11 @@ spec = do
 
       it "matches an arbitrary number of lines (quickcheck)" $ do
         property $ \xs -> mkResult (lineToExpected xs) (lineToActual xs)
+            `shouldBe` Equal
+
+    context "with WildCardChunk" $ do
+      it "matches an arbitrary line chunk" $ do
+        mkResult [ExpectedLine ["foo", WildCardChunk, "bar"]] ["foo baz bar"]
             `shouldBe` Equal
 
     context "when output does not match" $ do

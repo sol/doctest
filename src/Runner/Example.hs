@@ -4,6 +4,7 @@ module Runner.Example (
 ) where
 
 import           Data.Char
+import           Data.List
 import           Util
 
 import           Parse
@@ -16,12 +17,21 @@ mkResult expected actual
   | expected `matches` actual = Equal
   | otherwise = NotEqual (formatNotEqual expected actual)
   where
+    chunksMatch :: [LineChunk] -> String -> Bool
+    chunksMatch [] "" = True
+    chunksMatch [LineChunk xs] ys = stripEnd xs == stripEnd ys
+    chunksMatch (LineChunk x : xs) ys =
+        x `isPrefixOf` ys && xs `chunksMatch` drop (length x) ys
+    chunksMatch zs@(WildCardChunk : xs) (_:ys) =
+        xs `chunksMatch` ys || zs `chunksMatch` ys
+    chunksMatch _ _ = False
+
     matches :: ExpectedResult -> [String] -> Bool
     matches [] [] = True
     matches [] _  = False
     matches _  [] = False
-    matches (PlainResultLine x : xs) (y:ys) =
-        stripEnd x == stripEnd y && xs `matches` ys
+    matches (ExpectedLine x : xs) (y:ys) =
+        x `chunksMatch` y && xs `matches` ys
     matches zs@(WildCardLine : xs) (_:ys) =
         xs `matches` ys || zs `matches` ys
 
@@ -31,7 +41,7 @@ formatNotEqual expected_ actual = formatLines "expected: " expected ++ formatLin
   where
     expected :: [String]
     expected = map (\x -> case x of
-        PlainResultLine str -> str
+        ExpectedLine str -> concatMap lineChunkToString str
         WildCardLine -> "..." ) expected_
 
     -- use show to escape special characters in output lines if any output line
@@ -49,3 +59,7 @@ formatNotEqual expected_ actual = formatLines "expected: " expected ++ formatLin
       []   -> [message]
       where
         padding = replicate (length message) ' '
+
+lineChunkToString :: LineChunk -> String
+lineChunkToString WildCardChunk = "..."
+lineChunkToString (LineChunk str) = str

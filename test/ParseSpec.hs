@@ -2,6 +2,7 @@
 module ParseSpec (main, spec) where
 
 import           Test.Hspec
+import           Data.String
 import           Data.String.Builder (Builder, build)
 import           Control.Monad.Trans.Writer
 
@@ -17,7 +18,7 @@ group :: Writer [DocTest] () -> Writer [[DocTest]] ()
 group g = tell [execWriter g]
 
 ghci :: Expression -> Builder -> Writer [DocTest] ()
-ghci expressions expected = tell [Example expressions $ (map PlainResultLine . lines . build) expected]
+ghci expressions expected = tell [Example expressions $ (map fromString . lines . build) expected]
 
 prop_ :: Expression -> Writer [DocTest] ()
 prop_ e = tell [Property e]
@@ -162,14 +163,19 @@ spec = do
         " output"
       `shouldBe` [(":{ first\n:}", ["output"])]
 
-    context "when a result line contains ellipsis" $ do
-      it "parses it into WildCardLine" $ do
-        parse_ $ do
-          " >>> action"
-          " foo"
-          " ..."
-          " bar"
-        `shouldBe` [("action", ["foo", WildCardLine, "bar"])]
+    it "parses wild cards lines" $ do
+      parse_ $ do
+        " >>> action"
+        " foo"
+        " ..."
+        " bar"
+      `shouldBe` [("action", ["foo", WildCardLine, "bar"])]
+
+    it "parses wild card chunks" $ do
+      parse_ $ do
+        " >>> action"
+        " foo ... bar"
+      `shouldBe` [("action", [ExpectedLine ["foo ", WildCardChunk, " bar"]])]
 
   describe " parseProperties (an internal function)" $ do
     let parse_ = map unLoc . parseProperties . noLocation . build
@@ -178,3 +184,16 @@ spec = do
       parse_ $ do
         "prop> foo"
       `shouldBe` ["foo"]
+
+  describe " mkLineChunks (an internal function)" $ do
+
+    it "replaces ellipsis with WildCardChunks" $ do
+      mkLineChunks "foo ... bar ... baz" `shouldBe`
+        ["foo ", WildCardChunk, " bar ", WildCardChunk, " baz"]
+
+    it "doesn't replace fewer than 3 consecutive dots" $ do
+      mkLineChunks "foo .. bar .. baz" `shouldBe`
+        ["foo .. bar .. baz"]
+
+    it "handles leading and trailing dots" $ do
+      mkLineChunks ".. foo bar .." `shouldBe` [".. foo bar .."]
