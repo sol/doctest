@@ -157,12 +157,18 @@ mkExpectedLine x = case x of
 mkLineChunks :: String -> [LineChunk]
 mkLineChunks = finish . foldr go (0, [], [])
   where
+    mkChunk :: String -> [LineChunk]
+    mkChunk "" = []
+    mkChunk x  = [LineChunk x]
+
     go :: Char -> (Int, String, [LineChunk]) -> (Int, String, [LineChunk])
     go '.' (count, acc, res) = if count == 2
-          then (0,  "", [WildCardChunk, LineChunk acc] ++ res)
+          then (0, "", WildCardChunk : mkChunk acc ++ res)
           else (count + 1, acc, res)
-    go c   (count, acc, res) = (0, c : replicate count '.' ++ acc, res)
-    finish (count, acc, res) = LineChunk (replicate count '.' ++ acc) : res
+    go c   (count, acc, res) = if count > 0
+          then (0, c : replicate count '.' ++ acc, res)
+          else (0, c : acc, res)
+    finish (count, acc, res) = mkChunk (replicate count '.' ++ acc) ++ res
 
 
 -- | Remove leading and trailing whitespace.

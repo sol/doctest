@@ -185,7 +185,7 @@ spec = do
         "prop> foo"
       `shouldBe` ["foo"]
 
-  describe " mkLineChunks (an internal function)" $ do
+  describe "mkLineChunks (an internal function)" $ do
 
     it "replaces ellipsis with WildCardChunks" $ do
       mkLineChunks "foo ... bar ... baz" `shouldBe`
@@ -197,3 +197,9 @@ spec = do
 
     it "handles leading and trailing dots" $ do
       mkLineChunks ".. foo bar .." `shouldBe` [".. foo bar .."]
+
+    it "handles leading and trailing ellipsis" $ do
+      mkLineChunks "... foo bar ..." `shouldBe` [ WildCardChunk
+                                                , " foo bar "
+                                                , WildCardChunk
+                                                ]
