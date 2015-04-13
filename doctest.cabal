@@ -46,6 +46,7 @@ library
     , Run
     , Util
     , Sandbox
+    , Language.Haskell.GhciWrapper
   build-depends:
       base          == 4.*
     , ghc           >= 7.0 && < 7.12

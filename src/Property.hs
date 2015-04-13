@@ -24,10 +24,10 @@ data PropertyResult =
 
 runProperty :: Interpreter -> Expression -> IO PropertyResult
 runProperty repl expression = do
-  _ <- Interpreter.eval repl "import Test.QuickCheck ((==>))"
-  _ <- Interpreter.eval repl "import Test.QuickCheck.All (polyQuickCheck)"
-  _ <- Interpreter.eval repl "import Language.Haskell.TH (mkName)"
-  _ <- Interpreter.eval repl ":set -XTemplateHaskell"
+  _ <- Interpreter.safeEval repl "import Test.QuickCheck ((==>))"
+  _ <- Interpreter.safeEval repl "import Test.QuickCheck.All (polyQuickCheck)"
+  _ <- Interpreter.safeEval repl "import Language.Haskell.TH (mkName)"
+  _ <- Interpreter.safeEval repl ":set -XTemplateHaskell"
   r <- freeVariables repl expression >>=
        (Interpreter.safeEval repl . quickCheck expression)
   case r of

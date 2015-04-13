@@ -1,7 +1,9 @@
-import qualified Interpreter
+import           Control.Exception
+import           Language.Haskell.GhciWrapper
 
-main = Interpreter.withInterpreter [] $ \repl -> do
+main :: IO ()
+main = bracket (new []) close $ \repl -> do
   putStrLn "sleeping for 1 second..."
-  Interpreter.eval repl "import Control.Concurrent"
-  Interpreter.eval repl "threadDelay 1000000"
+  _ <- eval repl "import Control.Concurrent"
+  _ <- eval repl "threadDelay 1000000"
   putStrLn "done"

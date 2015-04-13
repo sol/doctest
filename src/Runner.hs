@@ -126,15 +126,15 @@ runModule repl (Module module_ setup examples) = do
     reload = do
       -- NOTE: It is important to do the :reload first!  There was some odd bug
       -- with a previous version of GHC (7.4.1?).
-      void $ Interpreter.eval repl   ":reload"
-      void $ Interpreter.eval repl $ ":m *" ++ module_
+      void $ Interpreter.safeEval repl   ":reload"
+      void $ Interpreter.safeEval repl $ ":m *" ++ module_
 
     setup_ :: IO ()
     setup_ = do
       reload
       forM_ setup $ \l -> forM_ l $ \(Located _ x) -> case x of
         Property _  -> return ()
-        Example e _ -> void $ Interpreter.eval repl e
+        Example e _ -> void $ Interpreter.safeEval repl e
 
 reportFailure :: Location -> Expression -> Report ()
 reportFailure loc expression = do
