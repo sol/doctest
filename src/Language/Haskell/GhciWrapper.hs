@@ -3,7 +3,6 @@ module Language.Haskell.GhciWrapper (
 , new
 , close
 , eval
-, ghc
 ) where
 
 import           System.IO
@@ -12,9 +11,6 @@ import           System.Exit
 import           Control.Monad
 import           Control.Exception
 import           Data.List
-
-import           GHC.Paths (ghc)
-import           Sandbox (getSandboxArguments)
 
 -- | Truly random marker, used to separate expressions.
 --
@@ -30,12 +26,9 @@ data Interpreter = Interpreter {
   , process :: ProcessHandle
   }
 
-new :: [String] -> IO Interpreter
-new flags = do
-  sandboxFlags <- getSandboxArguments -- keep this
-  let myFlags = ghciFlags ++ flags ++ sandboxFlags
-  -- get examples from Haddock comments
-  (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc ghc myFlags) {std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit}
+new :: String -> [String] -> IO Interpreter
+new ghci args = do
+  (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc ghci args) {std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit}
   setMode stdin_
   setMode stdout_
   let interpreter = Interpreter {hIn = stdin_, hOut = stdout_, process = processHandle}
@@ -56,7 +49,6 @@ new flags = do
 
   return interpreter
   where
-    ghciFlags = ["-v0", "--interactive", "-ignore-dot-ghci"]
     setMode h = do
       hSetBinaryMode h False
       hSetBuffering h LineBuffering

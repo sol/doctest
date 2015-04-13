@@ -16,8 +16,10 @@ import           Control.Applicative
 import           Control.Monad
 import           Control.Exception hiding (handle)
 import           Data.Char
+import           GHC.Paths (ghc)
 
 import           Language.Haskell.GhciWrapper
+import           Sandbox (getSandboxArguments)
 
 haveInterpreterKey :: String
 haveInterpreterKey = "Have interpreter"
@@ -45,7 +47,10 @@ withInterpreter
   :: [String]               -- ^ List of flags, passed to GHC
   -> (Interpreter -> IO a)  -- ^ Action to run
   -> IO a                   -- ^ Result of action
-withInterpreter flags = bracket (new flags) close
+withInterpreter flags action = do
+  sandboxFlags <- getSandboxArguments
+  let args = sandboxFlags ++ ["-v0", "--interactive", "-ignore-dot-ghci"] ++ flags
+  bracket (new ghc args) close action
 
 -- | Evaluate an expression; return a Left value on exceptions.
 --

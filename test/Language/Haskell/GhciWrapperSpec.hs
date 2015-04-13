@@ -16,7 +16,7 @@ main :: IO ()
 main = hspec spec
 
 withInterpreter :: ((String -> IO String) -> IO a) -> IO a
-withInterpreter action = bracket (Interpreter.new []) Interpreter.close $ \ghci -> action (Interpreter.eval ghci)
+withInterpreter action = bracket (Interpreter.new "ghci" ["-v0", "-ignore-dot-ghci"]) Interpreter.close $ \ghci -> action (Interpreter.eval ghci)
 
 shouldEvaluateTo :: (Show a, Eq a) => IO a -> a -> IO ()
 action `shouldEvaluateTo` expected = action >>= (`shouldBe` expected)
