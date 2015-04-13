@@ -5,7 +5,7 @@ module Language.Haskell.GhciWrapper (
 , eval
 ) where
 
-import           System.IO
+import           System.IO hiding (stdin, stdout, stderr)
 import           System.Process
 import           System.Exit
 import           Control.Monad
@@ -70,33 +70,26 @@ close repl = do
     throwIO (userError $ "Language.Haskell.GhciWrapper.close: Interpreter exited with an error (" ++ show e ++ ")")
 
 putExpression :: Interpreter -> String -> IO ()
-putExpression repl e = do
-  hPutStrLn stdin_ e
-  hPutStrLn stdin_ marker
-  hFlush stdin_
-  return ()
-  where
-    stdin_ = hIn repl
-
+putExpression Interpreter{hIn = stdin} e = do
+  hPutStrLn stdin e
+  hPutStrLn stdin marker
+  hFlush stdin
 
 getResult :: Interpreter -> IO String
-getResult repl = do
-  line <- hGetLine stdout_
-  if marker `isSuffixOf` line
-    then
-      return $ stripMarker line
-    else do
-      result <- getResult repl
-      return $ line ++ '\n' : result
+getResult Interpreter{hOut = stdout} = go
   where
-    stdout_ = hOut repl
+    go = do
+      line <- hGetLine stdout
+      if marker `isSuffixOf` line
+        then
+          return (stripMarker line)
+        else do
+          result <- go
+          return (line ++ "\n" ++ result)
     stripMarker l = take (length l - length marker) l
 
 -- | Evaluate an expresion
-eval
-  :: Interpreter
-  -> String       -- Expression
-  -> IO String    -- Result
+eval :: Interpreter -> String -> IO String
 eval repl expr = do
   putExpression repl expr
   getResult repl
