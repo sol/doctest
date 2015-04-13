@@ -10,7 +10,6 @@ import           Data.List (isSuffixOf)
 import           System.Process (readProcess)
 #endif
 
-import           Language.Haskell.GhciWrapper (Interpreter)
 import qualified Language.Haskell.GhciWrapper as Interpreter
 
 main :: IO ()
@@ -18,9 +17,6 @@ main = hspec spec
 
 withInterpreter :: ((String -> IO String) -> IO a) -> IO a
 withInterpreter action = bracket (Interpreter.new []) Interpreter.close $ \ghci -> action (Interpreter.eval ghci)
-
-withInterpreter_ :: (Interpreter -> IO a) -> IO a
-withInterpreter_ action = bracket (Interpreter.new []) Interpreter.close action
 
 shouldEvaluateTo :: (Show a, Eq a) => IO a -> a -> IO ()
 action `shouldEvaluateTo` expected = action >>= (`shouldBe` expected)
@@ -88,10 +84,3 @@ spec = do
 #else
       ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: `foo'\n")
 #endif
-
-  describe "safeEval" $ do
-    it "evaluates an expression" $ withInterpreter_ $ \ghci -> do
-      Interpreter.safeEval ghci "23 + 42" `shouldReturn` Right "65\n"
-
-    it "returns Left on unterminated multiline command" $ withInterpreter_ $ \ghci -> do
-      Interpreter.safeEval ghci ":{\n23 + 42" `shouldReturn` Left "unterminated multiline command"

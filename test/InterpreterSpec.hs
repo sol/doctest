@@ -4,7 +4,7 @@ import           Test.Hspec
 
 import           Control.Applicative
 
-import           Interpreter (interpreterSupported, haveInterpreterKey, ghcInfo)
+import           Interpreter (interpreterSupported, haveInterpreterKey, ghcInfo, withInterpreter, safeEval)
 
 main :: IO ()
 main = hspec spec
@@ -20,3 +20,10 @@ spec = do
       info <- ghcInfo
       lookup haveInterpreterKey info `shouldSatisfy`
         (||) <$> (== Just "YES") <*> (== Just "NO")
+
+  describe "safeEval" $ do
+    it "evaluates an expression" $ withInterpreter [] $ \ghci -> do
+      Interpreter.safeEval ghci "23 + 42" `shouldReturn` Right "65\n"
+
+    it "returns Left on unterminated multiline command" $ withInterpreter [] $ \ghci -> do
+      Interpreter.safeEval ghci ":{\n23 + 42" `shouldReturn` Left "unterminated multiline command"

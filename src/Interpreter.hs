@@ -15,6 +15,7 @@ import           System.Directory (getPermissions, executable)
 import           Control.Applicative
 import           Control.Monad
 import           Control.Exception hiding (handle)
+import           Data.Char
 
 import           Language.Haskell.GhciWrapper
 
@@ -45,3 +46,22 @@ withInterpreter
   -> (Interpreter -> IO a)  -- ^ Action to run
   -> IO a                   -- ^ Result of action
 withInterpreter flags = bracket (new flags) close
+
+-- | Evaluate an expression; return a Left value on exceptions.
+--
+-- An exception may e.g. be caused on unterminated multiline expressions.
+safeEval :: Interpreter -> String -> IO (Either String String)
+safeEval repl = either (return . Left) (fmap Right . eval repl) . filterExpression
+
+filterExpression :: String -> Either String String
+filterExpression e =
+  case lines e of
+    [] -> Right e
+    l  -> if firstLine == ":{" && lastLine /= ":}" then fail_ else Right e
+      where
+        firstLine = strip $ head l
+        lastLine  = strip $ last l
+        fail_ = Left "unterminated multiline command"
+  where
+    strip :: String -> String
+    strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
