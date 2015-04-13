@@ -49,8 +49,8 @@ withInterpreter
   -> IO a                   -- ^ Result of action
 withInterpreter flags action = do
   sandboxFlags <- getSandboxArguments
-  let args = sandboxFlags ++ ["-v0", "--interactive", "-ignore-dot-ghci"] ++ flags
-  bracket (new ghc args) close action
+  let args = sandboxFlags ++ ["--interactive"] ++ flags
+  bracket (new defaultConfig{configGhci = ghc} args) close action
 
 -- | Evaluate an expression; return a Left value on exceptions.
 --

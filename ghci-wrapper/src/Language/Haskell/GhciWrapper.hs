@@ -1,5 +1,8 @@
+{-# LANGUAGE RecordWildCards #-}
 module Language.Haskell.GhciWrapper (
   Interpreter
+, Config(..)
+, defaultConfig
 , new
 , close
 , eval
@@ -11,6 +14,20 @@ import           System.Exit
 import           Control.Monad
 import           Control.Exception
 import           Data.List
+import           Data.Maybe
+
+data Config = Config {
+  configGhci :: String
+, configVerbose :: Bool
+, configIgnoreDotGhci :: Bool
+} deriving (Eq, Show)
+
+defaultConfig :: Config
+defaultConfig = Config {
+  configGhci = "ghci"
+, configVerbose = False
+, configIgnoreDotGhci = True
+}
 
 -- | Truly random marker, used to separate expressions.
 --
@@ -26,9 +43,9 @@ data Interpreter = Interpreter {
   , process :: ProcessHandle
   }
 
-new :: String -> [String] -> IO Interpreter
-new ghci args = do
-  (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc ghci args) {std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit}
+new :: Config -> [String] -> IO Interpreter
+new Config{..} args_ = do
+  (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc configGhci args) {std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit}
   setMode stdin_
   setMode stdout_
   let interpreter = Interpreter {hIn = stdin_, hOut = stdout_, process = processHandle}
@@ -47,8 +64,15 @@ new ghci args = do
   _ <- eval interpreter "hSetEncoding stdout utf8"
   _ <- eval interpreter "hSetEncoding stderr utf8"
 
+  _ <- eval interpreter ":m - System.IO"
+  _ <- eval interpreter ":m - GHC.IO.Handle"
+
   return interpreter
   where
+    args = args_ ++ catMaybes [
+        if configIgnoreDotGhci then Just "-ignore-dot-ghci" else Nothing
+      , if configVerbose then Nothing else Just "-v0"
+      ]
     setMode h = do
       hSetBinaryMode h False
       hSetBuffering h LineBuffering

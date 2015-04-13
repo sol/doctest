@@ -6,32 +6,23 @@ import           Test.Hspec
 import           Control.Exception
 import           Data.List (isSuffixOf)
 
-#ifndef mingw32_HOST_OS
-import           System.Process (readProcess)
-#endif
-
+import           Language.Haskell.GhciWrapper (Config(..), defaultConfig)
 import qualified Language.Haskell.GhciWrapper as Interpreter
 
 main :: IO ()
 main = hspec spec
 
+withInterpreterConfig :: Config -> ((String -> IO String) -> IO a) -> IO a
+withInterpreterConfig config action = bracket (Interpreter.new config []) Interpreter.close $ \ghci -> action (Interpreter.eval ghci)
+
 withInterpreter :: ((String -> IO String) -> IO a) -> IO a
-withInterpreter action = bracket (Interpreter.new "ghci" ["-v0", "-ignore-dot-ghci"]) Interpreter.close $ \ghci -> action (Interpreter.eval ghci)
+withInterpreter = withInterpreterConfig defaultConfig
 
 shouldEvaluateTo :: (Show a, Eq a) => IO a -> a -> IO ()
 action `shouldEvaluateTo` expected = action >>= (`shouldBe` expected)
 
 spec :: Spec
 spec = do
-  describe "Interpreter" $ do
-    it "terminates on SIGINT" $ do
-#ifdef mingw32_HOST_OS
-      pending
-#else
-      s <- readProcess "test/interpreter/termination/test_script.sh" [] ""
-      s `shouldBe` "success\n"
-#endif
-
   describe "eval" $ do
     it "shows literals" $ withInterpreter $ \ghci -> do
       ghci "23" `shouldEvaluateTo` "23\n"
@@ -84,3 +75,7 @@ spec = do
 #else
       ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: `foo'\n")
 #endif
+    context "when configVerbose is True" $ do
+      it "prints prompt" $ do
+        withInterpreterConfig defaultConfig{configVerbose = True} $ \ghci -> do
+          ghci "print 23" `shouldReturn` "Prelude> 23\nPrelude> "
