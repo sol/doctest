@@ -1,0 +1,14 @@
+dependencies:
+  - base == 4.*
+  - process
+
+library: {}
+
+tests:
+  spec:
+    main: Spec.hs
+    source-dirs:
+      - test
+    dependencies:
+      - ghci-wrapper
+      - hspec == 2.*

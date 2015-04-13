@@ -6,6 +6,7 @@ main :: IO ()
 main = doctest [
     "-packageghc"
   , "-isrc"
+  , "-ighci-wrapper/src"
   , "-idist/build/autogen/"
   , "-optP-include"
   , "-optPdist/build/autogen/cabal_macros.h"

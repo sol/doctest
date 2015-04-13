@@ -31,7 +31,7 @@ library
   ghc-options:
       -Wall
   hs-source-dirs:
-      src
+      src, ghci-wrapper/src
   other-modules:
       Extract
     , GhcUtil
@@ -79,7 +79,7 @@ test-suite spec
   cpp-options:
       -DTEST
   hs-source-dirs:
-      src, test
+      test, src, ghci-wrapper/src
   c-sources:
       test/integration/with-cbits/foo.c
   build-depends:
