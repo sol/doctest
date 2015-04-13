@@ -11,7 +11,7 @@ import           System.IO
 import           System.Process
 import           System.Exit
 import           Control.Monad
-import           Control.Exception hiding (handle)
+import           Control.Exception
 import           Data.Char
 import           Data.List
 
@@ -59,10 +59,10 @@ new flags = do
   return interpreter
   where
     ghciFlags = ["-v0", "--interactive", "-ignore-dot-ghci"]
-    setMode handle = do
-      hSetBinaryMode handle False
-      hSetBuffering handle LineBuffering
-      hSetEncoding handle utf8
+    setMode h = do
+      hSetBinaryMode h False
+      hSetBuffering h LineBuffering
+      hSetEncoding h utf8
 
 close :: Interpreter -> IO ()
 close repl = do
@@ -76,53 +76,17 @@ close repl = do
   e <- waitForProcess $ process repl
   hClose $ hOut repl
 
-  when (e /= ExitSuccess) $ error $ "Interpreter exited with an error: " ++ show e
-  return ()
+  when (e /= ExitSuccess) $ do
+    throwIO (userError $ "Language.Haskell.GhciWrapper.close: Interpreter exited with an error (" ++ show e ++ ")")
 
 putExpression :: Interpreter -> String -> IO ()
 putExpression repl e = do
-  hPutStrLn stdin_ $ filterExpression e
+  hPutStrLn stdin_ e
   hPutStrLn stdin_ marker
   hFlush stdin_
   return ()
   where
     stdin_ = hIn repl
-
-
--- | Fail on unterminated multiline commands.
---
--- Examples:
---
--- >>> filterExpression ""
--- ""
---
--- >>> filterExpression "foobar"
--- "foobar"
---
--- >>> filterExpression ":{"
--- "*** Exception: unterminated multiline command
---
--- >>> filterExpression "  :{  "
--- "*** Exception: unterminated multiline command
---
--- >>> filterExpression "  :{  \nfoobar"
--- "*** Exception: unterminated multiline command
---
--- >>> filterExpression "  :{  \nfoobar \n  :}  "
--- "  :{  \nfoobar \n  :}  "
---
-filterExpression :: String -> String
-filterExpression e =
-  case lines e of
-    [] -> e
-    l  -> if firstLine == ":{" && lastLine /= ":}" then fail_ else e
-      where
-        firstLine = strip $ head l
-        lastLine  = strip $ last l
-        fail_ = error "unterminated multiline command"
-  where
-    strip :: String -> String
-    strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
 
 
 getResult :: Interpreter -> IO String
@@ -151,12 +115,17 @@ eval repl expr = do
 --
 -- An exception may e.g. be caused on unterminated multiline expressions.
 safeEval :: Interpreter -> String -> IO (Either String String)
-safeEval repl expression = (Right `fmap` eval repl expression) `catches` [
-  -- Re-throw AsyncException, otherwise execution will not terminate on
-  -- SIGINT (ctrl-c).  All AsyncExceptions are re-thrown (not just
-  -- UserInterrupt) because all of them indicate severe conditions and
-  -- should not occur during normal test runs.
-  Handler $ \e -> throw (e :: AsyncException),
+safeEval repl = either (return . Left) (fmap Right . eval repl) . filterExpression
 
-  Handler $ \e -> (return . Left . show) (e :: SomeException)
-  ]
+filterExpression :: String -> Either String String
+filterExpression e =
+  case lines e of
+    [] -> Right e
+    l  -> if firstLine == ":{" && lastLine /= ":}" then fail_ else Right e
+      where
+        firstLine = strip $ head l
+        lastLine  = strip $ last l
+        fail_ = Left "unterminated multiline command"
+  where
+    strip :: String -> String
+    strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
