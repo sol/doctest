@@ -6,6 +6,7 @@ module Language.Haskell.GhciWrapper (
 , new
 , close
 , eval
+, evalEcho
 ) where
 
 import           System.IO hiding (stdin, stdout, stderr)
@@ -99,21 +100,35 @@ putExpression Interpreter{hIn = stdin} e = do
   hPutStrLn stdin marker
   hFlush stdin
 
-getResult :: Interpreter -> IO String
-getResult Interpreter{hOut = stdout} = go
+getResult :: Bool -> Interpreter -> IO String
+getResult echoMode Interpreter{hOut = stdout} = go
   where
     go = do
       line <- hGetLine stdout
       if marker `isSuffixOf` line
-        then
-          return (stripMarker line)
+        then do
+          let xs = stripMarker line
+          echo xs
+          return xs
         else do
+          echo (line ++ "\n")
           result <- go
           return (line ++ "\n" ++ result)
     stripMarker l = take (length l - length marker) l
 
--- | Evaluate an expresion
+    echo :: String -> IO ()
+    echo
+      | echoMode = putStr
+      | otherwise = (const $ return ())
+
+-- | Evaluate an expression
 eval :: Interpreter -> String -> IO String
 eval repl expr = do
   putExpression repl expr
-  getResult repl
+  getResult False repl
+
+-- | Evaluate an expression
+evalEcho :: Interpreter -> String -> IO String
+evalEcho repl expr = do
+  putExpression repl expr
+  getResult True repl

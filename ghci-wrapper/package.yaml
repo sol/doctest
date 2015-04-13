@@ -2,13 +2,14 @@ dependencies:
   - base == 4.*
   - process
 
-library: {}
+library:
+  source-dirs: src
 
 tests:
   spec:
     main: Spec.hs
-    source-dirs:
-      - test
+    source-dirs: test
     dependencies:
       - ghci-wrapper
       - hspec == 2.*
+      - silently

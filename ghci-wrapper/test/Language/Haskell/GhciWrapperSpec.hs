@@ -2,27 +2,33 @@
 module Language.Haskell.GhciWrapperSpec (main, spec) where
 
 import           Test.Hspec
+import           System.IO.Silently
 
 import           Control.Exception
 import           Data.List (isSuffixOf)
 
-import           Language.Haskell.GhciWrapper (Config(..), defaultConfig)
+import           Language.Haskell.GhciWrapper (Interpreter, Config(..), defaultConfig)
 import qualified Language.Haskell.GhciWrapper as Interpreter
 
 main :: IO ()
 main = hspec spec
 
-withInterpreterConfig :: Config -> ((String -> IO String) -> IO a) -> IO a
-withInterpreterConfig config action = bracket (Interpreter.new config []) Interpreter.close $ \ghci -> action (Interpreter.eval ghci)
+withInterpreterConfig :: Config -> (Interpreter -> IO a) -> IO a
+withInterpreterConfig config action = bracket (Interpreter.new config []) Interpreter.close $ \ghci -> action ghci
 
 withInterpreter :: ((String -> IO String) -> IO a) -> IO a
-withInterpreter = withInterpreterConfig defaultConfig
+withInterpreter action = withInterpreterConfig defaultConfig $ \ghci -> action (Interpreter.eval ghci)
 
 shouldEvaluateTo :: (Show a, Eq a) => IO a -> a -> IO ()
 action `shouldEvaluateTo` expected = action >>= (`shouldBe` expected)
 
 spec :: Spec
 spec = do
+  describe "evalEcho" $ do
+    it "prints result to stdout" $ do
+      withInterpreterConfig defaultConfig $ \ghci -> do
+        (capture $ Interpreter.evalEcho ghci ("putStr" ++ show "foo\nbar")) `shouldReturn` ("foo\nbar", "foo\nbar")
+
   describe "eval" $ do
     it "shows literals" $ withInterpreter $ \ghci -> do
       ghci "23" `shouldEvaluateTo` "23\n"
@@ -78,4 +84,4 @@ spec = do
     context "when configVerbose is True" $ do
       it "prints prompt" $ do
         withInterpreterConfig defaultConfig{configVerbose = True} $ \ghci -> do
-          ghci "print 23" `shouldReturn` "Prelude> 23\nPrelude> "
+          Interpreter.eval ghci "print 23" `shouldReturn` "Prelude> 23\nPrelude> "

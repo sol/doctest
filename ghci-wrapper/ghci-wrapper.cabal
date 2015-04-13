@@ -26,4 +26,5 @@ test-suite spec
 
     , ghci-wrapper
     , hspec == 2.*
+    , silently
   default-language: Haskell2010
