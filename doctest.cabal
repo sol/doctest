@@ -50,7 +50,7 @@ library
   build-depends:
       base          == 4.*
     , ghc           >= 7.0 && < 7.12
-    , syb           >= 0.3 && < 0.5
+    , syb           >= 0.3
     , deepseq
     , directory
     , filepath
