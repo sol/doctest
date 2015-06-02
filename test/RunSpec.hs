@@ -16,6 +16,7 @@ import           System.Directory (getCurrentDirectory, setCurrentDirectory, rem
 import           Data.List
 
 import           System.Environment.Compat
+import           System.FilePath (searchPathSeparator)
 
 import           System.IO.Silently
 import           System.IO (stderr)
@@ -91,6 +92,28 @@ spec = do
 
       `E.finally` do
         rmDir "test/integration/custom-package-conf/packages/"
+        rmDir "test/integration/custom-package-conf/foo/dist/"
+
+    it "respects HASKELL_PACKAGE_SANDBOXES" $ do
+      withCurrentDirectory "test/integration/custom-package-conf/foo" $ do
+        ExitSuccess <- rawSystem "ghc-pkg" ["init", "../packages"]
+        ExitSuccess <- rawSystem "ghc-pkg" ["init", "../packages-extra"]
+        ExitSuccess <- rawSystem "cabal" ["configure", "--disable-optimization", "--disable-library-profiling", "--package-db=../packages"]
+        ExitSuccess <- rawSystem "cabal" ["build"]
+        ExitSuccess <- rawSystem "cabal" ["register", "--inplace"]
+        return ()
+
+      let sandboxes = intercalate [searchPathSeparator]
+            [ "test/integration/custom-package-conf/packages-extra"
+            , "test/integration/custom-package-conf/packages"
+            ]
+      withEnv "HASKELL_PACKAGE_SANDBOXES" sandboxes $ do
+        hCapture_ [stderr] (doctest ["test/integration/custom-package-conf/Bar.hs"])
+          `shouldReturn` "Examples: 2  Tried: 2  Errors: 0  Failures: 0\n"
+
+      `E.finally` do
+        rmDir "test/integration/custom-package-conf/packages/"
+        rmDir "test/integration/custom-package-conf/packages-extra/"
         rmDir "test/integration/custom-package-conf/foo/dist/"
 
   describe "doctest_" $ do

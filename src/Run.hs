@@ -13,6 +13,7 @@ import           Control.Monad (when, unless)
 import           System.Exit (exitFailure, exitSuccess)
 import           System.IO
 import           System.Environment (getEnvironment)
+import           System.FilePath (splitSearchPath)
 
 import           Control.Applicative
 import qualified Control.Exception as E
@@ -44,15 +45,22 @@ doctest args
   | "--help"    `elem` args = putStr usage
   | "--version" `elem` args = printVersion
   | otherwise = do
+      env <- getEnvironment
       -- Look up the HASKELL_PACKAGE_SANDBOX environment variable and, if
       -- present, add it to the list of package databases GHC searches.
       -- Intended to make testing from inside sandboxes such as cabal-dev
       -- simpler.
-      packageConf <- lookup "HASKELL_PACKAGE_SANDBOX" <$> getEnvironment
-      let addPackageConf = case packageConf of
-            Nothing -> id
-            Just p  -> \rest -> ghcPackageDbFlag : p : rest
-      
+      --
+      -- Also support HASKELL_PACKAGE_SANDBOXES to allow for multiple custom package databases
+      let mkAddPackageConf ps rest =
+            concatMap (\p -> [ghcPackageDbFlag, p]) ps ++ rest
+          addPackageConf = case lookup "HASKELL_PACKAGE_SANDBOXES" env of
+            Just sandboxes -> mkAddPackageConf $ splitSearchPath sandboxes
+            Nothing ->
+                case lookup "HASKELL_PACKAGE_SANDBOX" env of
+                    Nothing -> id
+                    Just sandbox -> mkAddPackageConf [sandbox]
+
       i <- Interpreter.interpreterSupported
       unless i $ do
         hPutStrLn stderr "WARNING: GHC does not support --interactive, skipping tests"
