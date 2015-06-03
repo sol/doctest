@@ -1,11 +1,12 @@
 module PackageDBsSpec (main, spec) where
 
+import           Prelude ()
+import           Prelude.Compat
+
 import qualified Control.Exception         as E
 import           Data.List                 (intercalate)
 import           PackageDBs
-import           System.Directory          (getCurrentDirectory,
-                                            removeDirectoryRecursive,
-                                            setCurrentDirectory)
+import           System.Directory          (getCurrentDirectory, setCurrentDirectory)
 import           System.Environment.Compat
 import           System.FilePath           (searchPathSeparator)
 import           Test.Hspec

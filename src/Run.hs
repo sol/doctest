@@ -13,7 +13,6 @@ import           Control.Monad (when, unless)
 import           System.Exit (exitFailure, exitSuccess)
 import           System.IO
 
-import           Control.Applicative
 import qualified Control.Exception as E
 import           Panic
 

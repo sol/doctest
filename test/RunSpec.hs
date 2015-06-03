@@ -16,7 +16,6 @@ import           System.Directory (getCurrentDirectory, setCurrentDirectory, rem
 import           Data.List
 
 import           System.Environment.Compat
-import           System.FilePath (searchPathSeparator)
 
 import           System.IO.Silently
 import           System.IO (stderr)
