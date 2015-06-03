@@ -1,6 +1,10 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Sandbox (getSandboxArguments, getPackageDbDir) where
+module Sandbox
+    ( getSandboxArguments
+    , getPackageDbDir
+    , getSandboxConfigFile
+    ) where
 
 import Control.Applicative ((<$>))
 import Control.Exception as E (catch, SomeException, throwIO)

@@ -12,24 +12,16 @@ import           Data.List
 import           Control.Monad (when, unless)
 import           System.Exit (exitFailure, exitSuccess)
 import           System.IO
-import           System.Environment (getEnvironment)
-import           System.FilePath (splitSearchPath)
 
 import           Control.Applicative
 import qualified Control.Exception as E
 import           Panic
 
+import           PackageDBs
 import           Parse
 import           Help
 import           Runner
 import qualified Interpreter
-
-ghcPackageDbFlag :: String
-#if __GLASGOW_HASKELL__ >= 706
-ghcPackageDbFlag = "-package-db"
-#else
-ghcPackageDbFlag = "-package-conf"
-#endif
 
 -- | Run doctest with given list of arguments.
 --
@@ -45,22 +37,6 @@ doctest args
   | "--help"    `elem` args = putStr usage
   | "--version" `elem` args = printVersion
   | otherwise = do
-      env <- getEnvironment
-      -- Look up the HASKELL_PACKAGE_SANDBOX environment variable and, if
-      -- present, add it to the list of package databases GHC searches.
-      -- Intended to make testing from inside sandboxes such as cabal-dev
-      -- simpler.
-      --
-      -- Also support HASKELL_PACKAGE_SANDBOXES to allow for multiple custom package databases
-      let mkAddPackageConf ps rest =
-            concatMap (\p -> [ghcPackageDbFlag, p]) ps ++ rest
-          addPackageConf = case lookup "HASKELL_PACKAGE_SANDBOXES" env of
-            Just sandboxes -> mkAddPackageConf $ splitSearchPath sandboxes
-            Nothing ->
-                case lookup "HASKELL_PACKAGE_SANDBOX" env of
-                    Nothing -> id
-                    Just sandbox -> mkAddPackageConf [sandbox]
-
       i <- Interpreter.interpreterSupported
       unless i $ do
         hPutStrLn stderr "WARNING: GHC does not support --interactive, skipping tests"
@@ -70,6 +46,10 @@ doctest args
       when f $ do
         hPutStrLn stderr "WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."
         hFlush stderr
+
+      packageDBArgs <- getPackageDBArgs
+      let addPackageConf = (packageDBArgs ++)
+
       r <- doctest_ (addPackageConf args_) `E.catch` \e -> do
         case fromException e of
           Just (UsageError err) -> do

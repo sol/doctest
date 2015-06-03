@@ -106,6 +106,7 @@ spec = do
       let sandboxes = intercalate [searchPathSeparator]
             [ "test/integration/custom-package-conf/packages-extra"
             , "test/integration/custom-package-conf/packages"
+            , ""
             ]
       withEnv "HASKELL_PACKAGE_SANDBOXES" sandboxes $ do
         hCapture_ [stderr] (doctest ["test/integration/custom-package-conf/Bar.hs"])

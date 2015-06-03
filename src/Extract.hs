@@ -38,7 +38,7 @@ import           GhcUtil (withGhc)
 import           Location hiding (unLoc)
 
 import           Util (convertDosLineEndings)
-import           Sandbox (getSandboxArguments)
+import           PackageDBs (getPackageDBArgs)
 
 -- | A wrapper around `SomeException`, to allow for a custom `Show` instance.
 newtype ExtractError = ExtractError SomeException
@@ -146,8 +146,8 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
 -- those modules (possibly indirect).
 extract :: [String] -> IO [Module (Located String)]
 extract args = do
-  sandboxArgs <- getSandboxArguments
-  let args'  = args ++ sandboxArgs
+  packageDBArgs <- getPackageDBArgs
+  let args'  = args ++ packageDBArgs
   mods <- parse args'
   let docs = map (fmap (fmap convertDosLineEndings) . extractFromModule . tm_parsed_module) mods
 

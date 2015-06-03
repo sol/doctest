@@ -19,7 +19,6 @@ import           Data.Char
 import           GHC.Paths (ghc)
 
 import           Language.Haskell.GhciWrapper
-import           Sandbox (getSandboxArguments)
 
 haveInterpreterKey :: String
 haveInterpreterKey = "Have interpreter"
@@ -48,8 +47,7 @@ withInterpreter
   -> (Interpreter -> IO a)  -- ^ Action to run
   -> IO a                   -- ^ Result of action
 withInterpreter flags action = do
-  sandboxFlags <- getSandboxArguments
-  let args = sandboxFlags ++ ["--interactive"] ++ flags
+  let args = ["--interactive"] ++ flags
   bracket (new defaultConfig{configGhci = ghc} args) close action
 
 -- | Evaluate an expression; return a Left value on exceptions.

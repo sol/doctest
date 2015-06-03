@@ -38,6 +38,7 @@ library
     , Interpreter
     , Location
     , Help
+    , PackageDBs
     , Parse
     , Paths_doctest
     , Property
