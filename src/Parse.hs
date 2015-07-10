@@ -1,5 +1,6 @@
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 module Parse (
   Module (..)
 , DocTest (..)
@@ -20,8 +21,9 @@ import           Data.Char (isSpace)
 import           Data.List
 import           Data.Maybe
 import           Data.String
+#if __GLASGOW_HASKELL__ < 710
 import           Control.Applicative
-
+#endif
 import           Extract
 import           Location
 

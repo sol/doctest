@@ -3,7 +3,9 @@ module Extract (Module(..), extract) where
 
 import           Prelude hiding (mod, concat)
 import           Control.Monad
+#if __GLASGOW_HASKELL__ < 710
 import           Control.Applicative
+#endif
 import           Control.Exception
 import           Data.List (partition, isSuffixOf)
 import           Data.Maybe

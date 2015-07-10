@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Interpreter (
   Interpreter
 , safeEval
@@ -12,7 +14,9 @@ module Interpreter (
 
 import           System.Process
 import           System.Directory (getPermissions, executable)
+#if __GLASGOW_HASKELL__ < 710
 import           Control.Applicative
+#endif
 import           Control.Monad
 import           Control.Exception hiding (handle)
 import           Data.Char
