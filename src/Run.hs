@@ -5,12 +5,16 @@ module Run (
 , doctest_
 , Summary
 , stripOptGhc
+, expandDirs
 #endif
 ) where
 
 import           Data.List
+import           Control.Applicative ((<$>))
 import           Control.Monad (when, unless)
+import           System.Directory (doesDirectoryExist, getDirectoryContents)
 import           System.Exit (exitFailure, exitSuccess)
+import           System.FilePath ((</>), takeExtension)
 import           System.IO
 
 import qualified Control.Exception as E
@@ -31,11 +35,15 @@ import qualified Interpreter
 --
 -- This can be used to create a Cabal test suite that runs doctest for your
 -- project.
+--
+-- If a directory is given, it is traversed to find all .hs and .lhs files
+-- inside of it, ignoring hidden entries.
 doctest :: [String] -> IO ()
-doctest args
-  | "--help"    `elem` args = putStr usage
-  | "--version" `elem` args = printVersion
+doctest args0
+  | "--help"    `elem` args0 = putStr usage
+  | "--version" `elem` args0 = printVersion
   | otherwise = do
+      args <- concat <$> mapM expandDirs args0
       i <- Interpreter.interpreterSupported
       unless i $ do
         hPutStrLn stderr "WARNING: GHC does not support --interactive, skipping tests"
@@ -57,6 +65,33 @@ doctest args
             exitFailure
           _ -> E.throwIO e
       when (not $ isSuccess r) exitFailure
+
+-- | Expand a reference to a directory to all .hs and .lhs files within it.
+expandDirs :: String -> IO [String]
+expandDirs fp0 = do
+    isDir <- doesDirectoryExist fp0
+    if isDir
+        then findHaskellFiles fp0
+        else return [fp0]
+  where
+    findHaskellFiles dir = do
+        contents <- getDirectoryContents dir
+        concat <$> mapM go (filter (not . hidden) contents)
+      where
+        go name = do
+            isDir <- doesDirectoryExist fp
+            if isDir
+                then findHaskellFiles fp
+                else if isHaskellFile fp
+                        then return [fp]
+                        else return []
+          where
+            fp = dir </> name
+
+    hidden ('.':_) = True
+    hidden _ = False
+
+    isHaskellFile fp = takeExtension fp `elem` [".hs", ".lhs"]
 
 isSuccess :: Summary -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
