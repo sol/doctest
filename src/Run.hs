@@ -10,6 +10,8 @@ module Run (
 
 import           Data.List
 import           Control.Monad (when, unless)
+import           System.Directory (doesFileExist, doesDirectoryExist)
+import           System.Environment (getEnvironment)
 import           System.Exit (exitFailure, exitSuccess)
 import           System.IO
 
@@ -48,8 +50,9 @@ doctest args
 
       packageDBArgs <- getPackageDBArgs
       let addPackageConf = (packageDBArgs ++)
+      addDistArgs <- getAddDistArgs
 
-      r <- doctest_ (addPackageConf args_) `E.catch` \e -> do
+      r <- doctest_ (addDistArgs $ addPackageConf args_) `E.catch` \e -> do
         case fromException e of
           Just (UsageError err) -> do
             hPutStrLn stderr ("doctest: " ++ err)
@@ -57,6 +60,30 @@ doctest args
             exitFailure
           _ -> E.throwIO e
       when (not $ isSuccess r) exitFailure
+
+-- | Get the necessary arguments to add the @cabal_macros.h@ file and autogen
+-- directory, if present.
+getAddDistArgs :: IO ([String] -> [String])
+getAddDistArgs = do
+    env <- getEnvironment
+    let dist =
+            case lookup "HASKELL_DIST_DIR" env of
+                Nothing -> "dist"
+                Just x -> x
+        autogen = dist ++ "/build/autogen/"
+        cabalMacros = autogen ++ "cabal_macros.h"
+
+    dirExists <- doesDirectoryExist autogen
+    if dirExists
+        then do
+            fileExists <- doesFileExist cabalMacros
+            return $ \rest ->
+                  concat ["-i", dist, "/build/autogen/"]
+                : "-optP-include"
+                : (if fileExists
+                    then (concat ["-optP", dist, "/build/autogen/cabal_macros.h"]:)
+                    else id) rest
+        else return id
 
 isSuccess :: Summary -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
