@@ -120,3 +120,18 @@ spec = do
     it "indicates when nothing got striped" $
       property $ \xs ->
         stripOptGhc xs == (False, xs)
+
+  describe "expandDirs" $ do
+    it "expands a directory" $ do
+      res <- expandDirs "example"
+      sort res `shouldBe`
+        [ "example/src/Example.hs"
+        , "example/test/doctests.hs"
+        ]
+    it "ignores files" $ do
+      res <- expandDirs "doctest.cabal"
+      res `shouldBe` ["doctest.cabal"]
+    it "ignores random things" $ do
+      let x = "foo bar baz bin"
+      res <- expandDirs x
+      res `shouldBe` [x]

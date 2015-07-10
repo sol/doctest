@@ -1,16 +1,23 @@
 {-# LANGUAGE CPP #-}
 module Run (
   doctest
+, doctestDist
 #ifdef TEST
 , doctest_
 , Summary
 , stripOptGhc
+, expandDirs
 #endif
 ) where
 
 import           Data.List
+import           Control.Applicative ((<$>))
 import           Control.Monad (when, unless)
+import           System.Directory (doesFileExist, doesDirectoryExist,
+                                   getDirectoryContents)
+import           System.Environment (getEnvironment)
 import           System.Exit (exitFailure, exitSuccess)
+import           System.FilePath ((</>), takeExtension)
 import           System.IO
 
 import qualified Control.Exception as E
@@ -31,11 +38,15 @@ import qualified Interpreter
 --
 -- This can be used to create a Cabal test suite that runs doctest for your
 -- project.
+--
+-- If a directory is given, it is traversed to find all .hs and .lhs files
+-- inside of it, ignoring hidden entries.
 doctest :: [String] -> IO ()
-doctest args
-  | "--help"    `elem` args = putStr usage
-  | "--version" `elem` args = printVersion
+doctest args0
+  | "--help"    `elem` args0 = putStr usage
+  | "--version" `elem` args0 = printVersion
   | otherwise = do
+      args <- concat <$> mapM expandDirs args0
       i <- Interpreter.interpreterSupported
       unless i $ do
         hPutStrLn stderr "WARNING: GHC does not support --interactive, skipping tests"
@@ -57,6 +68,51 @@ doctest args
             exitFailure
           _ -> E.throwIO e
       when (not $ isSuccess r) exitFailure
+
+-- | Expand a reference to a directory to all .hs and .lhs files within it.
+expandDirs :: String -> IO [String]
+expandDirs fp = do
+    isDir <- doesDirectoryExist fp
+    if isDir
+        then findHaskellFiles fp
+        else return [fp]
+  where
+    findHaskellFiles dir = do
+        contents <- getDirectoryContents dir
+        concat <$> mapM go (filter (not . hidden) contents)
+      where
+        go name = do
+            isDir <- doesDirectoryExist fp
+            if isDir
+                then findHaskellFiles fp
+                else if isHaskellFile fp
+                        then return [fp]
+                        else return []
+          where
+            fp = dir </> name
+
+    hidden ('.':_) = True
+    hidden _ = False
+
+    isHaskellFile fp = takeExtension fp `elem` [".hs", ".lhs"]
+
+-- | Same as @doctest@, but sets relevant flags for Cabal projects for
+-- cabal_macros.h and the autogen directory.
+--
+-- Will respect the @HASKELL_DIST_DIR@ environment variable if present (used by
+-- stack), otherwise assume a directory named dist (used by cabal-install).
+doctestDist :: [String] -> IO ()
+doctestDist rest = do
+    env <- getEnvironment
+    let dist =
+            case lookup "HASKELL_DIST_DIR" env of
+                Nothing -> "dist"
+                Just x -> x
+    doctest
+        $ concat ["-i", dist, "/build/autogen/"]
+        : "-optP-include"
+        : concat ["-optP", dist, "/build/autogen/cabal_macros.h"]
+        : rest
 
 isSuccess :: Summary -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
