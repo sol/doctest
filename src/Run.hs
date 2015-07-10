@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 module Run (
   doctest
+, doctestDist
 #ifdef TEST
 , doctest_
 , Summary
@@ -10,6 +11,7 @@ module Run (
 
 import           Data.List
 import           Control.Monad (when, unless)
+import           System.Environment (getEnvironment)
 import           System.Exit (exitFailure, exitSuccess)
 import           System.IO
 
@@ -57,6 +59,25 @@ doctest args
             exitFailure
           _ -> E.throwIO e
       when (not $ isSuccess r) exitFailure
+
+
+-- | Same as @doctest@, but sets relevant flags for Cabal projects for
+-- cabal_macros.h and the autogen directory.
+--
+-- Will respect the @HASKELL_DIST_DIR@ environment variable if present (used by
+-- stack), otherwise assume a directory named dist (used by cabal-install).
+doctestDist :: [String] -> IO ()
+doctestDist rest = do
+    env <- getEnvironment
+    let dist =
+            case lookup "HASKELL_DIST_DIR" env of
+                Nothing -> "dist"
+                Just x -> x
+    doctest
+        $ concat ["-i", dist, "/build/autogen/"]
+        : "-optP-include"
+        : concat ["-optP", dist, "/build/autogen/cabal_macros.h"]
+        : rest
 
 isSuccess :: Summary -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
