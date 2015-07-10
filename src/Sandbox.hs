@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP, BangPatterns #-}
 
 module Sandbox
     ( getSandboxArguments
@@ -6,7 +6,9 @@ module Sandbox
     , getSandboxConfigFile
     ) where
 
-import Control.Applicative ((<$>))
+#if __GLASGOW_HASKELL__ < 710
+import Data.Functor ((<$>))
+#endif
 import Control.Exception as E (catch, SomeException, throwIO)
 import Data.Char (isSpace)
 import Data.List (isPrefixOf, tails)
