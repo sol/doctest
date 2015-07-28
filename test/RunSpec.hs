@@ -1,11 +1,13 @@
 {-# LANGUAGE CPP #-}
 module RunSpec (main, spec) where
 
+import           Prelude ()
+import           Prelude.Compat
+
 import           Test.Hspec
 import           Test.QuickCheck
 import           System.Exit
 
-import           Control.Applicative
 import qualified Control.Exception as E
 #if __GLASGOW_HASKELL__ < 707
 import           System.Cmd
@@ -13,7 +15,7 @@ import           System.Cmd
 import           System.Process
 #endif
 import           System.Directory (getCurrentDirectory, setCurrentDirectory, removeDirectoryRecursive)
-import           Data.List
+import           Data.List.Compat
 
 import           System.Environment.Compat
 

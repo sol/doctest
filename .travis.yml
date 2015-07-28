@@ -1,4 +1,27 @@
-language: haskell
+sudo: false
+
+env:
+  - CABALVER=1.18 GHCVER=7.6.3
+  - CABALVER=1.18 GHCVER=7.8.4
+  - CABALVER=1.22 GHCVER=7.10.1
+
+addons:
+  apt:
+    sources:
+      - hvr-ghc
+    packages:
+      - ghc-7.6.3
+      - ghc-7.8.4
+      - ghc-7.10.1
+      - cabal-install-1.18
+      - cabal-install-1.22
+
+before_install:
+ - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+ - ghc --version
+ - cabal --version
+ - travis_retry cabal update
+ - cabal install --enable-tests --only-dep
 
 script:
   - cabal configure --enable-tests --ghc-options=-Werror && cabal build && cabal test

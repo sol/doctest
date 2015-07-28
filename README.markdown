@@ -386,3 +386,4 @@ changes.
  * Nick Smallbone
  * Sakari Jokinen
  * Simon Hengel
+ * Sönke Hahn

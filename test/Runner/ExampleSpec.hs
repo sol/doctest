@@ -1,7 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Runner.ExampleSpec (main, spec) where
 
-import           Control.Applicative
+import           Prelude ()
+import           Prelude.Compat
+
 import           Data.String
 import           Test.Hspec
 import           Test.QuickCheck

@@ -9,8 +9,10 @@ module Run (
 #endif
 ) where
 
-import           Data.List
-import           Control.Applicative ((<$>))
+import           Prelude ()
+import           Prelude.Compat
+
+import           Data.List.Compat
 import           Control.Monad (when, unless)
 import           System.Directory (doesFileExist, doesDirectoryExist, getDirectoryContents)
 import           System.Environment (getEnvironment)

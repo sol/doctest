@@ -1,8 +1,9 @@
 module InterpreterSpec (main, spec) where
 
-import           Test.Hspec
+import           Prelude ()
+import           Prelude.Compat
 
-import           Control.Applicative
+import           Test.Hspec
 
 import           Interpreter (interpreterSupported, haveInterpreterKey, ghcInfo, withInterpreter, safeEval)
 
