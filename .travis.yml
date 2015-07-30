@@ -17,11 +17,11 @@ addons:
       - cabal-install-1.22
 
 before_install:
- - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
- - ghc --version
- - cabal --version
- - travis_retry cabal update
- - cabal install --enable-tests --only-dep
+  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+  - ghc --version
+  - cabal --version
+  - travis_retry cabal update
+  - cabal install --enable-tests --only-dep
 
 script:
   - cabal configure --enable-tests --ghc-options=-Werror && cabal build && cabal test
