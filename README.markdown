@@ -257,71 +257,53 @@ You can put examples into [named chunks] [named-chunks], and not refer to them
 in the export list.  That way they will not be part of the generated Haddock
 documentation, but Doctest will still find them.
 
+```haskell
+-- $
+-- >>> 1 + 1
+-- 2
+```
+
 [named-chunks]: http://www.haskell.org/haddock/doc/html/ch03s05.html
 
 ### Using GHC extensions
 
-The easiest way to tell Doctest about GHC extensions is to use [LANGUAGE
-pragmas] [language-pragma] in your source files.
+There's two sets of GHC extensions involved when running Doctest:
+
+1. The set of GHC extensions that are active when compiling the module code
+(excluding the doctest examples). The easiest way to specify these extensions
+is through [LANGUAGE pragmas] [language-pragma] in your source files.
+(Doctest will not look at your cabal file.)
+2. The set of GHC extensions that are active when executing the Doctest
+examples. (These are not influenced by the LANGUAGE pragmas in the file.) The
+recommended way to enable extensions for Doctest examples is to switch them
+on like this:
+
+```haskell
+-- |
+-- >>> :set -XTupleSections
+-- >>> fst' $ (1,) 2
+-- 1
+fst' :: (a, b) -> a
+fst' = fst
+```
 
 Alternatively you can pass any GHC options to Doctest, e.g.:
 
     doctest -XCPP Foo.hs
 
+These options will affect both the loading of the module and the execution of
+the Doctest examples.
+
+If you want to omit the information which language extensions are enabled from
+the Doctest examples you can use the method described in [Hiding examples from
+Haddock] (#hiding-examples-from-haddock), e.g.:
+
+```haskell
+-- $
+-- >>> :set -XTupleSections
+```
+
 [language-pragma]: http://www.haskell.org/ghc/docs/latest/html/users_guide/pragmas.html#language-pragma
-
-#### OverloadedStrings example
-
-It should be noted that Doctest behaves like ghci.
-Let's say you want to use the [OverloadedStrings] [overloaded-strings]
-[LANGUAGE pragma] [language-pragma]. In this case, the [LANGUAGE pragmas] [language-pragma]
-allows you to use [OverloadedStrings] [overloaded-strings] in the source file.
-If you want to use them in examples, too, you have to explicitly say so.
-
-There are three ways to deal with this:
-
-1.  Pass ```-XOverloadedStrings``` to doctest
-
-2.  Make it part of your example
-
-    ```Haskell
-    -- | Xpto function
-    --
-    -- This is meant to be used with GHC's `OverloadedStrings` extension:
-    --
-    -- >>> :set -XOverloadedStrings
-    --
-    -- >>> xpto "what?"
-    -- "what?:xpto!"
-    xpto :: Text -> Text
-    xpto = (<> ":xpto!")
-    ```
-
-3.  Putting it into a ```$setup``` hook
-
-    ```Haskell
-    -- $setup
-    -- The code examples in this module require GHC's `OverloadedStrings`
-    -- extension:
-    --
-    -- >>> :set -XOverloadedStrings
-
-    -- | Xpto function
-    -- >>> xpto "what?"
-    -- "what?:xpto!"
-    xpto :: Text -> Text
-    xpto = (<> ":xpto!")
-    ```
-
-Note that a ```$setup``` hook is also a named chunk,
-so you can refer to it in the module header
-(that way making it part of the module documentation).
-
-The third (3) option may be preferable, as it puts you in the
-flexible position to show/hide the dependency of your code examples
-on OverloadedStrings (as you deem fit).
-
-[overloaded-strings]: http://www.haskell.org/ghc/docs/7.8.2/html/users_guide/type-class-extensions.html#overloaded-strings
 
 ### Cabal integration
 
