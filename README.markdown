@@ -251,6 +251,23 @@ fib 1 = 1
 fib n = fib (n - 1) + fib (n - 2)
 ```
 
+If you see an error like the following, ensure that
+[QuickCheck](http://hackage.haskell.org/package/QuickCheck) is a dependency
+of the test-suite or executable running `doctest`.
+
+```haskell
+<interactive>:39:3:
+    Not in scope: ‘polyQuickCheck’
+    In the splice: $(polyQuickCheck (mkName "doctest_prop"))
+
+<interactive>:39:3:
+    GHC stage restriction:
+      ‘polyQuickCheck’ is used in a top-level splice or annotation,
+      and must be imported, not defined locally
+    In the expression: polyQuickCheck (mkName "doctest_prop")
+    In the splice: $(polyQuickCheck (mkName "doctest_prop"))
+```
+
 ### Hiding examples from Haddock
 
 You can put examples into [named chunks] [named-chunks], and not refer to them
