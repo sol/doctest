@@ -59,6 +59,9 @@ library
     , process
     , ghc-paths     >= 0.1.0.9
     , transformers
+    , find-conduit
+    , conduit
+    , resourcet
 
 executable doctest
   main-is:
@@ -70,6 +73,9 @@ executable doctest
   build-depends:
       base          == 4.*
     , doctest
+    , find-conduit
+    , conduit
+    , resourcet
 
 test-suite spec
   main-is:
@@ -102,6 +108,9 @@ test-suite spec
     , stringbuilder >= 0.4
     , silently      >= 1.2.4
     , setenv
+    , find-conduit
+    , conduit
+    , resourcet
 
 test-suite doctests
   main-is:
@@ -115,3 +124,6 @@ test-suite doctests
   build-depends:
       base
     , doctest
+    , find-conduit
+    , conduit
+    , resourcet

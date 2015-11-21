@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 module Run (
   doctest
+, getCppArgs
 #ifdef TEST
 , doctest_
 , Summary
@@ -29,6 +30,11 @@ import           Help
 import           Runner
 import qualified Interpreter
 
+import           Data.Monoid
+import           Data.Conduit
+import qualified Data.Conduit.Find as F
+import           Control.Monad.Trans.Resource
+
 -- | Run doctest with given list of arguments.
 --
 -- Example:
@@ -45,8 +51,13 @@ doctest :: [String] -> IO ()
 doctest args0
   | "--help"    `elem` args0 = putStr usage
   | "--version" `elem` args0 = printVersion
-  | otherwise = do
-      args <- concat <$> mapM expandDirs args0
+  | "--cpp" `elem` args0 = do
+      args <-  getCppArgs "."
+      doctest' $ args ++ tail args0
+  | otherwise = doctest' args0
+  where
+    doctest' args' = do
+      args <- concat <$> mapM expandDirs args'
       i <- Interpreter.interpreterSupported
       unless i $ do
         hPutStrLn stderr "WARNING: GHC does not support --interactive, skipping tests"
@@ -69,6 +80,22 @@ doctest args0
             exitFailure
           _ -> E.throwIO e
       when (not $ isSuccess r) exitFailure
+
+
+-- | Find "cabal_macros.h", then make include-options to support MIN_VERSION-macro.
+getCppArgs ::  String ->  IO [String]
+getCppArgs dir = do
+  let macroFile = "cabal_macros.h"
+      dirname path = take (length path - length macroFile) path
+  runResourceT $ F.find dir (F.glob ("*autogen/" ++ macroFile) <> F.regular) $$ do
+    v <-  await
+    case v of
+      Just path ->  return [
+          "-i" ++ dirname path
+        , "-optP-include"
+        , "-optP" ++ path
+        ]
+      Nothing ->  return []
 
 -- | Expand a reference to a directory to all .hs and .lhs files within it.
 expandDirs :: String -> IO [String]
