@@ -223,18 +223,22 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
   `extQ` (ignore :: Selector Coercion)
 
 #if __GLASGOW_HASKELL__ >= 706
-#if __GLASGOW_HASKELL__ < 710
   -- hswb_kvs and hswb_tvs may be error thunks
+#if __GLASGOW_HASKELL__ < 710
   `extQ` (ignore :: Selector (HsWithBndrs [LHsType RdrName]))
   `extQ` (ignore :: Selector (HsWithBndrs [LHsType Name]))
   `extQ` (ignore :: Selector (HsWithBndrs (LHsType RdrName)))
   `extQ` (ignore :: Selector (HsWithBndrs (LHsType Name)))
-#else
-  -- hswb_kvs and hswb_tvs may be error thunks
+#elif __GLASGOW_HASKELL__ < 800
   `extQ` (ignore :: Selector (HsWithBndrs RdrName [LHsType RdrName]))
   `extQ` (ignore :: Selector (HsWithBndrs Name    [LHsType Name]))
   `extQ` (ignore :: Selector (HsWithBndrs RdrName (LHsType RdrName)))
   `extQ` (ignore :: Selector (HsWithBndrs Name    (LHsType Name)))
+#else
+  `extQ` (ignore :: Selector (HsImplicitBndrs RdrName [LHsType RdrName]))
+  `extQ` (ignore :: Selector (HsImplicitBndrs Name    [LHsType Name]))
+  `extQ` (ignore :: Selector (HsImplicitBndrs RdrName (LHsType RdrName)))
+  `extQ` (ignore :: Selector (HsImplicitBndrs Name    (LHsType Name)))
 #endif
 #endif
   )
