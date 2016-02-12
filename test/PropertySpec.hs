@@ -18,7 +18,7 @@ spec :: Spec
 spec = do
   describe "runProperty" $ do
     it "reports a failing property" $ withInterpreter [] $ \repl -> do
-      runProperty repl "False" `shouldReturn` Failure "Falsifiable (after 1 test):"
+      runProperty repl "False" `shouldReturn` Failure "*** Failed! Falsifiable (after 1 test):"
 
     it "runs a Bool property" $ withInterpreter [] $ \repl -> do
       runProperty repl "True" `shouldReturn` Success
@@ -49,7 +49,7 @@ spec = do
       runProperty repl "\\x -> x + y == y + x" `shouldReturn` Success
 
     it "reports the value for which a property fails" $ withInterpreter [] $ \repl -> do
-      runProperty repl "x == 23" `shouldReturn` Failure "Falsifiable (after 1 test): \n0"
+      runProperty repl "x == 23" `shouldReturn` Failure "*** Failed! Falsifiable (after 1 test): \n0"
 
     it "reports the values for which a property that takes multiple arguments fails" $ withInterpreter [] $ \repl -> do
       let vals x = case x of (Failure r) -> tail (lines r); _ -> error "Property did not fail!"
