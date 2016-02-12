@@ -27,10 +27,12 @@ import           MonadUtils (liftIO)
 import           Exception (ExceptionMonad)
 import           System.Directory
 import           System.FilePath
+
 #if __GLASGOW_HASKELL__ < 710
 import           NameSet (NameSet)
-#endif
 import           Coercion (Coercion)
+#endif
+
 import           FastString (unpackFS)
 import           Digraph (flattenSCCs)
 
@@ -192,9 +194,11 @@ docStringsFromModule mod = map (fmap (toLocated . fmap unpackDocString)) docs
 
 type Selector a = a -> ([(Maybe String, LHsDocString)], Bool)
 
+#if __GLASGOW_HASKELL__ < 710
 -- | Ignore a subtree.
 ignore :: Selector a
 ignore = const ([], True)
+#endif
 
 -- | Collect given value and descend into subtree.
 select :: a -> ([a], Bool)
@@ -208,7 +212,6 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
 #if __GLASGOW_HASKELL__ < 710
   `extQ` (ignore :: Selector NameSet)
   `extQ` (ignore :: Selector PostTcKind)
-#endif
 
   -- HsExpr never contains any documentation, but it may contain error thunks.
   --
@@ -223,19 +226,13 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
   `extQ` (ignore :: Selector Coercion)
 
 #if __GLASGOW_HASKELL__ >= 706
-#if __GLASGOW_HASKELL__ < 710
   -- hswb_kvs and hswb_tvs may be error thunks
   `extQ` (ignore :: Selector (HsWithBndrs [LHsType RdrName]))
   `extQ` (ignore :: Selector (HsWithBndrs [LHsType Name]))
   `extQ` (ignore :: Selector (HsWithBndrs (LHsType RdrName)))
   `extQ` (ignore :: Selector (HsWithBndrs (LHsType Name)))
-#else
-  -- hswb_kvs and hswb_tvs may be error thunks
-  `extQ` (ignore :: Selector (HsWithBndrs RdrName [LHsType RdrName]))
-  `extQ` (ignore :: Selector (HsWithBndrs Name    [LHsType Name]))
-  `extQ` (ignore :: Selector (HsWithBndrs RdrName (LHsType RdrName)))
-  `extQ` (ignore :: Selector (HsWithBndrs Name    (LHsType Name)))
 #endif
+
 #endif
   )
   where

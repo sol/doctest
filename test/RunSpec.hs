@@ -107,7 +107,13 @@ spec = do
 #if __GLASGOW_HASKELL__ < 706
         r `shouldBe` "\nFoo.hs:6:1: parse error (possibly incorrect indentation)\n"
 #else
+
+#if __GLASGOW_HASKELL__ < 800
         r `shouldBe` "\nFoo.hs:6:1:\n    parse error (possibly incorrect indentation or mismatched brackets)\n"
+#else
+        r `shouldBe` "\nFoo.hs:6:1: error:\n    parse error (possibly incorrect indentation or mismatched brackets)\n"
+#endif
+
 #endif
 
   describe "stripOptGhc (an internal function)" $ do

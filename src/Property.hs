@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE PatternGuards #-}
 module Property (
   runProperty
 , PropertyResult (..)
@@ -9,6 +10,8 @@ module Property (
 ) where
 
 import           Data.List
+import           Data.Maybe
+import           Data.Foldable
 
 import           Util
 import           Interpreter (Interpreter)
@@ -53,15 +56,15 @@ freeVariables repl term = do
 
 -- | Parse and return all variables that are not in scope from a ghc error
 -- message.
---
--- >>> parseNotInScope "<interactive>:4:1: Not in scope: `foo'"
--- ["foo"]
 parseNotInScope :: String -> [String]
-parseNotInScope = nub . map extractVariable . filter ("Not in scope: " `isInfixOf`) . lines
+parseNotInScope = nub . mapMaybe extractVariable . lines
   where
     -- | Extract variable name from a "Not in scope"-error.
-    extractVariable :: String -> String
-    extractVariable = unquote . takeWhileEnd (/= ' ')
+    extractVariable :: String -> Maybe String
+    extractVariable x
+      | "Not in scope: " `isInfixOf` x = Just . unquote . takeWhileEnd (/= ' ') $ x
+      | Just y <- (asum $ map (stripPrefix "Variable not in scope: ") (tails x)) = Just (takeWhile (/= ' ') y)
+      | otherwise = Nothing
 
     -- | Remove quotes from given name, if any.
     unquote ('`':xs)     = init xs

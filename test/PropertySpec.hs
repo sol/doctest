@@ -72,19 +72,13 @@ spec = do
       freeVariables repl "x' == y''" `shouldReturn` ["x'", "y''"]
 
     it "works for names that are similar to other names that are in scope" $ withInterpreter [] $ \repl -> do
-      -- ghc will include a suggestion (did you mean `id` instead of `is`) in
-      -- the error message
       freeVariables repl "length_" `shouldReturn` ["length_"]
 
   describe "parseNotInScope" $ do
-
     context "when error message was produced by GHC 7.4.1" $ do
-
-      it "extracts a variable name of variable that is not in scope from error an message" $ do
+      it "extracts a variable name of variable that is not in scope from an error message" $ do
         parseNotInScope . build $ do
           "<interactive>:4:1: Not in scope: `x'"
-          ""
-          "<interactive>:4:6: Not in scope: `x'"
         `shouldBe` ["x"]
 
       it "ignores duplicates" $ do
@@ -94,6 +88,13 @@ spec = do
           "<interactive>:4:6: Not in scope: `x'"
         `shouldBe` ["x"]
 
+      it "works for variable names that contain a prime" $ do
+        parseNotInScope . build $ do
+          "<interactive>:2:1: Not in scope: x'"
+          ""
+          "<interactive>:2:7: Not in scope: y'"
+        `shouldBe` ["x'", "y'"]
+
       it "works for error messages with suggestions" $ do
         parseNotInScope . build $ do
           "<interactive>:1:1:"
@@ -101,9 +102,29 @@ spec = do
           "    Perhaps you meant `id' (imported from Prelude)"
         `shouldBe` ["is"]
 
+    context "when error message was produced by GHC 8.0.1" $ do
+      it "extracts a variable name of variable that is not in scope from an error message" $ do
+        parseNotInScope . build $ do
+          "<interactive>:1:1: error: Variable not in scope: x"
+        `shouldBe` ["x"]
+
+      it "ignores duplicates" $ do
+        parseNotInScope . build $ do
+          "<interactive>:1:1: error: Variable not in scope: x :: ()"
+          ""
+          "<interactive>:1:6: error: Variable not in scope: x :: ()"
+        `shouldBe` ["x"]
+
       it "works for variable names that contain a prime" $ do
         parseNotInScope . build $ do
-          "<interactive>:2:1: Not in scope: x'"
+          "<interactive>:1:1: error: Variable not in scope: x' :: ()"
           ""
-          "<interactive>:2:7: Not in scope: y'"
-        `shouldBe` ["x'", "y'"]
+          "<interactive>:1:7: error: Variable not in scope: y'' :: ()"
+        `shouldBe` ["x'", "y''"]
+
+      it "works for error messages with suggestions" $ do
+        parseNotInScope . build $ do
+          "<interactive>:1:1: error:"
+          "    • Variable not in scope: length_"
+          "    • Perhaps you meant ‘length’ (imported from Prelude)"
+        `shouldBe` ["length_"]
