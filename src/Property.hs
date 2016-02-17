@@ -1,4 +1,6 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE PatternGuards #-}
+
 module Property (
   runProperty
 , PropertyResult (..)
