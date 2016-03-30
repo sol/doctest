@@ -2,8 +2,8 @@ Changes in 0.11.0
  - Support for GHC 8.0.1-rc2
 
 Changes in 0.10.1
- - Automatically expand directories into contained Haskell source files
- - Add cabal_macros.h and autogen dir by default
+ - Automatically expand directories into contained Haskell source files (thanks @snoyberg)
+ - Add cabal_macros.h and autogen dir by default (thanks @snoyberg)
 
 Changes in 0.10.0
  - Support HASKELL_PACKAGE_SANDBOXES (thanks @snoyberg)
