@@ -102,6 +102,7 @@ test-suite spec
     , stringbuilder >= 0.4
     , silently      >= 1.2.4
     , setenv
+    , with-location
 
 test-suite doctests
   main-is:

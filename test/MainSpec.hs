@@ -1,7 +1,9 @@
+{-# LANGUAGE FlexibleContexts #-}
 module MainSpec (main, spec) where
 
 import           Test.Hspec
 import           Test.HUnit (assertEqual, Assertion)
+import           Data.WithLocation
 
 import           Control.Exception
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
@@ -18,13 +20,10 @@ withCurrentDirectory workingDir action = do
     action
 
 -- | Construct a doctest specific 'Assertion'.
-doctest :: FilePath   -- ^ current directory of `doctest` process
-        -> [String]   -- ^ args, given to `doctest`
-        -> Summary    -- ^ expected test result
-        -> Assertion
-doctest workingDir args summary = do
-  r <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctest_ args)
-  assertEqual label summary r
+doctest :: WithLocation (FilePath -> [String] -> Summary -> Assertion)
+doctest workingDir args expected = do
+  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctest_ args)
+  assertEqual label expected actual
   where
     label = workingDir ++ " " ++ show args
 
