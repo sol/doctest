@@ -9,7 +9,6 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-
   describe "convertDosLineEndings" $ do
     it "converts CRLF to LF" $ do
       convertDosLineEndings "foo\r\nbar\r\nbaz" `shouldBe` "foo\nbar\nbaz"
