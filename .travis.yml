@@ -1,9 +1,11 @@
 sudo: false
 
+language: c
+
 env:
-  - CABALVER=1.18 GHCVER=7.6.3
-  - CABALVER=1.18 GHCVER=7.8.4
-  - CABALVER=1.22 GHCVER=7.10.1
+  - GHCVER=7.6.3
+  - GHCVER=7.8.4
+  - GHCVER=7.10.3
 
 addons:
   apt:
@@ -12,15 +14,15 @@ addons:
     packages:
       - ghc-7.6.3
       - ghc-7.8.4
-      - ghc-7.10.1
-      - cabal-install-1.18
+      - ghc-7.10.3
       - cabal-install-1.22
 
 before_install:
-  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/1.22/bin:$PATH
   - ghc --version
   - cabal --version
   - travis_retry cabal update
+  - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
   - cabal install --enable-tests --only-dep
 
 script:
