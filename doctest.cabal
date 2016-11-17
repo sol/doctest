@@ -50,7 +50,7 @@ library
     , Language.Haskell.GhciWrapper
   build-depends:
       base          == 4.*
-    , base-compat   >= 0.4.2
+    , base-compat   >= 0.7.0
     , ghc           >= 7.0 && < 8.2
     , syb           >= 0.3
     , deepseq
