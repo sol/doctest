@@ -19,6 +19,7 @@ import           System.Environment (getEnvironment)
 import           System.Exit (exitFailure, exitSuccess)
 import           System.FilePath ((</>), takeExtension)
 import           System.IO
+import           System.IO.CodePage (withCP65001)
 
 import qualified Control.Exception as E
 import           Panic
@@ -144,5 +145,5 @@ doctest_ args = do
   -- get examples from Haddock comments
   modules <- getDocTests args
 
-  Interpreter.withInterpreter args $ \repl -> do
+  Interpreter.withInterpreter args $ \repl -> withCP65001 $ do
     runModules repl modules

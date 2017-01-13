@@ -53,6 +53,7 @@ library
     , base-compat   >= 0.4.2
     , ghc           >= 7.0 && < 8.2
     , syb           >= 0.3
+    , code-page     >= 0.1
     , deepseq
     , directory
     , filepath
@@ -88,6 +89,7 @@ test-suite spec
       base
     , ghc
     , syb
+    , code-page
     , deepseq
     , directory
     , filepath
