@@ -20,7 +20,7 @@ import           StaticFlags (v_opt_C_ready)
 import           Data.IORef (writeIORef)
 #elif __GLASGOW_HASKELL__ < 707
 import           StaticFlags (saveStaticFlagGlobals, restoreStaticFlagGlobals)
-#else
+#elif __GLASGOW_HASKELL__ < 801
 import           StaticFlags (discardStaticFlags)
 #endif
 
@@ -58,8 +58,10 @@ withGhc flags action = bracketStaticFlags $ do
 handleStaticFlags :: [String] -> IO [Located String]
 #if __GLASGOW_HASKELL__ < 707
 handleStaticFlags flags = fst `fmap` parseStaticFlags (map noLoc flags)
-#else
+#elif __GLASGOW_HASKELL__ < 801
 handleStaticFlags flags = return $ map noLoc $ discardStaticFlags flags
+#else
+handleStaticFlags flags = return $ map noLoc $ flags
 #endif
 
 handleDynamicFlags :: GhcMonad m => [Located String] -> m [String]
