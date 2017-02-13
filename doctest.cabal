@@ -50,7 +50,7 @@ library
     , Language.Haskell.GhciWrapper
   build-depends:
       base          == 4.*
-    , base-compat   >= 0.7.0
+    , base-compat   >= 0.8.0
     , ghc           >= 7.0 && < 8.4
     , syb           >= 0.3
     , code-page     >= 0.1
@@ -59,6 +59,7 @@ library
     , filepath
     , process
     , ghc-paths     >= 0.1.0.9
+    , regex-tdfa    >= 1.1.8
     , transformers
 
 executable doctest
@@ -96,6 +97,7 @@ test-suite spec
     , process
     , ghc-paths
     , transformers
+    , regex-tdfa
 
     , base-compat
     , HUnit

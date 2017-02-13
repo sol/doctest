@@ -6,6 +6,7 @@ module Runner.Example (
 import           Data.Char
 import           Data.List
 import           Util
+import           Text.Regex.TDFA (Regex, makeRegexM, matchTest)
 
 import           Parse
 
@@ -26,8 +27,17 @@ mkResult expected actual
         xs `chunksMatch` ys || zs `chunksMatch` ys
     chunksMatch _ _ = False
 
+    reMatch :: String -> String -> Bool
+    reMatch restr line = case re of
+        Nothing -> False
+        Just re' -> matchTest re' line
+      where
+        re :: Maybe Regex
+        re = makeRegexM restr
+
     matches :: ExpectedResult -> [String] -> Bool
     matches (ExpectedLine x : xs) (y : ys) = x `chunksMatch` y && xs `matches` ys
+    matches (RegexLine re : xs) (y:ys) = re `reMatch` y && xs `matches` ys
     matches (WildCardLine : xs) ys | xs `matches` ys = True
     matches zs@(WildCardLine : _) (_ : ys) = zs `matches` ys
     matches [] [] = True
@@ -41,6 +51,7 @@ formatNotEqual expected_ actual = formatLines "expected: " expected ++ formatLin
     expected :: [String]
     expected = map (\x -> case x of
         ExpectedLine str -> concatMap lineChunkToString str
+        RegexLine re -> "~~~" ++ re
         WildCardLine -> "..." ) expected_
 
     -- use show to escape special characters in output lines if any output line

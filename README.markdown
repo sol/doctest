@@ -212,6 +212,16 @@ anything *within that line*:
 -- foo ... baz
 ```
 
+The lines starting with three tildes (`~~~`) will be matched using
+[`regex-tdfa`](https://hackage.haskell.org/package/regex-tdfa)
+regular expressions
+
+```haskell
+-- |
+-- >>> putStrLn "foo bar baz"
+-- ~~~o{2}
+```
+
 ### QuickCheck properties
 
 Haddock (since version 2.13.0) has markup support for properties.  Doctest can

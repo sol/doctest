@@ -1,6 +1,5 @@
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE CPP #-}
 module Parse (
   Module (..)
 , DocTest (..)
@@ -17,13 +16,12 @@ module Parse (
 , mkLineChunks
 ) where
 
+import           Prelude ()
+import           Prelude.Compat
 import           Data.Char (isSpace)
-import           Data.List
+import           Data.List.Compat
 import           Data.Maybe
 import           Data.String
-#if __GLASGOW_HASKELL__ < 710
-import           Control.Applicative
-#endif
 import           Extract
 import           Location
 
@@ -37,7 +35,7 @@ data LineChunk = LineChunk String | WildCardChunk
 instance IsString LineChunk where
     fromString = LineChunk
 
-data ExpectedLine = ExpectedLine [LineChunk] | WildCardLine
+data ExpectedLine = ExpectedLine [LineChunk] | RegexLine String | WildCardLine
   deriving (Show, Eq)
 
 instance IsString ExpectedLine where
@@ -154,6 +152,7 @@ mkExpectedLine :: String -> ExpectedLine
 mkExpectedLine x = case x of
     "<BLANKLINE>" -> ""
     "..." -> WildCardLine
+    _ | "~~~" `isPrefixOf` x -> RegexLine (drop 3 x)
     _ -> ExpectedLine $ mkLineChunks x
 
 mkLineChunks :: String -> [LineChunk]

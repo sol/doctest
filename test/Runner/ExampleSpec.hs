@@ -55,6 +55,14 @@ spec = do
         property $ \xs -> mkResult (lineToExpected xs) (lineToActual xs)
             `shouldBe` Equal
 
+    context "with RegexLine" $ do
+      it "matches line against the regexp" $ do
+        mkResult ["foo", RegexLine "x{2}", "bar"] ["foo", "..xx..x.xx..", "bar"]
+            `shouldBe` Equal
+
+        mkResult ["foo", RegexLine "^x{2}", "bar"] ["foo", "..xx..x.xx..", "bar"]
+            `shouldNotBe` Equal
+
     context "with WildCardChunk" $ do
       it "matches an arbitrary line chunk" $ do
         mkResult [ExpectedLine ["foo", WildCardChunk, "bar"]] ["foo baz bar"]

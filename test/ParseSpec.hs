@@ -171,6 +171,14 @@ spec = do
         " bar"
       `shouldBe` [("action", ["foo", WildCardLine, "bar"])]
 
+    it "parses regex lines" $ do
+      parse_ $ do
+        " >>> action"
+        " foo"
+        " ~~~o{2}"
+        " bar"
+      `shouldBe` [("action", ["foo", RegexLine "o{2}", "bar"])]
+
     it "parses wild card chunks" $ do
       parse_ $ do
         " >>> action"
