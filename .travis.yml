@@ -3,29 +3,40 @@ sudo: false
 language: c
 
 env:
-  - GHCVER=7.6.3
-  - GHCVER=7.8.4
-  - GHCVER=7.10.3
+  - GHCVER=8.2.1 TESTS=--disable-tests
   - GHCVER=8.0.2
+  - GHCVER=7.10.3
+  - GHCVER=7.8.4
+  - GHCVER=7.6.3
+  - GHCVER=7.4.2 TESTS=--disable-tests
+  - GHCVER=7.2.2 TESTS=--disable-tests
+  - GHCVER=7.0.4 TESTS=--disable-tests
 
 addons:
   apt:
     sources:
       - hvr-ghc
     packages:
+      - ghc-7.0.4
+      - ghc-7.2.2
+      - ghc-7.4.2
       - ghc-7.6.3
       - ghc-7.8.4
       - ghc-7.10.3
       - ghc-8.0.2
-      - cabal-install-1.24
+      - ghc-8.2.1
+      - cabal-install-2.0
 
 before_install:
-  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/1.24/bin:$PATH
+  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/2.0/bin:$PATH
   - ghc --version
   - cabal --version
   - travis_retry cabal update
   - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
-  - cabal install --enable-tests --only-dep
+  - TESTS=${TESTS=--enable-tests}
+  - cabal install $TESTS --only-dep
 
 script:
-  - cabal configure --enable-tests --ghc-options=-Werror && cabal build && cabal test
+  - cabal configure $TESTS --ghc-options=-Werror
+  - cabal build
+  - if [ "x$TEST" = "x--enable-tests" ]; then cabal test; fi
