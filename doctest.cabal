@@ -105,6 +105,7 @@ test-suite spec
     , silently      >= 1.2.4
     , setenv
     , with-location
+    , mockery
 
 test-suite doctests
   main-is:
