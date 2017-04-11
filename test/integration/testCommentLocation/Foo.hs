@@ -20,6 +20,7 @@ module Foo (
   --
   -- >>> test 10
   -- *** Exception: Prelude.undefined
+  -- ...
   test,
 
   -- |
@@ -38,6 +39,7 @@ module Foo (
 --
 -- >>> test 20
 -- *** Exception: Prelude.undefined
+-- ...
 test :: Integer -> Integer
 test = undefined
 

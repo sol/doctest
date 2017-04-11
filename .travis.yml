@@ -6,6 +6,7 @@ env:
   - GHCVER=7.6.3
   - GHCVER=7.8.4
   - GHCVER=7.10.3
+  - GHCVER=8.0.2
 
 addons:
   apt:
@@ -15,10 +16,11 @@ addons:
       - ghc-7.6.3
       - ghc-7.8.4
       - ghc-7.10.3
-      - cabal-install-1.22
+      - ghc-8.0.2
+      - cabal-install-1.24
 
 before_install:
-  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/1.22/bin:$PATH
+  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/1.24/bin:$PATH
   - ghc --version
   - cabal --version
   - travis_retry cabal update

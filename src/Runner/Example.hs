@@ -27,13 +27,12 @@ mkResult expected actual
     chunksMatch _ _ = False
 
     matches :: ExpectedResult -> [String] -> Bool
+    matches (ExpectedLine x : xs) (y : ys) = x `chunksMatch` y && xs `matches` ys
+    matches (WildCardLine : xs) ys | xs `matches` ys = True
+    matches zs@(WildCardLine : _) (_ : ys) = zs `matches` ys
     matches [] [] = True
     matches [] _  = False
     matches _  [] = False
-    matches (ExpectedLine x : xs) (y:ys) =
-        x `chunksMatch` y && xs `matches` ys
-    matches zs@(WildCardLine : xs) (_:ys) =
-        xs `matches` ys || zs `matches` ys
 
 
 formatNotEqual :: ExpectedResult -> [String] -> [String]

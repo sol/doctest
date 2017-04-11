@@ -43,6 +43,10 @@ spec = do
       mkResult ["foo\t"] ["foo  "] `shouldBe` Equal
 
     context "with WildCardLine" $ do
+      it "matches zero lines" $ do
+        mkResult ["foo", WildCardLine, "bar"] ["foo", "bar"]
+            `shouldBe` Equal
+
       it "matches an arbitrary number of lines" $ do
         mkResult ["foo", WildCardLine, "bar"] ["foo", "baz", "bazoom", "bar"]
             `shouldBe` Equal

@@ -376,7 +376,7 @@ Discuss your ideas first, ideally by opening an issue on GitHub.
 Add tests for new features, and make sure that the test suite passes with your
 changes.
 
-    cabal configure --enable-tests && cabal build && cabal test
+    cabal configure --enable-tests && cabal build && cabal exec cabal test
 
 
 ## Contributors
