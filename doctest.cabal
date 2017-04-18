@@ -51,7 +51,7 @@ library
   build-depends:
       base          == 4.*
     , base-compat   >= 0.7.0
-    , ghc           >= 7.0 && < 8.2
+    , ghc           >= 7.0 && < 8.4
     , syb           >= 0.3
     , code-page     >= 0.1
     , deepseq
