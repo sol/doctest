@@ -11,13 +11,14 @@ import           Interpreter (ghc)
 usage :: String
 usage = unlines [
           "Usage:"
-        , "  doctest [ GHC OPTION | MODULE ]..."
+        , "  doctest [ --no-magic | GHC OPTION | MODULE ]..."
         , "  doctest --help"
         , "  doctest --version"
         , ""
         , "Options:"
         , "  --help     display this help and exit"
         , "  --version  output version information and exit"
+        , "  --no-magic no directory expansion, and no argument discovery."
         ]
 
 printVersion :: IO ()

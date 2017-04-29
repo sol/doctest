@@ -47,7 +47,8 @@ doctest args0
   | "--help"    `elem` args0 = putStr usage
   | "--version" `elem` args0 = printVersion
   | otherwise = do
-      args <- concat <$> mapM expandDirs args0
+      let (noMagic, args1) = stripNoMagic args0
+      args <- concat <$> mapM expandDirs args1
       i <- Interpreter.interpreterSupported
       unless i $ do
         hPutStrLn stderr "WARNING: GHC does not support --interactive, skipping tests"
@@ -62,7 +63,7 @@ doctest args0
       let addPackageConf = (packageDBArgs ++)
       addDistArgs <- getAddDistArgs
 
-      r <- doctest_ (addDistArgs $ addPackageConf args_) `E.catch` \e -> do
+      r <- doctest_ (if noMagic then args1 else (addDistArgs $ addPackageConf args_)) `E.catch` \e -> do
         case fromException e of
           Just (UsageError err) -> do
             hPutStrLn stderr ("doctest: " ++ err)
@@ -138,6 +139,20 @@ stripOptGhc = go
       []                      -> (False, [])
       "--optghc" : opt : rest -> (True, opt : snd (go rest))
       opt : rest              -> maybe (fmap (opt :)) (\x (_, xs) -> (True, x :xs)) (stripPrefix "--optghc=" opt) (go rest)
+
+-- |
+-- Strip --no-magic from the options.  Running doctest with --no-magic neither
+-- expands directories nor tries to be smart about locating the package db.
+--
+-- A boolean is returned with the stipped arguments.  It is True if striping
+-- occurred.
+stripNoMagic :: [String] -> (Bool, [String])
+stripNoMagic = go
+  where
+    go args = case args of
+      []                        -> (False, [])
+      "--no-magic" : opt : rest -> (True, opt : snd (go rest))
+      opt : rest                -> (opt :) <$> (go rest)
 
 doctest_ :: [String] -> IO Summary
 doctest_ args = do
