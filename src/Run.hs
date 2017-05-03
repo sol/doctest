@@ -44,8 +44,9 @@ import qualified Interpreter
 -- inside of it, ignoring hidden entries.
 doctest :: [String] -> IO ()
 doctest args0
-  | "--help"    `elem` args0 = putStr usage
-  | "--version" `elem` args0 = printVersion
+  | "--help"        `elem` args0 = putStr usage
+  | "--version"     `elem` args0 = printVersion
+  | "--ghc-version" `elem` args0 = printGhcVersion
   | otherwise = do
       args <- concat <$> mapM expandDirs args0
       i <- Interpreter.interpreterSupported
