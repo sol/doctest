@@ -1,7 +1,8 @@
 module Help (
   usage
 , printVersion
-, printGhcVersion
+, printNumericVersion
+, printGhcNumericVersion
 ) where
 
 import           Paths_doctest (version)
@@ -19,8 +20,10 @@ usage = unlines [
         , "Options:"
         , "  --help     display this help and exit"
         , "  --version  output version information and exit"
-        , "  --ghc-version"
-        , "             output the ghc version identical to ghc --version"
+        , "  --numeric-version"
+        , "             output just the version"
+        , "  --ghc-numeric-version"
+        , "             output the ghc version identical to ghc --numeric-version"
         ]
 
 printVersion :: IO ()
@@ -29,6 +32,8 @@ printVersion = do
   putStrLn ("using version " ++ GHC.cProjectVersion ++ " of the GHC API")
   putStrLn ("using " ++ ghc)
 
-printGhcVersion :: IO ()
-printGhcVersion =
-  putStrLn (GHC.cProjectName ++ ", version " ++ GHC.cProjectVersion)
+printNumericVersion :: IO ()
+printNumericVersion = putStrLn (showVersion version)
+
+printGhcNumericVersion :: IO ()
+printGhcNumericVersion = putStrLn GHC.cProjectVersion
