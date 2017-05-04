@@ -1,4 +1,5 @@
 Changes in next
+  - Add `--info`
   - Add `--no-magic`
 
 Changes in 0.11.2

@@ -28,3 +28,7 @@ spec = do
     context "with --version" $ do
       it "outputs version information" $ do
         parseOptions ["--version"] `shouldBe` Output versionInfo
+
+    context "with --info" $ do
+      it "outputs machine readable version information" $ do
+        parseOptions ["--info"] `shouldBe` Output info

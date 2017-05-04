@@ -5,6 +5,7 @@ module Options (
 , parseOptions
 #ifdef TEST
 , usage
+, info
 , versionInfo
 #endif
 ) where
@@ -15,7 +16,7 @@ import           Prelude.Compat
 import           Data.List.Compat
 import           Data.Maybe
 
-import           Paths_doctest (version)
+import qualified Paths_doctest
 import           Data.Version (showVersion)
 import           Config as GHC
 import           Interpreter (ghc)
@@ -26,18 +27,33 @@ usage = unlines [
   , "  doctest [ --no-magic | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
+  , "  doctest --info"
   , ""
   , "Options:"
   , "  --help     display this help and exit"
   , "  --version  output version information and exit"
+  , "  --info     output machine-readable version information and exit"
   ]
+
+version :: String
+version = showVersion Paths_doctest.version
+
+ghcVersion :: String
+ghcVersion = GHC.cProjectVersion
 
 versionInfo :: String
 versionInfo = unlines [
-    "doctest version " ++ showVersion version
-  , "using version " ++ GHC.cProjectVersion ++ " of the GHC API"
+    "doctest version " ++ version
+  , "using version " ++ ghcVersion ++ " of the GHC API"
   , "using " ++ ghc
   ]
+
+info :: String
+info = "[ " ++ (intercalate "\n, " . map show $ [
+    ("version", version)
+  , ("ghc_version", ghcVersion)
+  , ("ghc", ghc)
+  ]) ++ "\n]\n"
 
 data Result = Output String | Result Run
   deriving (Eq, Show)
@@ -53,6 +69,7 @@ data Run = Run {
 parseOptions :: [String] -> Result
 parseOptions args
   | "--help" `elem` args = Output usage
+  | "--info" `elem` args = Output info
   | "--version" `elem` args = Output versionInfo
   | otherwise = case stripOptGhc <$> stripNoMagic args of
       (magicMode, (warning, xs)) -> Result (Run (maybeToList warning) xs magicMode)
