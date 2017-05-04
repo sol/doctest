@@ -37,7 +37,7 @@ library
     , GhcUtil
     , Interpreter
     , Location
-    , Help
+    , Options
     , PackageDBs
     , Parse
     , Paths_doctest

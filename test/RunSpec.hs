@@ -5,7 +5,6 @@ import           Prelude ()
 import           Prelude.Compat
 
 import           Test.Hspec
-import           Test.QuickCheck
 import           System.Exit
 
 import qualified Control.Exception as E
@@ -21,7 +20,7 @@ import           System.Environment.Compat
 
 import           System.IO.Silently
 import           System.IO (stderr)
-import qualified Help
+import qualified Options
 
 import           Run
 
@@ -52,7 +51,7 @@ spec = do
 
     it "prints help on --help" $ do
       (r, ()) <- capture (doctest ["--help"])
-      r `shouldBe` Help.usage
+      r `shouldBe` Options.usage
 
     it "prints version on --version" $ do
       (r, ()) <- capture (doctest ["--version"])
@@ -115,19 +114,6 @@ spec = do
 #endif
 
 #endif
-
-  describe "stripOptGhc (an internal function)" $ do
-    it "strips --optghc=" $
-      property $ \xs ys ->
-        stripOptGhc (xs ++ ["--optghc=foobar"] ++ ys) == (True, xs ++ ["foobar"] ++ ys)
-
-    it "strips --optghc" $
-      property $ \xs ys ->
-        stripOptGhc (xs ++ ["--optghc", "foobar"] ++ ys) == (True, xs ++ ["foobar"] ++ ys)
-
-    it "indicates when nothing got striped" $
-      property $ \xs ->
-        stripOptGhc xs == (False, xs)
 
   describe "expandDirs" $ do
     it "expands a directory" $ do
