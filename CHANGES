@@ -1,3 +1,6 @@
+Changes in next
+  - Add `--no-magic`
+
 Changes in 0.11.2
   - Make `...` match zero lines
 

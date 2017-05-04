@@ -43,7 +43,7 @@ import qualified Interpreter
 doctest :: [String] -> IO ()
 doctest args0 = case parseOptions args0 of
   Output s -> putStr s
-  Result (Run warnings args_) -> do
+  Result (Run warnings args_ magicMode) -> do
     mapM_ (hPutStrLn stderr) warnings
     hFlush stderr
 
@@ -52,11 +52,13 @@ doctest args0 = case parseOptions args0 of
       hPutStrLn stderr "WARNING: GHC does not support --interactive, skipping tests"
       exitSuccess
 
-    args <- do
-      expandedArgs <- concat <$> mapM expandDirs args_
-      packageDBArgs <- getPackageDBArgs
-      addDistArgs <- getAddDistArgs
-      return (addDistArgs $ packageDBArgs ++ expandedArgs)
+    args <- case magicMode of
+      False -> return args_
+      True -> do
+        expandedArgs <- concat <$> mapM expandDirs args_
+        packageDBArgs <- getPackageDBArgs
+        addDistArgs <- getAddDistArgs
+        return (addDistArgs $ packageDBArgs ++ expandedArgs)
 
     r <- doctest_ args `E.catch` \e -> do
       case fromException e of

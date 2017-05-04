@@ -23,7 +23,7 @@ import           Interpreter (ghc)
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ GHC OPTION | MODULE ]..."
+  , "  doctest [ --no-magic | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , ""
@@ -47,14 +47,20 @@ type Warning = String
 data Run = Run {
   runWarnings :: [Warning]
 , runOptions :: [String]
+, runMagicMode :: Bool
 } deriving (Eq, Show)
 
 parseOptions :: [String] -> Result
 parseOptions args
   | "--help" `elem` args = Output usage
   | "--version" `elem` args = Output versionInfo
-  | otherwise = case stripOptGhc args of
-      (warning, xs) -> Result (Run (maybeToList warning) xs)
+  | otherwise = case stripOptGhc <$> stripNoMagic args of
+      (magicMode, (warning, xs)) -> Result (Run (maybeToList warning) xs magicMode)
+
+stripNoMagic :: [String] -> (Bool, [String])
+stripNoMagic args = (noMagic `notElem` args, filter (/= noMagic) args)
+  where
+    noMagic = "--no-magic"
 
 stripOptGhc :: [String] -> (Maybe Warning, [String])
 stripOptGhc = go
