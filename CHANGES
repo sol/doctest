@@ -1,5 +1,5 @@
-Changes in next
-  - Make `...` match empty lines
+Changes in 0.11.2
+  - Make `...` match zero lines
 
 Changes in 0.11.1
  - Fix an issue with Unicode output on Windows (see #149)
