@@ -1,9 +1,7 @@
 # Doctest: Test interactive Haskell examples
 
-`doctest` is a small program, that checks [examples in Haddock comments]
-(http://www.haskell.org/haddock/doc/html/ch03s08.html#id566093).  It is similar
-to the [popular Python module with the same name]
-(http://docs.python.org/library/doctest.html).
+`doctest` is a small program, that checks [examples in Haddock comments](http://www.haskell.org/haddock/doc/html/ch03s08.html#id566093).  It is similar
+to the [popular Python module with the same name](http://docs.python.org/library/doctest.html).
 
 
 ## Installation
@@ -26,8 +24,7 @@ On Mac OS X:
 
 On Windows it's `C:\Documents And Settings\user\Application Data\cabal\bin`.
 
-For more information, see the [section on paths in the Cabal User Guide]
-(http://www.haskell.org/cabal/users-guide/installing-packages.html#paths-in-the-simple-build-system).
+For more information, see the [section on paths in the Cabal User Guide](http://www.haskell.org/cabal/users-guide/installing-packages.html#paths-in-the-simple-build-system).
 
 ## Usage
 
