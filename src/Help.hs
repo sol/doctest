@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 module Help (
   usage
 , printVersion
@@ -5,7 +6,7 @@ module Help (
 
 import           Paths_doctest (version)
 import           Data.Version (showVersion)
-import           Config as GHC
+import "ghc"     Config as GHC
 import           Interpreter (ghc)
 
 usage :: String
