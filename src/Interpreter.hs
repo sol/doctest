@@ -3,6 +3,7 @@
 module Interpreter (
   Interpreter
 , safeEval
+, safeEvalIt
 , withInterpreter
 , ghc
 , interpreterSupported
@@ -59,6 +60,10 @@ withInterpreter flags action = do
 -- An exception may e.g. be caused on unterminated multiline expressions.
 safeEval :: Interpreter -> String -> IO (Either String String)
 safeEval repl = either (return . Left) (fmap Right . eval repl) . filterExpression
+
+-- | Variant of 'safeEval' whichtries to preserve @it@ variable.
+safeEvalIt :: Interpreter -> String -> IO (Either String String)
+safeEvalIt repl = either (return . Left) (fmap Right . evalIt repl) . filterExpression
 
 filterExpression :: String -> Either String String
 filterExpression e =

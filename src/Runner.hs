@@ -134,7 +134,8 @@ runModule repl (Module module_ setup examples) = do
       reload
       forM_ setup $ \l -> forM_ l $ \(Located _ x) -> case x of
         Property _  -> return ()
-        Example e _ -> void $ Interpreter.safeEval repl e
+        Example e _ -> do
+          void $ Interpreter.safeEval repl e
 
 reportFailure :: Location -> Expression -> Report ()
 reportFailure loc expression = do
@@ -194,7 +195,8 @@ runExampleGroup :: Interpreter -> [Located Interaction] -> Report ()
 runExampleGroup repl = go
   where
     go ((Located loc (expression, expected)) : xs) = do
-      r <- fmap lines <$> liftIO (Interpreter.safeEval repl expression)
+      -- asd
+      r <- fmap lines <$> liftIO (Interpreter.safeEvalIt repl expression)
       case r of
         Left err -> do
           reportError loc expression err

@@ -40,6 +40,10 @@ spec = do
       doctest "." ["testSimple/Fib.hs"]
         (cases 1)
 
+    it "it" $ do
+      doctest "." ["it/Foo.hs"]
+        (cases 4)
+
     it "failing" $ do
       doctest "." ["failing/Foo.hs"]
         (cases 1) {sFailures = 1}
