@@ -123,11 +123,7 @@ runModule repl (Module module_ setup examples) = do
       runTestGroup repl setup_
   where
     reload :: IO ()
-    reload = do
-      -- NOTE: It is important to do the :reload first!  There was some odd bug
-      -- with a previous version of GHC (7.4.1?).
-      void $ Interpreter.safeEval repl   ":reload"
-      void $ Interpreter.safeEval repl $ ":m *" ++ module_
+    reload = void $ Interpreter.safeEval repl $ ":m *" ++ module_
 
     setup_ :: IO ()
     setup_ = do
