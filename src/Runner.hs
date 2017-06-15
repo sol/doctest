@@ -124,9 +124,11 @@ runModule repl (Module module_ setup examples) = do
   where
     reload :: IO ()
     reload = do
+#if __GLASGOW_HASKELL__ < 707
       -- NOTE: It is important to do the :reload first!  There was some odd bug
-      -- with a previous version of GHC (7.4.1?).
+      -- with a previous versions of GHC (7.6.3 and older).
       void $ Interpreter.safeEval repl   ":reload"
+#endif
       void $ Interpreter.safeEval repl $ ":m *" ++ module_
 
     setup_ :: IO ()
