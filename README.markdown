@@ -88,6 +88,16 @@ for
 
 `print n` is not tried, because `let n = x + y` fails (`y` is not in scope!).
 
+#### A note on performance
+
+By default, `doctest` calls `:reload` between each group to clear GHCi's scope
+of any local definitions. This ensures that previous examples cannot influence
+later ones. However, it can lead to performance penalties if you are using
+`doctest` in a project with many modules. One possible remedy is to pass the
+`--fast` flag to `doctest`, which disables calling `:reload` between groups.
+If `doctest`s are running too slowly, you might consider using `--fast`.
+(With the caveat that the order in which groups appear now matters!)
+
 ### Setup code
 
 You can put setup code in a [named chunk][named-chunks] with the name `$setup`.

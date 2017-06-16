@@ -1,3 +1,6 @@
+Changes in next
+  - Add `--fast`, which disables running `:reload` between example groups
+
 Changes in 0.11.3
   - Add `--info`
   - Add `--no-magic`
