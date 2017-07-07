@@ -30,6 +30,7 @@ usage = unlines [
   , "  doctest --info"
   , ""
   , "Options:"
+  , "  --fast     disable :reload between example groups"
   , "  --help     display this help and exit"
   , "  --version  output version information and exit"
   , "  --info     output machine-readable version information and exit"
