@@ -43,7 +43,7 @@ import qualified Interpreter
 doctest :: [String] -> IO ()
 doctest args0 = case parseOptions args0 of
   Output s -> putStr s
-  Result (Run warnings args_ magicMode) -> do
+  Result (Run warnings args_ magicMode fastMode) -> do
     mapM_ (hPutStrLn stderr) warnings
     hFlush stderr
 
@@ -60,7 +60,7 @@ doctest args0 = case parseOptions args0 of
         addDistArgs <- getAddDistArgs
         return (addDistArgs $ packageDBArgs ++ expandedArgs)
 
-    r <- doctest_ args `E.catch` \e -> do
+    r <- doctestWithFastMode fastMode args `E.catch` \e -> do
       case fromException e of
         Just (UsageError err) -> do
           hPutStrLn stderr ("doctest: " ++ err)
@@ -123,11 +123,16 @@ getAddDistArgs = do
 isSuccess :: Summary -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
 
+#ifdef TEST
 doctest_ :: [String] -> IO Summary
-doctest_ args = do
+doctest_ = doctestWithFastMode False
+#endif
+
+doctestWithFastMode :: Bool -> [String] -> IO Summary
+doctestWithFastMode fastMode args = do
 
   -- get examples from Haddock comments
   modules <- getDocTests args
 
   Interpreter.withInterpreter args $ \repl -> withCP65001 $ do
-    runModules repl modules
+    runModules fastMode repl modules

@@ -52,11 +52,11 @@ instance Monoid Summary where
   (Summary x1 x2 x3 x4) `mappend` (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Run all examples from a list of modules.
-runModules :: Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules repl modules = do
+runModules :: Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
+runModules fastMode repl modules = do
   isInteractive <- hIsTerminalDevice stderr
   ReportState _ _ s <- (`execStateT` ReportState 0 isInteractive mempty {sExamples = c}) $ do
-    forM_ modules $ runModule repl
+    forM_ modules $ runModule fastMode repl
 
     -- report final summary
     gets (show . reportStateSummary) >>= report
@@ -107,8 +107,8 @@ overwrite msg = do
   liftIO (hPutStr stderr str)
 
 -- | Run all examples from given module.
-runModule :: Interpreter -> Module [Located DocTest] -> Report ()
-runModule repl (Module module_ setup examples) = do
+runModule :: Bool -> Interpreter -> Module [Located DocTest] -> Report ()
+runModule fastMode repl (Module module_ setup examples) = do
 
   Summary _ _ e0 f0 <- gets reportStateSummary
 
@@ -124,9 +124,10 @@ runModule repl (Module module_ setup examples) = do
   where
     reload :: IO ()
     reload = do
-      -- NOTE: It is important to do the :reload first!  There was some odd bug
-      -- with a previous version of GHC (7.4.1?).
-      void $ Interpreter.safeEval repl   ":reload"
+      unless fastMode $
+        -- NOTE: It is important to do the :reload first! See Trac #5904, which
+        -- results in a panic on GHC 7.4.1 if you do the :reload second.
+        void $ Interpreter.safeEval repl ":reload"
       void $ Interpreter.safeEval repl $ ":m *" ++ module_
 
     setup_ :: IO ()

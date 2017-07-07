@@ -24,7 +24,7 @@ import           Interpreter (ghc)
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --no-magic | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --no-magic | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
@@ -64,6 +64,7 @@ data Run = Run {
   runWarnings :: [Warning]
 , runOptions :: [String]
 , runMagicMode :: Bool
+, runFastMode :: Bool
 } deriving (Eq, Show)
 
 parseOptions :: [String] -> Result
@@ -71,13 +72,16 @@ parseOptions args
   | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
   | "--version" `elem` args = Output versionInfo
-  | otherwise = case stripOptGhc <$> stripNoMagic args of
-      (magicMode, (warning, xs)) -> Result (Run (maybeToList warning) xs magicMode)
+  | otherwise = case fmap stripOptGhc . stripFast <$> stripNoMagic args of
+      (magicMode, (fastMode, (warning, xs))) ->
+        Result (Run (maybeToList warning) xs magicMode fastMode)
 
-stripNoMagic :: [String] -> (Bool, [String])
-stripNoMagic args = (noMagic `notElem` args, filter (/= noMagic) args)
-  where
-    noMagic = "--no-magic"
+stripNoMagic, stripFast :: [String] -> (Bool, [String])
+stripNoMagic = stripFlag False "--no-magic"
+stripFast    = stripFlag True  "--fast"
+
+stripFlag :: Bool -> String -> [String] -> (Bool, [String])
+stripFlag enableIt flag args = ((flag `elem` args) == enableIt, filter (/= flag) args)
 
 stripOptGhc :: [String] -> (Maybe Warning, [String])
 stripOptGhc = go
