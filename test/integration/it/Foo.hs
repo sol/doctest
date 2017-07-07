@@ -1,6 +1,10 @@
 module Foo where
 
 -- |
+--
+-- >>> :t 'a'
+-- 'a' :: Char
+--
 -- >>> "foo"
 -- "foo"
 --

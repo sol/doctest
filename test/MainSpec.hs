@@ -40,9 +40,13 @@ spec = do
       doctest "." ["testSimple/Fib.hs"]
         (cases 1)
 
-    it "it" $ do
+    it "it-variable" $ do
       doctest "." ["it/Foo.hs"]
-        (cases 4)
+        (cases 5)
+
+    it "it-variable in $setup" $ do
+      doctest "." ["it/Setup.hs"]
+        (cases 5)
 
     it "failing" $ do
       doctest "." ["failing/Foo.hs"]

@@ -128,6 +128,10 @@ runModule repl (Module module_ setup examples) = do
       -- with a previous version of GHC (7.4.1?).
       void $ Interpreter.safeEval repl   ":reload"
       void $ Interpreter.safeEval repl $ ":m *" ++ module_
+      -- Evaluate a dumb expression to populate 'it' variable
+      -- NOTE: This is one reason why we cannot have safeEval = safeEvalIt:
+      -- 'it' isn't set in the fresh GHCi session
+      void $ Interpreter.safeEval repl $ "()"
 
     setup_ :: IO ()
     setup_ = do
@@ -135,7 +139,7 @@ runModule repl (Module module_ setup examples) = do
       forM_ setup $ \l -> forM_ l $ \(Located _ x) -> case x of
         Property _  -> return ()
         Example e _ -> do
-          void $ Interpreter.safeEval repl e
+          void $ Interpreter.safeEvalIt repl e
 
 reportFailure :: Location -> Expression -> Report ()
 reportFailure loc expression = do
