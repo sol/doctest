@@ -1,5 +1,8 @@
 module OptionsSpec (spec) where
 
+import           Prelude ()
+import           Prelude.Compat
+
 import           Test.Hspec
 import           Test.QuickCheck
 
