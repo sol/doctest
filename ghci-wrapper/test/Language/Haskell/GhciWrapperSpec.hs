@@ -1,4 +1,6 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 module Language.Haskell.GhciWrapperSpec (main, spec) where
 
 import           Test.Hspec
@@ -19,8 +21,8 @@ withInterpreterConfig config action = bracket (Interpreter.new config []) Interp
 withInterpreter :: ((String -> IO String) -> IO a) -> IO a
 withInterpreter action = withInterpreterConfig defaultConfig $ \ghci -> action (Interpreter.eval ghci)
 
-shouldEvaluateTo :: (Show a, Eq a) => IO a -> a -> IO ()
-action `shouldEvaluateTo` expected = action >>= (`shouldBe` expected)
+shouldEvaluateTo :: (HasCallStack, Show a, Eq a) => IO a -> a -> IO ()
+action `shouldEvaluateTo` expected = action >>= flip shouldBe expected
 
 spec :: Spec
 spec = do
@@ -68,15 +70,18 @@ spec = do
       ghci "import System.IO" `shouldEvaluateTo` ""
       ghci "hPutStrLn stderr \"λ\"" `shouldEvaluateTo` "λ\n"
 
-    it "shows exceptions (undefined)" $ withInterpreter $ \ghci -> do
-      ghci "undefined" `shouldEvaluateTo` "*** Exception: Prelude.undefined\n"
+    it "shows exceptions" $ withInterpreter $ \ghci -> do
+      ghci "import Control.Exception" `shouldEvaluateTo` ""
+      ghci "throwIO DivideByZero" `shouldEvaluateTo` "*** Exception: divide by zero\n"
 
     it "shows exceptions (ExitCode)" $ withInterpreter $ \ghci -> do
       ghci "import System.Exit" `shouldEvaluateTo` ""
       ghci "exitWith $ ExitFailure 10" `shouldEvaluateTo` "*** Exception: ExitFailure 10\n"
 
     it "gives an error message for identifiers that are not in scope" $ withInterpreter $ \ghci -> do
-#if __GLASGOW_HASKELL__ >= 707
+#if __GLASGOW_HASKELL__ >= 800
+      ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Variable not in scope: foo\n")
+#elif __GLASGOW_HASKELL__ >= 707
       ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: \8216foo\8217\n")
 #else
       ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: `foo'\n")

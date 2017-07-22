@@ -30,4 +30,5 @@ before_install:
   - cabal install --enable-tests --only-dep
 
 script:
+  - (cd ghci-wrapper && cabal configure --enable-tests --ghc-options=-Werror && cabal build && cabal test)
   - cabal configure --enable-tests --ghc-options=-Werror && cabal build && cabal test
