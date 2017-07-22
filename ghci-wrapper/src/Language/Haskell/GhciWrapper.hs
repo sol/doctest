@@ -6,6 +6,7 @@ module Language.Haskell.GhciWrapper (
 , new
 , close
 , eval
+, evalIt
 , evalEcho
 ) where
 
@@ -37,6 +38,13 @@ defaultConfig = Config {
 -- properly, if you reuse it for any purpose!
 marker :: String
 marker = show "dcbd2a1e20ae519a1c7714df2859f1890581d57fac96ba3f499412b2f5c928a1"
+
+-- | Like 'marker' this is truly random but identifier.
+--
+-- The same disclaimer applies. Yet this identifier is obtained from /dev/urandom
+-- of Oleg's machine.
+itSafe :: String
+itSafe = "unFn05Bi65vUzrR_rYd7BkgHiD0Tho3Y"
 
 data Interpreter = Interpreter {
     hIn  :: Handle
@@ -94,10 +102,12 @@ close repl = do
   when (e /= ExitSuccess) $ do
     throwIO (userError $ "Language.Haskell.GhciWrapper.close: Interpreter exited with an error (" ++ show e ++ ")")
 
-putExpression :: Interpreter -> String -> IO ()
-putExpression Interpreter{hIn = stdin} e = do
+putExpression :: Interpreter -> Bool -> String -> IO ()
+putExpression Interpreter{hIn = stdin} preserveIt e = do
   hPutStrLn stdin e
+  when preserveIt $ hPutStrLn stdin $ "let " ++ itSafe ++ " = it"
   hPutStrLn stdin marker
+  when preserveIt $ hPutStrLn stdin $ "let it = " ++ itSafe
   hFlush stdin
 
 getResult :: Bool -> Interpreter -> IO String
@@ -124,11 +134,17 @@ getResult echoMode Interpreter{hOut = stdout} = go
 -- | Evaluate an expression
 eval :: Interpreter -> String -> IO String
 eval repl expr = do
-  putExpression repl expr
+  putExpression repl False expr
+  getResult False repl
+
+-- | Like 'eval', but don't try to preserve @it@ variable
+evalIt :: Interpreter -> String -> IO String
+evalIt repl expr = do
+  putExpression repl True expr
   getResult False repl
 
 -- | Evaluate an expression
 evalEcho :: Interpreter -> String -> IO String
 evalEcho repl expr = do
-  putExpression repl expr
+  putExpression repl True expr
   getResult True repl
