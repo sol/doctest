@@ -22,7 +22,7 @@ withCurrentDirectory workingDir action = do
 -- | Construct a doctest specific 'Assertion'.
 doctest :: WithLocation (FilePath -> [String] -> Summary -> Assertion)
 doctest workingDir args expected = do
-  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctest_ args)
+  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithFastMode False args)
   assertEqual label expected actual
   where
     label = workingDir ++ " " ++ show args

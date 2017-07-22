@@ -94,9 +94,9 @@ spec = do
         rmDir "test/integration/custom-package-conf/packages/"
         rmDir "test/integration/custom-package-conf/foo/dist/"
 
-  describe "doctest_" $ do
+  describe "doctestWithFastMode" $ do
     context "on parse error" $ do
-      let action = withCurrentDirectory "test/integration/parse-error" (doctest_ ["Foo.hs"])
+      let action = withCurrentDirectory "test/integration/parse-error" (doctestWithFastMode False ["Foo.hs"])
 
       it "aborts with (ExitFailure 1)" $ do
         hSilence [stderr] action `shouldThrow` (== ExitFailure 1)

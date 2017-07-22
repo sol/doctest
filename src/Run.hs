@@ -2,7 +2,7 @@
 module Run (
   doctest
 #ifdef TEST
-, doctest_
+, doctestWithFastMode
 , Summary
 , expandDirs
 #endif
@@ -122,11 +122,6 @@ getAddDistArgs = do
 
 isSuccess :: Summary -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
-
-#ifdef TEST
-doctest_ :: [String] -> IO Summary
-doctest_ = doctestWithFastMode False
-#endif
 
 doctestWithFastMode :: Bool -> [String] -> IO Summary
 doctestWithFastMode fastMode args = do

@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE DeriveFunctor #-}
 module Options (
   Result(..)
 , Run(..)
@@ -56,8 +57,8 @@ info = "[ " ++ (intercalate "\n, " . map show $ [
   , ("ghc", ghc)
   ]) ++ "\n]\n"
 
-data Result = Output String | Result Run
-  deriving (Eq, Show)
+data Result a = Output String | Result a
+  deriving (Eq, Show, Functor)
 
 type Warning = String
 
@@ -68,7 +69,7 @@ data Run = Run {
 , runFastMode :: Bool
 } deriving (Eq, Show)
 
-parseOptions :: [String] -> Result
+parseOptions :: [String] -> Result Run
 parseOptions args
   | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
@@ -77,9 +78,11 @@ parseOptions args
       (magicMode, (fastMode, (warning, xs))) ->
         Result (Run (maybeToList warning) xs magicMode fastMode)
 
-stripNoMagic, stripFast :: [String] -> (Bool, [String])
+stripNoMagic :: [String] -> (Bool, [String])
 stripNoMagic = stripFlag False "--no-magic"
-stripFast    = stripFlag True  "--fast"
+
+stripFast :: [String] -> (Bool, [String])
+stripFast = stripFlag True  "--fast"
 
 stripFlag :: Bool -> String -> [String] -> (Bool, [String])
 stripFlag enableIt flag args = ((flag `elem` args) == enableIt, filter (/= flag) args)

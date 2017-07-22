@@ -17,13 +17,23 @@ spec = do
       property $ \xs ys ->
         parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) True False)
 
-    context "with --no-magic" $ do
-      it "disables magic mode" $ do
-        parseOptions ["--no-magic"] `shouldBe` Result (Run [] [] False False)
+    describe "--no-magic" $ do
+      context "without --no-magic" $ do
+        it "enables magic mode" $ do
+          runMagicMode <$> parseOptions [] `shouldBe` Result True
 
-    context "with --fast" $ do
-      it "enabled fast mode" $ do
-        parseOptions ["--fast"] `shouldBe` Result (Run [] [] True True)
+      context "with --no-magic" $ do
+        it "disables magic mode" $ do
+          runMagicMode <$> parseOptions ["--no-magic"] `shouldBe` Result False
+
+    describe "--fast" $ do
+      context "without --fast" $ do
+        it "disables fast mode" $ do
+          runFastMode <$> parseOptions [] `shouldBe` Result False
+
+      context "with --fast" $ do
+        it "enabled fast mode" $ do
+          runFastMode <$> parseOptions ["--fast"] `shouldBe` Result True
 
     context "with --help" $ do
       it "outputs usage information" $ do
