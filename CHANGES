@@ -1,3 +1,6 @@
+Changes in 0.12.0
+  - Preserve the 'it' variable between examples
+
 Changes in 0.11.4
   - Add `--fast`, which disables running `:reload` between example groups
 
