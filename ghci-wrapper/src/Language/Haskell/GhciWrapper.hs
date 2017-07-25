@@ -39,12 +39,8 @@ defaultConfig = Config {
 marker :: String
 marker = show "dcbd2a1e20ae519a1c7714df2859f1890581d57fac96ba3f499412b2f5c928a1"
 
--- | Like 'marker' this is truly random but identifier.
---
--- The same disclaimer applies. Yet this identifier is obtained from /dev/urandom
--- of Oleg's machine.
-itSafe :: String
-itSafe = "unFn05Bi65vUzrR_rYd7BkgHiD0Tho3Y"
+itMarker :: String
+itMarker = "d42472243a0e6fc481e7514cbc9eb08812ed48daa29ca815844d86010b1d113a"
 
 data Interpreter = Interpreter {
     hIn  :: Handle
@@ -105,9 +101,9 @@ close repl = do
 putExpression :: Interpreter -> Bool -> String -> IO ()
 putExpression Interpreter{hIn = stdin} preserveIt e = do
   hPutStrLn stdin e
-  when preserveIt $ hPutStrLn stdin $ "let " ++ itSafe ++ " = it"
+  when preserveIt $ hPutStrLn stdin $ "let " ++ itMarker ++ " = it"
   hPutStrLn stdin marker
-  when preserveIt $ hPutStrLn stdin $ "let it = " ++ itSafe
+  when preserveIt $ hPutStrLn stdin $ "let it = " ++ itMarker
   hFlush stdin
 
 getResult :: Bool -> Interpreter -> IO String
@@ -137,7 +133,7 @@ eval repl expr = do
   putExpression repl False expr
   getResult False repl
 
--- | Like 'eval', but don't try to preserve @it@ variable
+-- | Like 'eval', but try to preserve the @it@ variable
 evalIt :: Interpreter -> String -> IO String
 evalIt repl expr = do
   putExpression repl True expr

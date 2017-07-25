@@ -10,13 +10,13 @@ module Setup where
 -- >>> it
 -- 42
 
--- | 
+-- |
 --
 -- >>> it * it
 -- 1764
 foo = undefined
 
--- | 
+-- |
 --
 -- >>> it * it
 -- 1764

@@ -31,6 +31,12 @@ spec = do
       withInterpreterConfig defaultConfig $ \ghci -> do
         (capture $ Interpreter.evalEcho ghci ("putStr" ++ show "foo\nbar")) `shouldReturn` ("foo\nbar", "foo\nbar")
 
+  describe "evalIt" $ do
+    it "preserves it" $ do
+      withInterpreterConfig defaultConfig $ \ghci -> do
+        Interpreter.evalIt ghci "23" `shouldReturn` "23\n"
+        Interpreter.eval ghci "it" `shouldReturn` "23\n"
+
   describe "eval" $ do
     it "shows literals" $ withInterpreter $ \ghci -> do
       ghci "23" `shouldEvaluateTo` "23\n"

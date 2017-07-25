@@ -130,9 +130,10 @@ runModule fastMode repl (Module module_ setup examples) = do
         -- panic on GHC 7.4.1 if you do the :reload second.
         void $ Interpreter.safeEval repl ":reload"
       void $ Interpreter.safeEval repl $ ":m *" ++ module_
-      -- Evaluate a dumb expression to populate 'it' variable
-      -- NOTE: This is one reason why we cannot have safeEval = safeEvalIt:
-      -- 'it' isn't set in the fresh GHCi session
+
+      -- Evaluate a dumb expression to populate the 'it' variable NOTE: This is
+      -- one reason why we cannot have safeEval = safeEvalIt: 'it' isn't set in
+      -- a fresh GHCi session.
       void $ Interpreter.safeEval repl $ "()"
 
     setup_ :: IO ()
@@ -140,8 +141,7 @@ runModule fastMode repl (Module module_ setup examples) = do
       reload
       forM_ setup $ \l -> forM_ l $ \(Located _ x) -> case x of
         Property _  -> return ()
-        Example e _ -> do
-          void $ Interpreter.safeEvalIt repl e
+        Example e _ -> void $ Interpreter.safeEvalIt repl e
 
 reportFailure :: Location -> Expression -> Report ()
 reportFailure loc expression = do
@@ -201,7 +201,6 @@ runExampleGroup :: Interpreter -> [Located Interaction] -> Report ()
 runExampleGroup repl = go
   where
     go ((Located loc (expression, expected)) : xs) = do
-      -- asd
       r <- fmap lines <$> liftIO (Interpreter.safeEvalIt repl expression)
       case r of
         Left err -> do
