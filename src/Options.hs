@@ -3,6 +3,9 @@
 module Options (
   Result(..)
 , Run(..)
+, defaultMagic
+, defaultFastMode
+, defaultPreserveIt
 , parseOptions
 #ifdef TEST
 , usage
@@ -25,16 +28,17 @@ import           Interpreter (ghc)
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --fast | --no-magic | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --preserve-it | --no-magic | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
   , ""
   , "Options:"
-  , "  --fast     disable :reload between example groups"
-  , "  --help     display this help and exit"
-  , "  --version  output version information and exit"
-  , "  --info     output machine-readable version information and exit"
+  , "  --fast         disable :reload between example groups"
+  , "  --preserve-it  preserve the `it` variable between examples"
+  , "  --help         display this help and exit"
+  , "  --version      output version information and exit"
+  , "  --info         output machine-readable version information and exit"
   ]
 
 version :: String
@@ -67,22 +71,38 @@ data Run = Run {
 , runOptions :: [String]
 , runMagicMode :: Bool
 , runFastMode :: Bool
+, runPreserveIt :: Bool
 } deriving (Eq, Show)
+
+defaultMagic :: Bool
+defaultMagic = True
+
+defaultFastMode :: Bool
+defaultFastMode = False
+
+defaultPreserveIt :: Bool
+defaultPreserveIt = False
 
 parseOptions :: [String] -> Result Run
 parseOptions args
   | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
   | "--version" `elem` args = Output versionInfo
-  | otherwise = case fmap stripOptGhc . stripFast <$> stripNoMagic args of
-      (magicMode, (fastMode, (warning, xs))) ->
-        Result (Run (maybeToList warning) xs magicMode fastMode)
+  | otherwise = case  fmap (fmap stripOptGhc)
+                   .  fmap stripPreserveIt
+                   .  stripFast
+                  <$> stripNoMagic args of
+      (magicMode, (fastMode, (preserveIt, (warning, xs)))) ->
+        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt)
 
 stripNoMagic :: [String] -> (Bool, [String])
-stripNoMagic = stripFlag False "--no-magic"
+stripNoMagic = stripFlag (not defaultMagic) "--no-magic"
 
 stripFast :: [String] -> (Bool, [String])
-stripFast = stripFlag True  "--fast"
+stripFast = stripFlag (not defaultFastMode) "--fast"
+
+stripPreserveIt :: [String] -> (Bool, [String])
+stripPreserveIt = stripFlag (not defaultPreserveIt) "--preserve-it"
 
 stripFlag :: Bool -> String -> [String] -> (Bool, [String])
 stripFlag enableIt flag args = ((flag `elem` args) == enableIt, filter (/= flag) args)

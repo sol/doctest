@@ -8,6 +8,7 @@ import           Data.WithLocation
 import           Control.Exception
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           System.FilePath
+import           Options
 import           Runner (Summary(..))
 import           Run hiding (doctest)
 import           System.IO.Silently
@@ -21,8 +22,11 @@ withCurrentDirectory workingDir action = do
 
 -- | Construct a doctest specific 'Assertion'.
 doctest :: WithLocation (FilePath -> [String] -> Summary -> Assertion)
-doctest workingDir args expected = do
-  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithFastMode False args)
+doctest = doctestWithPreserveIt defaultPreserveIt
+
+doctestWithPreserveIt :: WithLocation (Bool -> FilePath -> [String] -> Summary -> Assertion)
+doctestWithPreserveIt preserveIt workingDir args expected = do
+  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithOptions defaultFastMode preserveIt args)
   assertEqual label expected actual
   where
     label = workingDir ++ " " ++ show args
@@ -41,11 +45,11 @@ spec = do
         (cases 1)
 
     it "it-variable" $ do
-      doctest "." ["it/Foo.hs"]
+      doctestWithPreserveIt True "." ["it/Foo.hs"]
         (cases 5)
 
     it "it-variable in $setup" $ do
-      doctest "." ["it/Setup.hs"]
+      doctestWithPreserveIt True "." ["it/Setup.hs"]
         (cases 5)
 
     it "failing" $ do

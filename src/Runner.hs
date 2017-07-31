@@ -52,11 +52,11 @@ instance Monoid Summary where
   (Summary x1 x2 x3 x4) `mappend` (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Run all examples from a list of modules.
-runModules :: Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode repl modules = do
+runModules :: Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
+runModules fastMode preserveIt repl modules = do
   isInteractive <- hIsTerminalDevice stderr
   ReportState _ _ s <- (`execStateT` ReportState 0 isInteractive mempty {sExamples = c}) $ do
-    forM_ modules $ runModule fastMode repl
+    forM_ modules $ runModule fastMode preserveIt repl
 
     -- report final summary
     gets (show . reportStateSummary) >>= report
@@ -107,20 +107,20 @@ overwrite msg = do
   liftIO (hPutStr stderr str)
 
 -- | Run all examples from given module.
-runModule :: Bool -> Interpreter -> Module [Located DocTest] -> Report ()
-runModule fastMode repl (Module module_ setup examples) = do
+runModule :: Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
+runModule fastMode preserveIt repl (Module module_ setup examples) = do
 
   Summary _ _ e0 f0 <- gets reportStateSummary
 
   forM_ setup $
-    runTestGroup repl reload
+    runTestGroup preserveIt repl reload
 
   Summary _ _ e1 f1 <- gets reportStateSummary
 
   -- only run tests, if setup does not produce any errors/failures
   when (e0 == e1 && f0 == f1) $
     forM_ examples $
-      runTestGroup repl setup_
+      runTestGroup preserveIt repl setup_
   where
     reload :: IO ()
     reload = do
@@ -131,17 +131,18 @@ runModule fastMode repl (Module module_ setup examples) = do
         void $ Interpreter.safeEval repl ":reload"
       void $ Interpreter.safeEval repl $ ":m *" ++ module_
 
-      -- Evaluate a dumb expression to populate the 'it' variable NOTE: This is
-      -- one reason why we cannot have safeEval = safeEvalIt: 'it' isn't set in
-      -- a fresh GHCi session.
-      void $ Interpreter.safeEval repl $ "()"
+      when preserveIt $
+        -- Evaluate a dumb expression to populate the 'it' variable NOTE: This is
+        -- one reason why we cannot have safeEval = safeEvalIt: 'it' isn't set in
+        -- a fresh GHCi session.
+        void $ Interpreter.safeEval repl $ "()"
 
     setup_ :: IO ()
     setup_ = do
       reload
       forM_ setup $ \l -> forM_ l $ \(Located _ x) -> case x of
         Property _  -> return ()
-        Example e _ -> void $ Interpreter.safeEvalIt repl e
+        Example e _ -> void $ safeEvalWith preserveIt repl e
 
 reportFailure :: Location -> Expression -> Report ()
 reportFailure loc expression = do
@@ -167,14 +168,14 @@ updateSummary summary = do
 --
 -- The interpreter state is zeroed with @:reload@ first.  This means that you
 -- can reuse the same 'Interpreter' for several test groups.
-runTestGroup :: Interpreter -> IO () -> [Located DocTest] -> Report ()
-runTestGroup repl setup tests = do
+runTestGroup :: Bool -> Interpreter -> IO () -> [Located DocTest] -> Report ()
+runTestGroup preserveIt repl setup tests = do
 
   -- report intermediate summary
   gets (show . reportStateSummary) >>= report_
 
   liftIO setup
-  runExampleGroup repl examples
+  runExampleGroup preserveIt repl examples
 
   forM_ properties $ \(loc, expression) -> do
     r <- liftIO $ do
@@ -197,11 +198,11 @@ runTestGroup repl setup tests = do
 -- |
 -- Execute all expressions from given example in given 'Interpreter' and verify
 -- the output.
-runExampleGroup :: Interpreter -> [Located Interaction] -> Report ()
-runExampleGroup repl = go
+runExampleGroup :: Bool -> Interpreter -> [Located Interaction] -> Report ()
+runExampleGroup preserveIt repl = go
   where
     go ((Located loc (expression, expected)) : xs) = do
-      r <- fmap lines <$> liftIO (Interpreter.safeEvalIt repl expression)
+      r <- fmap lines <$> liftIO (safeEvalWith preserveIt repl expression)
       case r of
         Left err -> do
           reportError loc expression err
@@ -213,3 +214,8 @@ runExampleGroup repl = go
             reportSuccess
             go xs
     go [] = return ()
+
+safeEvalWith :: Bool -> Interpreter -> String -> IO (Either String String)
+safeEvalWith preserveIt
+  | preserveIt = Interpreter.safeEvalIt
+  | otherwise  = Interpreter.safeEval
