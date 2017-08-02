@@ -24,6 +24,9 @@ import qualified Options
 
 import           Run
 
+doctestWithDefaultOptions :: [String] -> IO Summary
+doctestWithDefaultOptions = doctestWithOptions Options.defaultFastMode Options.defaultPreserveIt
+
 withCurrentDirectory :: FilePath -> IO a -> IO a
 withCurrentDirectory workingDir action = do
   E.bracket getCurrentDirectory setCurrentDirectory $ \_ -> do
@@ -94,9 +97,9 @@ spec = do
         rmDir "test/integration/custom-package-conf/packages/"
         rmDir "test/integration/custom-package-conf/foo/dist/"
 
-  describe "doctestWithFastMode" $ do
+  describe "doctestWithOptions" $ do
     context "on parse error" $ do
-      let action = withCurrentDirectory "test/integration/parse-error" (doctestWithFastMode False ["Foo.hs"])
+      let action = withCurrentDirectory "test/integration/parse-error" (doctestWithDefaultOptions ["Foo.hs"])
 
       it "aborts with (ExitFailure 1)" $ do
         hSilence [stderr] action `shouldThrow` (== ExitFailure 1)

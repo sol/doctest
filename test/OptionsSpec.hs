@@ -14,11 +14,11 @@ spec = do
     let warning = ["WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."]
     it "strips --optghc" $
       property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) True False)
+        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt)
 
     it "strips --optghc=" $
       property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) True False)
+        parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt)
 
     describe "--no-magic" $ do
       context "without --no-magic" $ do
@@ -37,6 +37,15 @@ spec = do
       context "with --fast" $ do
         it "enabled fast mode" $ do
           runFastMode <$> parseOptions ["--fast"] `shouldBe` Result True
+
+    describe "--preserve-it" $ do
+      context "without --preserve-it" $ do
+        it "does not preserve the `it` variable" $ do
+          runPreserveIt <$> parseOptions [] `shouldBe` Result False
+
+      context "with --preserve-it" $ do
+        it "preserves the `it` variable" $ do
+          runPreserveIt <$> parseOptions ["--preserve-it"] `shouldBe` Result True
 
     context "with --help" $ do
       it "outputs usage information" $ do
