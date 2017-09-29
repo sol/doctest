@@ -140,7 +140,7 @@ GHCi supports commands which span multiple lines, and the same syntax works for 
 multiline = 3
 ```
 
-Note that `>>>` can be left of for the lines following the first: this so that
+Note that `>>>` can be left off for the lines following the first: this is so that
 haddock does not strip leading whitespace. The expected output has whitespace
 stripped relative to the :}.
 
