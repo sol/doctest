@@ -367,6 +367,17 @@ And a corresponding Cabal test suite section like this:
       ghc-options:   -threaded
       main-is:       doctests.hs
       build-depends: base, doctest >= 0.8
+      
+Specifying source files manually is tedious. Using the [`Glob`](https://hackage.haskell.org/package/Glob), we can still keep `main` a one-liner in many cases (credits go to [`haskeleton`](https://github.com/tfausak/haskeleton/blob/c0e2b61f99d2ba81ec2055b5f20cc609e487fb76/package-name/test-suite/DocTest.hs)):
+
+```haskell
+-- file doctests.hs
+import System.FilePath.Glob (glob)
+import Test.DocTest (doctest)
+
+main :: IO ()
+main = glob "library/**/*.hs" >>= doctest
+```
 
 ## Doctest in the wild
 
