@@ -20,6 +20,8 @@ cabal-version:    >= 1.8
 extra-source-files: example/example.cabal
                   , example/src/Example.hs
                   , example/test/doctests.hs
+                  , CHANGES
+                  , README.markdown
 
 source-repository head
   type: git
