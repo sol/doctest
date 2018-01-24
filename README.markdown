@@ -114,6 +114,9 @@ Here is an example:
 
 ```haskell
 module Foo where
+
+import Bar.Baz
+
 -- $setup
 -- >>> let x = 23 :: Int
 
@@ -123,6 +126,12 @@ module Foo where
 foo :: Int
 foo = 42
 ```
+
+Note that you should not place setup code inbetween the module header (`module
+...  where`) and import declarations. GHC will not be able to parse it ([issue
+ #167](https://github.com/sol/doctest/issues/167)). It is best to place setup
+code right after import declarations, but due to its declarative nature you can
+place it anywhere inbetween top level declarations as well.
 
 
 ### Multi-line input
