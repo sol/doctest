@@ -102,7 +102,7 @@ test-suite spec
     , base-compat
     , HUnit
     , hspec         >= 1.5.1
-    , QuickCheck    >= 2.8.2
+    , QuickCheck    >= 2.11.3
     , stringbuilder >= 0.4
     , silently      >= 1.2.4
     , setenv
