@@ -2,33 +2,71 @@ sudo: false
 
 language: c
 
-env:
-  - GHCVER=7.6.3
-  - GHCVER=7.8.4
-  - GHCVER=7.10.3
-  - GHCVER=8.0.2
-  - GHCVER=8.2.1
-
-addons:
-  apt:
-    sources:
-      - hvr-ghc
-    packages:
-      - ghc-7.6.3
-      - ghc-7.8.4
-      - ghc-7.10.3
-      - ghc-8.0.2
-      - ghc-8.2.1
-      - cabal-install-1.24
+matrix:
+  include:
+    - env: GHCVER=7.6.3 CABALVER=1.24
+      addons:
+        apt:
+          sources:
+            - hvr-ghc
+          packages:
+            - ghc-7.6.3
+            - cabal-install-1.24
+    - env: GHCVER=7.8.4 CABALVER=1.24
+      addons:
+        apt:
+          sources:
+            - hvr-ghc
+          packages:
+            - ghc-7.8.4
+            - cabal-install-1.24
+    - env: GHCVER=7.10.3 CABALVER=1.24
+      addons:
+        apt:
+          sources:
+            - hvr-ghc
+          packages:
+            - ghc-7.10.3
+            - cabal-install-1.24
+    - env: GHCVER=8.0.2 CABALVER=1.24
+      addons:
+        apt:
+          sources:
+            - hvr-ghc
+          packages:
+            - ghc-8.0.2
+            - cabal-install-1.24
+    - env: GHCVER=8.2.1 CABALVER=1.24
+      addons:
+        apt:
+          sources:
+            - hvr-ghc
+          packages:
+            - ghc-8.2.1
+            - cabal-install-1.24
+    - env: GHCVER=8.4.1 CABALVER=head GHCHEAD=true
+      addons:
+        apt:
+          sources:
+            - hvr-ghc
+          packages:
+            - ghc-8.4.1
+            - cabal-install-head
+  allow_failures:
+    - env: GHCVER=8.4.1 CABALVER=head GHCHEAD=true
 
 before_install:
-  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/1.24/bin:$PATH
+  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
   - ghc --version
   - cabal --version
   - travis_retry cabal update
   - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
-  - cabal install --enable-tests --only-dep
+  - ALLOW_NEWER=''
+  - if ${GHCHEAD-false} ; then ALLOW_NEWER='--allow-newer' ; fi
+  - cabal install --enable-tests --only-dep $ALLOW_NEWER
 
 script:
-  - (cd ghci-wrapper && cabal configure --enable-tests --ghc-options=-Werror && cabal build && cabal test)
-  - cabal configure --enable-tests --ghc-options=-Werror && cabal build && cabal test
+  - WERROR='--ghc-options=-Werror'
+  - if ${GHCHEAD-false} ; then WERROR='' ; fi
+  - (cd ghci-wrapper && cabal configure --enable-tests $WERROR $ALLOW_NEWER && cabal build && cabal test)
+  - cabal configure --enable-tests $WERROR $ALLOW_NEWER && cabal build && cabal test
