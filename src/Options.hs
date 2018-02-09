@@ -6,6 +6,7 @@ module Options (
 , defaultMagic
 , defaultFastMode
 , defaultPreserveIt
+, defaultVerbose
 , parseOptions
 #ifdef TEST
 , usage
@@ -28,7 +29,7 @@ import           Interpreter (ghc)
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --fast | --preserve-it | --no-magic | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
@@ -36,6 +37,7 @@ usage = unlines [
   , "Options:"
   , "  --fast         disable :reload between example groups"
   , "  --preserve-it  preserve the `it` variable between examples"
+  , "  --verbose      print each test as it is run"
   , "  --help         display this help and exit"
   , "  --version      output version information and exit"
   , "  --info         output machine-readable version information and exit"
@@ -72,7 +74,11 @@ data Run = Run {
 , runMagicMode :: Bool
 , runFastMode :: Bool
 , runPreserveIt :: Bool
+, runVerbose :: Bool
 } deriving (Eq, Show)
+
+defaultVerbose :: Bool
+defaultVerbose = False
 
 defaultMagic :: Bool
 defaultMagic = True
@@ -88,15 +94,19 @@ parseOptions args
   | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
   | "--version" `elem` args = Output versionInfo
-  | otherwise = case  fmap (fmap stripOptGhc)
+  | otherwise = case  (fmap . fmap . fmap) stripVerbose
+                   .  fmap (fmap stripOptGhc)
                    .  fmap stripPreserveIt
                    .  stripFast
                   <$> stripNoMagic args of
-      (magicMode, (fastMode, (preserveIt, (warning, xs)))) ->
-        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt)
+      (magicMode, (fastMode, (preserveIt, (warning, (verbose, xs))))) ->
+        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt verbose)
 
 stripNoMagic :: [String] -> (Bool, [String])
 stripNoMagic = stripFlag (not defaultMagic) "--no-magic"
+
+stripVerbose :: [String] -> (Bool, [String])
+stripVerbose = stripFlag (not defaultVerbose) "--verbose"
 
 stripFast :: [String] -> (Bool, [String])
 stripFast = stripFlag (not defaultFastMode) "--fast"

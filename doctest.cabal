@@ -1,11 +1,10 @@
--- This file has been generated from package.yaml by hpack version 0.26.0.
+-- This file has been generated from package.yaml by hpack version 0.26.0, then
+-- edited by hand somewhat.
 --
 -- see: https://github.com/sol/hpack
---
--- hash: 0a29aaff0365fc3bd51a91801874db9f7286c473371a385a2d6ec0c8dfb48e6e
 
 name:           doctest
-version:        0.14.1
+version:        0.14.2
 synopsis:       Test interactive Haskell examples
 description:    The doctest program checks examples in source code comments.  It is modeled
                 after doctest for Python (<http://docs.python.org/library/doctest.html>).
