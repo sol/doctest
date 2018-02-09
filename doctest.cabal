@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b0182195255108828fabca5036f31acb4a3a37b7aec9111311496c86ebc86a13
+-- hash: 69dd6d1ecadc8f87149ce07099560f936552a152651e21b775a0e513aaaaf79a
 
 name:           doctest
 version:        0.14.0
@@ -159,7 +159,7 @@ test-suite spec
       HUnit
     , QuickCheck >=2.11.3
     , base ==4.*
-    , base-compat
+    , base-compat >=0.7.0
     , code-page >=0.1
     , deepseq
     , directory

@@ -61,7 +61,6 @@ tests:
       - ghci-wrapper/src
     c-sources: test/integration/with-cbits/foo.c
     dependencies:
-    - base-compat
     - HUnit
     - hspec         >= 1.5.1
     - QuickCheck    >= 2.11.3
