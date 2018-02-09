@@ -14,10 +14,11 @@ module Runner (
 import           Prelude hiding (putStr, putStrLn, error)
 
 #if __GLASGOW_HASKELL__ < 710
-import           Data.Monoid
+import           Data.Monoid hiding ((<>))
 import           Control.Applicative
-#else
-import Data.Semigroup
+#endif
+#if MIN_VERSION_base(4,9,0) && !MIN_VERSION_base(4,11,0)
+import           Data.Semigroup
 #endif
 
 import           Control.Monad hiding (forM_)
@@ -48,14 +49,21 @@ instance Show Summary where
   show (Summary examples tried errors failures) =
     printf "Examples: %d  Tried: %d  Errors: %d  Failures: %d" examples tried errors failures
 
--- | Sum up summaries.
-instance Semigroup Summary where
-  (Summary x1 x2 x3 x4) <> (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
+appendSummary :: Summary -> Summary -> Summary
+appendSummary (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Sum up summaries.
 instance Monoid Summary where
   mempty = Summary 0 0 0 0
+#if MIN_VERSION_base(4,9,0)
   mappend = (<>)
+
+-- | Sum up summaries.
+instance Semigroup Summary where
+  (<>) = appendSummary
+#else
+  mappend = appendSummary
+#endif
 
 -- | Run all examples from a list of modules.
 runModules :: Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
