@@ -1,0 +1,79 @@
+name:             doctest
+version:          0.14.0
+synopsis:         Test interactive Haskell examples
+description: |
+  The doctest program checks examples in source code comments.  It is modeled
+  after doctest for Python (<http://docs.python.org/library/doctest.html>).
+  
+  Documentation is at <https://github.com/sol/doctest#readme>.
+category:         Testing
+license:          MIT
+copyright:        (c) 2009-2017 Simon Hengel
+author:           Simon Hengel <sol@typeful.net>
+maintainer:       Simon Hengel <sol@typeful.net>
+
+
+github: sol/doctest
+
+extra-source-files:
+- example/example.cabal
+- example/src/Example.hs
+- example/test/doctests.hs
+- CHANGES
+- README.markdown
+
+ghc-options: -Wall
+
+dependencies:
+- base == 4.*
+- base-compat >= 0.7.0
+- ghc >= 7.0 && < 8.4
+- syb >= 0.3
+- code-page >= 0.1
+- deepseq
+- directory
+- filepath
+- process
+- ghc-paths >= 0.1.0.9
+- transformers
+
+library:
+  source-dirs:
+  - src
+  - ghci-wrapper/src
+  exposed-modules:
+  - Test.DocTest
+
+executable:
+  main: Main.hs
+  ghc-options: -threaded
+  source-dirs: driver
+  dependencies: doctest
+
+tests:
+  spec:
+    main: Spec.hs
+    ghc-options: -threaded
+    cpp-options: -DTEST
+    source-dirs:
+      - test
+      - src
+      - ghci-wrapper/src
+    c-sources: test/integration/with-cbits/foo.c
+    dependencies:
+    - base-compat
+    - HUnit
+    - hspec         >= 1.5.1
+    - QuickCheck    >= 2.11.3
+    - stringbuilder >= 0.4
+    - silently      >= 1.2.4
+    - setenv
+    - with-location
+    - mockery
+
+  doctests:
+    main: doctests.hs
+    other-modules: []
+    ghc-options: -threaded
+    source-dirs: test
+    dependencies: doctest

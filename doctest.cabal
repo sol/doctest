@@ -1,123 +1,178 @@
-name:             doctest
-version:          0.14.0
-synopsis:         Test interactive Haskell examples
-description:      The doctest program checks examples in source code comments.
-                  It is modeled after doctest for Python
-                  (<http://docs.python.org/library/doctest.html>).
-                  .
-                  Documentation is at
-                  <https://github.com/sol/doctest#readme>.
-category:         Testing
-bug-reports:      https://github.com/sol/doctest/issues
-homepage:         https://github.com/sol/doctest#readme
-license:          MIT
-license-file:     LICENSE
-copyright:        (c) 2009-2017 Simon Hengel
-author:           Simon Hengel <sol@typeful.net>
-maintainer:       Simon Hengel <sol@typeful.net>
-build-type:       Simple
-cabal-version:    >= 1.8
-extra-source-files: example/example.cabal
-                  , example/src/Example.hs
-                  , example/test/doctests.hs
-                  , CHANGES
-                  , README.markdown
+-- This file has been generated from package.yaml by hpack version 0.25.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: b0182195255108828fabca5036f31acb4a3a37b7aec9111311496c86ebc86a13
+
+name:           doctest
+version:        0.14.0
+synopsis:       Test interactive Haskell examples
+description:    The doctest program checks examples in source code comments.  It is modeled
+                after doctest for Python (<http://docs.python.org/library/doctest.html>).
+                .
+                Documentation is at <https://github.com/sol/doctest#readme>.
+category:       Testing
+bug-reports:    https://github.com/sol/doctest/issues
+homepage:       https://github.com/sol/doctest#readme
+license:        MIT
+license-file:   LICENSE
+copyright:      (c) 2009-2017 Simon Hengel
+author:         Simon Hengel <sol@typeful.net>
+maintainer:     Simon Hengel <sol@typeful.net>
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    CHANGES
+    example/example.cabal
+    example/src/Example.hs
+    example/test/doctests.hs
+    README.markdown
 
 source-repository head
   type: git
   location: https://github.com/sol/doctest
 
 library
+  ghc-options: -Wall
+  hs-source-dirs:
+      src
+      ghci-wrapper/src
   exposed-modules:
       Test.DocTest
-  ghc-options:
-      -Wall
-  hs-source-dirs:
-      src, ghci-wrapper/src
   other-modules:
       Extract
-    , GhcUtil
-    , Interpreter
-    , Location
-    , Options
-    , PackageDBs
-    , Parse
-    , Paths_doctest
-    , Property
-    , Runner
-    , Runner.Example
-    , Run
-    , Util
-    , Sandbox
-    , Language.Haskell.GhciWrapper
+      GhcUtil
+      Interpreter
+      Location
+      Options
+      PackageDBs
+      Parse
+      Property
+      Run
+      Runner
+      Runner.Example
+      Sandbox
+      Util
+      Language.Haskell.GhciWrapper
+      Paths_doctest
   build-depends:
-      base          == 4.*
-    , base-compat   >= 0.7.0
-    , ghc           >= 7.0 && < 8.4
-    , syb           >= 0.3
-    , code-page     >= 0.1
+      base ==4.*
+    , base-compat >=0.7.0
+    , code-page >=0.1
     , deepseq
     , directory
     , filepath
+    , ghc >=7.0 && <8.4
+    , ghc-paths >=0.1.0.9
     , process
-    , ghc-paths     >= 0.1.0.9
+    , syb >=0.3
     , transformers
+  default-language: Haskell2010
 
 executable doctest
-  main-is:
-      Main.hs
-  ghc-options:
-      -Wall -threaded
+  main-is: Main.hs
+  other-modules:
+      Paths_doctest
+  ghc-options: -Wall -threaded
   hs-source-dirs:
       driver
   build-depends:
-      base          == 4.*
-    , doctest
-
-test-suite spec
-  main-is:
-      Spec.hs
-  type:
-      exitcode-stdio-1.0
-  ghc-options:
-      -Wall -threaded
-  cpp-options:
-      -DTEST
-  hs-source-dirs:
-      test, src, ghci-wrapper/src
-  c-sources:
-      test/integration/with-cbits/foo.c
-  build-depends:
-      base
-    , ghc
-    , syb
-    , code-page
+      base ==4.*
+    , base-compat >=0.7.0
+    , code-page >=0.1
     , deepseq
     , directory
+    , doctest
     , filepath
+    , ghc >=7.0 && <8.4
+    , ghc-paths >=0.1.0.9
     , process
-    , ghc-paths
+    , syb >=0.3
     , transformers
-
-    , base-compat
-    , HUnit
-    , hspec         >= 1.5.1
-    , QuickCheck    >= 2.11.3
-    , stringbuilder >= 0.4
-    , silently      >= 1.2.4
-    , setenv
-    , with-location
-    , mockery
+  default-language: Haskell2010
 
 test-suite doctests
-  main-is:
-      doctests.hs
-  type:
-      exitcode-stdio-1.0
-  ghc-options:
-      -Wall -threaded
+  main-is: doctests.hs
+  type: exitcode-stdio-1.0
+  ghc-options: -Wall -threaded
   hs-source-dirs:
       test
   build-depends:
-      base
+      base ==4.*
+    , base-compat >=0.7.0
+    , code-page >=0.1
+    , deepseq
+    , directory
     , doctest
+    , filepath
+    , ghc >=7.0 && <8.4
+    , ghc-paths >=0.1.0.9
+    , process
+    , syb >=0.3
+    , transformers
+  default-language: Haskell2010
+
+test-suite spec
+  main-is: Spec.hs
+  other-modules:
+      ExtractSpec
+      InterpreterSpec
+      LocationSpec
+      MainSpec
+      OptionsSpec
+      Orphans
+      PackageDBsSpec
+      ParseSpec
+      PropertySpec
+      Runner.ExampleSpec
+      RunnerSpec
+      RunSpec
+      SandboxSpec
+      UtilSpec
+      Extract
+      GhcUtil
+      Interpreter
+      Location
+      Options
+      PackageDBs
+      Parse
+      Property
+      Run
+      Runner
+      Runner.Example
+      Sandbox
+      Test.DocTest
+      Util
+      Language.Haskell.GhciWrapper
+      Paths_doctest
+  type: exitcode-stdio-1.0
+  ghc-options: -Wall -threaded
+  cpp-options: -DTEST
+  hs-source-dirs:
+      test
+      src
+      ghci-wrapper/src
+  c-sources:
+      test/integration/with-cbits/foo.c
+  build-depends:
+      HUnit
+    , QuickCheck >=2.11.3
+    , base ==4.*
+    , base-compat
+    , code-page >=0.1
+    , deepseq
+    , directory
+    , filepath
+    , ghc >=7.0 && <8.4
+    , ghc-paths >=0.1.0.9
+    , hspec >=1.5.1
+    , mockery
+    , process
+    , setenv
+    , silently >=1.2.4
+    , stringbuilder >=0.4
+    , syb >=0.3
+    , transformers
+    , with-location
+  default-language: Haskell2010
