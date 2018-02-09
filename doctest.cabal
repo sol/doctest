@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 054c306e552f0abe320fe8ddf4b247a8d2cf1ab185edc53fb27e7444f3f47007
+-- hash: 2257b4c61cee79388a8dab11b2124a90aa9c3246277911f1674082146760bf20
 
 name:           doctest
-version:        0.14.1
+version:        0.14.2
 synopsis:       Test interactive Haskell examples
 description:    The doctest program checks examples in source code comments.  It is modeled
                 after doctest for Python (<http://docs.python.org/library/doctest.html>).

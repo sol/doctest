@@ -1,3 +1,6 @@
+Changes in 0.14.2
+  - Add `--verbose` for printing each test as it is run
+
 Changes in 0.14.1
   - Add test assets to source tarball (see #189)
 
