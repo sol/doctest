@@ -76,6 +76,16 @@ data Module a = Module {
 instance NFData a => NFData (Module a) where
   rnf (Module name setup content) = name `deepseq` setup `deepseq` content `deepseq` ()
 
+#if __GLASGOW_HASKELL__ < 803
+type GhcPs = RdrName
+
+needsTemplateHaskellOrQQ :: ModuleGraph -> Bool
+needsTemplateHaskellOrQQ = needsTemplateHaskell
+
+mapMG :: (ModSummary -> ModSummary) -> ModuleGraph -> ModuleGraph
+mapMG = map
+#endif
+
 -- | Parse a list of modules.
 parse :: [String] -> IO [TypecheckedModule]
 parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
@@ -86,7 +96,7 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
   mapM (`guessTarget` Nothing) modules >>= setTargets
   mods <- depanal [] False
 
-  mods' <- if needsTemplateHaskell mods then enableCompilation mods else return mods
+  mods' <- if needsTemplateHaskellOrQQ mods then enableCompilation mods else return mods
 
   let sortedMods = flattenSCCs (topSortModuleGraph False mods' Nothing)
   reverse <$> mapM (parseModule >=> typecheckModule >=> loadModule) sortedMods
@@ -103,7 +113,7 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
       modifySessionDynFlags enableComp
       -- We need to update the DynFlags of the ModSummaries as well.
       let upd m = m { ms_hspp_opts = enableComp (ms_hspp_opts m) }
-      let modGraph' = map upd modGraph
+      let modGraph' = mapMG upd modGraph
       return modGraph'
 
     -- copied from Haddock/GhcUtils.hs
@@ -236,7 +246,7 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
 #endif
   )
   where
-    fromLHsDecl :: Selector (LHsDecl RdrName)
+    fromLHsDecl :: Selector (LHsDecl GhcPs)
     fromLHsDecl (L loc decl) = case decl of
 
       -- Top-level documentation has to be treated separately, because it has
