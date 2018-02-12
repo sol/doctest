@@ -27,7 +27,7 @@ ghc-options: -Wall
 dependencies:
 - base == 4.*
 - base-compat >= 0.7.0
-- ghc >= 7.0 && < 8.4
+- ghc >= 7.0 && < 8.6
 - syb >= 0.3
 - code-page >= 0.1
 - deepseq

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 69dd6d1ecadc8f87149ce07099560f936552a152651e21b775a0e513aaaaf79a
+-- hash: 963cf1ec79ce30b2c464e5e64a64f5b9f0cba107029eb8fdc5333229775060c9
 
 name:           doctest
 version:        0.14.0
@@ -63,7 +63,7 @@ library
     , deepseq
     , directory
     , filepath
-    , ghc >=7.0 && <8.4
+    , ghc >=7.0 && <8.6
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -85,7 +85,7 @@ executable doctest
     , directory
     , doctest
     , filepath
-    , ghc >=7.0 && <8.4
+    , ghc >=7.0 && <8.6
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -106,7 +106,7 @@ test-suite doctests
     , directory
     , doctest
     , filepath
-    , ghc >=7.0 && <8.4
+    , ghc >=7.0 && <8.6
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -164,7 +164,7 @@ test-suite spec
     , deepseq
     , directory
     , filepath
-    , ghc >=7.0 && <8.4
+    , ghc >=7.0 && <8.6
     , ghc-paths >=0.1.0.9
     , hspec >=1.5.1
     , mockery
