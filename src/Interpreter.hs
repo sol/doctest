@@ -52,7 +52,14 @@ withInterpreter
   -> (Interpreter -> IO a)  -- ^ Action to run
   -> IO a                   -- ^ Result of action
 withInterpreter flags action = do
-  let args = ["--interactive"] ++ flags
+  let
+    args = [
+        "--interactive"
+#if __GLASGOW_HASKELL__ >= 802
+      , "-fdiagnostics-color=never"
+      , "-fno-diagnostics-show-caret"
+#endif
+      ] ++ flags
   bracket (new defaultConfig{configGhci = ghc} args) close action
 
 -- | Evaluate an expression; return a Left value on exceptions.
