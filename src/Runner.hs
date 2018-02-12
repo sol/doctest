@@ -17,9 +17,6 @@ import           Prelude hiding (putStr, putStrLn, error)
 import           Data.Monoid hiding ((<>))
 import           Control.Applicative
 #endif
-#if MIN_VERSION_base(4,9,0) && !MIN_VERSION_base(4,11,0)
-import           Data.Semigroup
-#endif
 
 import           Control.Monad hiding (forM_)
 import           Text.Printf (printf)
@@ -49,21 +46,17 @@ instance Show Summary where
   show (Summary examples tried errors failures) =
     printf "Examples: %d  Tried: %d  Errors: %d  Failures: %d" examples tried errors failures
 
-appendSummary :: Summary -> Summary -> Summary
-appendSummary (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Sum up summaries.
 instance Monoid Summary where
   mempty = Summary 0 0 0 0
-#if MIN_VERSION_base(4,9,0)
-  mappend = (<>)
-
--- | Sum up summaries.
+#if MIN_VERSION_base(4,11,0)
 instance Semigroup Summary where
-  (<>) = appendSummary
+  (<>)
 #else
-  mappend = appendSummary
+  mappend
 #endif
+    (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Run all examples from a list of modules.
 runModules :: Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
