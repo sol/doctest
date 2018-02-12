@@ -52,8 +52,6 @@ matrix:
           packages:
             - ghc-8.4.1
             - cabal-install-head
-  allow_failures:
-    - env: GHCVER=8.4.1 CABALVER=head
 
 before_install:
   - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
