@@ -1,11 +1,11 @@
--- This file has been generated from package.yaml by hpack version 0.25.0.
+-- This file has been generated from package.yaml by hpack version 0.26.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 963cf1ec79ce30b2c464e5e64a64f5b9f0cba107029eb8fdc5333229775060c9
+-- hash: 0a29aaff0365fc3bd51a91801874db9f7286c473371a385a2d6ec0c8dfb48e6e
 
 name:           doctest
-version:        0.14.0
+version:        0.14.1
 synopsis:       Test interactive Haskell examples
 description:    The doctest program checks examples in source code comments.  It is modeled
                 after doctest for Python (<http://docs.python.org/library/doctest.html>).
@@ -16,7 +16,7 @@ bug-reports:    https://github.com/sol/doctest/issues
 homepage:       https://github.com/sol/doctest#readme
 license:        MIT
 license-file:   LICENSE
-copyright:      (c) 2009-2017 Simon Hengel
+copyright:      (c) 2009-2018 Simon Hengel
 author:         Simon Hengel <sol@typeful.net>
 maintainer:     Simon Hengel <sol@typeful.net>
 build-type:     Simple
@@ -28,6 +28,79 @@ extra-source-files:
     example/src/Example.hs
     example/test/doctests.hs
     README.markdown
+    test/extract/argument-list/Foo.hs
+    test/extract/comment-order/Foo.hs
+    test/extract/declaration/Foo.hs
+    test/extract/dos-line-endings/Foo.hs
+    test/extract/export-list/Foo.hs
+    test/extract/imported-module/Bar.hs
+    test/extract/imported-module/Baz.hs
+    test/extract/module-header/Foo.hs
+    test/extract/named-chunks/Foo.hs
+    test/extract/regression/Fixity.hs
+    test/extract/regression/ForeignImport.hs
+    test/extract/regression/ParallelListComp.hs
+    test/extract/regression/ParallelListCompClass.hs
+    test/extract/regression/RewriteRules.hs
+    test/extract/regression/RewriteRulesWithSigs.hs
+    test/extract/setup/Foo.hs
+    test/extract/th/Bar.hs
+    test/extract/th/Foo.hs
+    test/extract/type-class-args/Foo.hs
+    test/extract/type-class/Foo.hs
+    test/extract/type-families/Foo.hs
+    test/integration/bugfixImportHierarchical/ModuleA.hs
+    test/integration/bugfixImportHierarchical/ModuleB.hs
+    test/integration/bugfixMultipleModules/ModuleA.hs
+    test/integration/bugfixMultipleModules/ModuleB.hs
+    test/integration/bugfixOutputToStdErr/Fib.hs
+    test/integration/bugfixWorkingDirectory/description
+    test/integration/bugfixWorkingDirectory/examples/Fib.hs
+    test/integration/bugfixWorkingDirectory/Fib.hs
+    test/integration/custom-package-conf/Bar.hs
+    test/integration/custom-package-conf/foo/doctest-foo.cabal
+    test/integration/custom-package-conf/foo/Foo.hs
+    test/integration/dos-line-endings/Fib.hs
+    test/integration/failing-multiple/Foo.hs
+    test/integration/failing/Foo.hs
+    test/integration/it/Foo.hs
+    test/integration/it/Setup.hs
+    test/integration/multiline/Multiline.hs
+    test/integration/parse-error/Foo.hs
+    test/integration/property-bool-with-type-signature/Foo.hs
+    test/integration/property-bool/Foo.hs
+    test/integration/property-failing/Foo.hs
+    test/integration/property-implicitly-quantified/Foo.hs
+    test/integration/property-quantified/Foo.hs
+    test/integration/property-setup/Foo.hs
+    test/integration/setup-skip-on-failure/Foo.hs
+    test/integration/setup/Foo.hs
+    test/integration/template-haskell-bugfix/Main.hs
+    test/integration/template-haskell-bugfix/Printf.hs
+    test/integration/template-haskell/Foo.hs
+    test/integration/test-options/Foo.hs
+    test/integration/testBlankline/Fib.hs
+    test/integration/testCombinedExample/Fib.hs
+    test/integration/testCommentLocation/Foo.hs
+    test/integration/testCPP/Foo.hs
+    test/integration/testDocumentationForArguments/Fib.hs
+    test/integration/testFailOnMultiline/Fib.hs
+    test/integration/testImport/ModuleA.hs
+    test/integration/testImport/ModuleB.hs
+    test/integration/testPutStr/Fib.hs
+    test/integration/testSimple/Fib.hs
+    test/integration/trailing-whitespace/Foo.hs
+    test/integration/with-cbits/Bar.hs
+    test/integration/with-cbits/foo.c
+    test/parse/multiple-examples/Foo.hs
+    test/parse/no-examples/Fib.hs
+    test/parse/non-exported/Fib.hs
+    test/parse/property/Fib.hs
+    test/parse/setup-empty/Foo.hs
+    test/parse/setup-only/Foo.hs
+    test/parse/simple/Fib.hs
+    test/sandbox/bad.config
+    test/sandbox/cabal.sandbox.config
 
 source-repository head
   type: git

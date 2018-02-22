@@ -1,5 +1,5 @@
 name:             doctest
-version:          0.14.0
+version:          0.14.1
 synopsis:         Test interactive Haskell examples
 description: |
   The doctest program checks examples in source code comments.  It is modeled
@@ -8,7 +8,7 @@ description: |
   Documentation is at <https://github.com/sol/doctest#readme>.
 category:         Testing
 license:          MIT
-copyright:        (c) 2009-2017 Simon Hengel
+copyright:        (c) 2009-2018 Simon Hengel
 author:           Simon Hengel <sol@typeful.net>
 maintainer:       Simon Hengel <sol@typeful.net>
 
@@ -16,9 +16,11 @@ maintainer:       Simon Hengel <sol@typeful.net>
 github: sol/doctest
 
 extra-source-files:
-- example/example.cabal
-- example/src/Example.hs
-- example/test/doctests.hs
+- example/**/*
+- test/parse/**/*
+- test/extract/**/*
+- test/integration/**/*
+- test/sandbox/*
 - CHANGES
 - README.markdown
 
