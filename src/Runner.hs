@@ -14,7 +14,7 @@ module Runner (
 import           Prelude hiding (putStr, putStrLn, error)
 
 #if __GLASGOW_HASKELL__ < 710
-import           Data.Monoid hiding ((<>))
+import           Data.Monoid (Monoid(..))
 import           Control.Applicative
 #endif
 
