@@ -4,7 +4,7 @@ synopsis:         Test interactive Haskell examples
 description: |
   The doctest program checks examples in source code comments.  It is modeled
   after doctest for Python (<http://docs.python.org/library/doctest.html>).
-  
+
   Documentation is at <https://github.com/sol/doctest#readme>.
 category:         Testing
 license:          MIT
@@ -27,7 +27,7 @@ extra-source-files:
 ghc-options: -Wall
 
 dependencies:
-- base == 4.*
+- base >= 4.5
 - base-compat >= 0.7.0
 - ghc >= 7.0 && < 8.6
 - syb >= 0.3
