@@ -22,7 +22,9 @@ On Mac OS X:
 
     export PATH="$HOME/Library/Haskell/bin:$PATH"
 
-On Windows it's `C:\Documents And Settings\user\Application Data\cabal\bin`.
+On Windows:
+
+    set PATH="%AppData%\cabal\bin\;%PATH%"
 
 For more information, see the [section on paths in the Cabal User Guide](http://www.haskell.org/cabal/users-guide/installing-packages.html#paths-in-the-simple-build-system).
 
