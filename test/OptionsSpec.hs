@@ -14,11 +14,11 @@ spec = do
     let warning = ["WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."]
     it "strips --optghc" $
       property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt)
+        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
 
     it "strips --optghc=" $
       property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt)
+        parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
 
     describe "--no-magic" $ do
       context "without --no-magic" $ do
@@ -58,3 +58,12 @@ spec = do
     context "with --info" $ do
       it "outputs machine readable version information" $ do
         parseOptions ["--info"] `shouldBe` Output info
+
+    describe "--verbose" $ do
+      context "without --verbose" $ do
+        it "is not verbose by default" $ do
+          runVerbose <$> parseOptions [] `shouldBe` Result False
+
+      context "with --verbose" $ do
+        it "parses verbose option" $ do
+          runVerbose <$> parseOptions ["--verbose"] `shouldBe` Result True

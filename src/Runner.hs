@@ -33,6 +33,12 @@ import           Location
 import           Property
 import           Runner.Example
 
+data TestType = Specification | QuickCheckProperty
+
+instance Show TestType where
+    show Specification = "example"
+    show QuickCheckProperty = "property"
+
 -- | Summary of a test run.
 data Summary = Summary {
   sExamples :: Int
@@ -59,13 +65,14 @@ instance Semigroup Summary where
     (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Run all examples from a list of modules.
-runModules :: Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt repl modules = do
+runModules :: Bool -> Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
+runModules fastMode preserveIt verbose repl modules = do
   isInteractive <- hIsTerminalDevice stderr
   ReportState _ _ s <- (`execStateT` ReportState 0 isInteractive mempty {sExamples = c}) $ do
-    forM_ modules $ runModule fastMode preserveIt repl
+    forM_ modules $ runModule fastMode preserveIt verbose repl
 
     -- report final summary
+    when verbose $ report $ "# Final summary:"
     gets (show . reportStateSummary) >>= report
 
   return s
@@ -114,20 +121,20 @@ overwrite msg = do
   liftIO (hPutStr stderr str)
 
 -- | Run all examples from given module.
-runModule :: Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
-runModule fastMode preserveIt repl (Module module_ setup examples) = do
+runModule :: Bool -> Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
+runModule fastMode preserveIt verbose repl (Module module_ setup examples) = do
 
   Summary _ _ e0 f0 <- gets reportStateSummary
 
   forM_ setup $
-    runTestGroup preserveIt repl reload
+    runTestGroup preserveIt verbose repl reload
 
   Summary _ _ e1 f1 <- gets reportStateSummary
 
   -- only run tests, if setup does not produce any errors/failures
   when (e0 == e1 && f0 == f1) $
     forM_ examples $
-      runTestGroup preserveIt repl setup_
+      runTestGroup preserveIt verbose repl setup_
   where
     reload :: IO ()
     reload = do
@@ -151,20 +158,30 @@ runModule fastMode preserveIt repl (Module module_ setup examples) = do
         Property _  -> return ()
         Example e _ -> void $ safeEvalWith preserveIt repl e
 
-reportFailure :: Location -> Expression -> Report ()
-reportFailure loc expression = do
+reportStart :: Location -> Expression -> Bool -> TestType -> Report ()
+reportStart loc expression verbose testType = when verbose $ do
+  when verbose $
+    report (printf "### Started execution at %s.\n### %s:\n%s"
+        (show loc) (show testType) expression)
+
+reportFailure :: Location -> Expression -> Bool -> Report ()
+reportFailure loc expression _ = do
   report (printf "### Failure in %s: expression `%s'" (show loc) expression)
   updateSummary (Summary 0 1 0 1)
 
-reportError :: Location -> Expression -> String -> Report ()
-reportError loc expression err = do
+reportError :: Location -> Expression -> String -> Bool -> Report ()
+reportError loc expression err _ = do
   report (printf "### Error in %s: expression `%s'" (show loc) expression)
   report err
   updateSummary (Summary 0 1 1 0)
 
-reportSuccess :: Report ()
-reportSuccess =
+reportSuccess :: Bool -> Report ()
+reportSuccess verbose = do
+  when verbose $ report "### Successful!"
   updateSummary (Summary 0 1 0 0)
+
+reportSeparator :: Bool -> Report ()
+reportSeparator verbose = when verbose $ report ""
 
 updateSummary :: Summary -> Report ()
 updateSummary summary = do
@@ -175,27 +192,31 @@ updateSummary summary = do
 --
 -- The interpreter state is zeroed with @:reload@ first.  This means that you
 -- can reuse the same 'Interpreter' for several test groups.
-runTestGroup :: Bool -> Interpreter -> IO () -> [Located DocTest] -> Report ()
-runTestGroup preserveIt repl setup tests = do
+runTestGroup :: Bool -> Bool -> Interpreter -> IO () -> [Located DocTest] -> Report ()
+runTestGroup preserveIt verbose repl setup tests = do
 
   -- report intermediate summary
-  gets (show . reportStateSummary) >>= report_
+  when (not verbose) $ gets (show . reportStateSummary) >>= report_
 
   liftIO setup
-  runExampleGroup preserveIt repl examples
+  runExampleGroup preserveIt verbose repl examples
 
   forM_ properties $ \(loc, expression) -> do
-    r <- liftIO $ do
-      setup
-      runProperty repl expression
+    r <- do
+      liftIO setup
+      reportStart loc expression verbose QuickCheckProperty
+      liftIO $ runProperty repl expression
     case r of
-      Success ->
-        reportSuccess
+      Success -> do
+        reportSuccess verbose
+        reportSeparator verbose
       Error err -> do
-        reportError loc expression err
+        reportError loc expression err verbose
+        reportSeparator verbose
       Failure msg -> do
-        reportFailure loc expression
+        reportFailure loc expression verbose
         report msg
+        reportSeparator verbose
   where
     properties = [(loc, p) | Located loc (Property p) <- tests]
 
@@ -205,20 +226,24 @@ runTestGroup preserveIt repl setup tests = do
 -- |
 -- Execute all expressions from given example in given 'Interpreter' and verify
 -- the output.
-runExampleGroup :: Bool -> Interpreter -> [Located Interaction] -> Report ()
-runExampleGroup preserveIt repl = go
+runExampleGroup :: Bool -> Bool -> Interpreter -> [Located Interaction] -> Report ()
+runExampleGroup preserveIt verbose repl = go
   where
     go ((Located loc (expression, expected)) : xs) = do
+      reportStart loc expression verbose Specification
       r <- fmap lines <$> liftIO (safeEvalWith preserveIt repl expression)
       case r of
         Left err -> do
-          reportError loc expression err
+          reportError loc expression err verbose
+          reportSeparator verbose
         Right actual -> case mkResult expected actual of
           NotEqual err -> do
-            reportFailure loc expression
+            reportFailure loc expression verbose
             mapM_ report err
+            reportSeparator verbose
           Equal -> do
-            reportSuccess
+            reportSuccess verbose
+            reportSeparator verbose
             go xs
     go [] = return ()
 
