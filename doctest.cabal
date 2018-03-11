@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3c0e7fcde23be36c2db1a7350efe4ee58a6c4ca032fe19cb8d7f1cbbc7853a85
+-- hash: 054c306e552f0abe320fe8ddf4b247a8d2cf1ab185edc53fb27e7444f3f47007
 
 name:           doctest
 version:        0.14.1
@@ -130,7 +130,7 @@ library
       Language.Haskell.GhciWrapper
       Paths_doctest
   build-depends:
-      base >=4.5
+      base >=4.5 && <5
     , base-compat >=0.7.0
     , code-page >=0.1
     , deepseq
@@ -151,7 +151,7 @@ executable doctest
   hs-source-dirs:
       driver
   build-depends:
-      base >=4.5
+      base >=4.5 && <5
     , base-compat >=0.7.0
     , code-page >=0.1
     , deepseq
@@ -172,7 +172,7 @@ test-suite doctests
   hs-source-dirs:
       test
   build-depends:
-      base >=4.5
+      base >=4.5 && <5
     , base-compat >=0.7.0
     , code-page >=0.1
     , deepseq
@@ -231,7 +231,7 @@ test-suite spec
   build-depends:
       HUnit
     , QuickCheck >=2.11.3
-    , base >=4.5
+    , base >=4.5 && <5
     , base-compat >=0.7.0
     , code-page >=0.1
     , deepseq
