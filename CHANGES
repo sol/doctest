@@ -1,3 +1,6 @@
+Changes in 0.14.1
+  - Add test assets to source tarball (see #189)
+
 Changes in 0.14.0
   - GHC 8.4 compatibility.
 
