@@ -1,4 +1,4 @@
-Changes in 0.14.2
+Changes in 0.15.0
   - Add `--verbose` for printing each test as it is run
 
 Changes in 0.14.1
