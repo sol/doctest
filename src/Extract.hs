@@ -33,7 +33,10 @@ import           NameSet (NameSet)
 import           Coercion (Coercion)
 #endif
 
+#if __GLASGOW_HASKELL__ < 805
 import           FastString (unpackFS)
+#endif
+
 import           Digraph (flattenSCCs)
 
 import           System.Posix.Internals (c_getpid)
@@ -84,6 +87,11 @@ needsTemplateHaskellOrQQ = needsTemplateHaskell
 
 mapMG :: (ModSummary -> ModSummary) -> ModuleGraph -> ModuleGraph
 mapMG = map
+#endif
+
+#if __GLASGOW_HASKELL__ < 805
+addQuoteInclude :: [String] -> [String] -> [String]
+addQuoteInclude includes new = new ++ includes
 #endif
 
 -- | Parse a list of modules.
@@ -151,7 +159,7 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
         objectDir  = Just f
       , hiDir      = Just f
       , stubDir    = Just f
-      , includePaths = f : includePaths d
+      , includePaths = addQuoteInclude (includePaths d) [f]
       }
 
 -- | Extract all docstrings from given list of files/modules.
@@ -184,7 +192,7 @@ extractFromModule m = Module name (listToMaybe $ map snd setup) (map snd docs)
 
 -- | Extract all docstrings from given module.
 docStringsFromModule :: ParsedModule -> [(Maybe String, Located String)]
-docStringsFromModule mod = map (fmap (toLocated . fmap unpackDocString)) docs
+docStringsFromModule mod = map (fmap (toLocated . fmap unpackHDS)) docs
   where
     source   = (unLoc . pm_parsed_source) mod
 
@@ -197,8 +205,10 @@ docStringsFromModule mod = map (fmap (toLocated . fmap unpackDocString)) docs
     header  = [(Nothing, x) | Just x <- [hsmodHaddockModHeader source]]
 #if __GLASGOW_HASKELL__ < 710
     exports = [(Nothing, L loc doc) | L loc (IEDoc doc) <- concat (hsmodExports source)]
-#else
+#elif __GLASGOW_HASKELL__ < 805
     exports = [(Nothing, L loc doc) | L loc (IEDoc doc) <- maybe [] unLoc (hsmodExports source)]
+#else
+    exports = [(Nothing, L loc doc) | L loc (IEDoc _ doc) <- maybe [] unLoc (hsmodExports source)]
 #endif
     decls   = extractDocStrings (hsmodDecls source)
 
@@ -252,7 +262,11 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
       -- Top-level documentation has to be treated separately, because it has
       -- no location information attached.  The location information is
       -- attached to HsDecl instead.
+#if __GLASGOW_HASKELL__ < 805
       DocD x -> select (fromDocDecl loc x)
+#else
+      DocD _ x -> select (fromDocDecl loc x)
+#endif
 
       _ -> (extractDocStrings decl, True)
 
@@ -267,6 +281,8 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
       DocCommentNamed name doc -> (Just name, L loc doc)
       _                        -> (Nothing, L loc $ docDeclDoc x)
 
+#if __GLASGOW_HASKELL__ < 805
 -- | Convert a docstring to a plain string.
-unpackDocString :: HsDocString -> String
-unpackDocString (HsDocString s) = unpackFS s
+unpackHDS :: HsDocString -> String
+unpackHDS (HsDocString s) = unpackFS s
+#endif
