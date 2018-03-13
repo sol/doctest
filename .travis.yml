@@ -52,15 +52,27 @@ matrix:
           packages:
             - ghc-8.4.1
             - cabal-install-head
+    - env: GHCVER=head CABALVER=head
+      addons:
+        apt:
+          sources:
+            - hvr-ghc
+          packages:
+            - ghc-head
+            - cabal-install-head
+  allow_failures:
+    - env: GHCVER=head CABALVER=head
 
 before_install:
   - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+  - CABAL_OPTS=""
+  - if ["$GHCVER" == "head"] ; then CABAL_OPTS="$CABAL_OPTS --allow-newer" ; fi
   - ghc --version
   - cabal --version
   - travis_retry cabal update
   - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
-  - cabal install --enable-tests --only-dep
+  - cabal install --enable-tests --only-dep $CABAL_OPTS
 
 script:
-  - (cd ghci-wrapper && cabal configure --enable-tests --ghc-options=-Werror && cabal build && cabal test)
-  - cabal configure --enable-tests --ghc-options=-Werror && cabal build && cabal test
+  - (cd ghci-wrapper && cabal configure --enable-tests --ghc-options=-Werror $CABAL_OPTS && cabal build && cabal test)
+  - cabal configure --enable-tests --ghc-options=-Werror $CABAL_OPTS && cabal build && cabal test
