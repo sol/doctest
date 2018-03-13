@@ -86,6 +86,11 @@ mapMG :: (ModSummary -> ModSummary) -> ModuleGraph -> ModuleGraph
 mapMG = map
 #endif
 
+#if __GLASGOW_HASKELL__ < 805
+addQuoteInclude :: [String] -> [String] -> [String]
+addQuoteInclude includes new = new ++ includes
+#endif
+
 -- | Parse a list of modules.
 parse :: [String] -> IO [TypecheckedModule]
 parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
@@ -151,7 +156,7 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
         objectDir  = Just f
       , hiDir      = Just f
       , stubDir    = Just f
-      , includePaths = f : includePaths d
+      , includePaths = addQuoteInclude (includePaths d) [f]
       }
 
 -- | Extract all docstrings from given list of files/modules.
