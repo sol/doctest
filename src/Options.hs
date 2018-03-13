@@ -77,9 +77,6 @@ data Run = Run {
 , runVerbose :: Bool
 } deriving (Eq, Show)
 
-defaultVerbose :: Bool
-defaultVerbose = False
-
 defaultMagic :: Bool
 defaultMagic = True
 
@@ -89,30 +86,33 @@ defaultFastMode = False
 defaultPreserveIt :: Bool
 defaultPreserveIt = False
 
+defaultVerbose :: Bool
+defaultVerbose = False
+
 parseOptions :: [String] -> Result Run
 parseOptions args
   | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
   | "--version" `elem` args = Output versionInfo
-  | otherwise = case  (fmap . fmap . fmap) stripVerbose
-                   .  fmap (fmap stripOptGhc)
+  | otherwise = case  fmap (fmap (fmap stripOptGhc))
+                   .  fmap (fmap stripVerbose)
                    .  fmap stripPreserveIt
                    .  stripFast
                   <$> stripNoMagic args of
-      (magicMode, (fastMode, (preserveIt, (warning, (verbose, xs))))) ->
+      (magicMode, (fastMode, (preserveIt, (verbose, (warning, xs))))) ->
         Result (Run (maybeToList warning) xs magicMode fastMode preserveIt verbose)
 
 stripNoMagic :: [String] -> (Bool, [String])
 stripNoMagic = stripFlag (not defaultMagic) "--no-magic"
-
-stripVerbose :: [String] -> (Bool, [String])
-stripVerbose = stripFlag (not defaultVerbose) "--verbose"
 
 stripFast :: [String] -> (Bool, [String])
 stripFast = stripFlag (not defaultFastMode) "--fast"
 
 stripPreserveIt :: [String] -> (Bool, [String])
 stripPreserveIt = stripFlag (not defaultPreserveIt) "--preserve-it"
+
+stripVerbose :: [String] -> (Bool, [String])
+stripVerbose = stripFlag (not defaultVerbose) "--verbose"
 
 stripFlag :: Bool -> String -> [String] -> (Bool, [String])
 stripFlag enableIt flag args = ((flag `elem` args) == enableIt, filter (/= flag) args)

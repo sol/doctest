@@ -16,11 +16,11 @@ main :: IO ()
 main = hspec spec
 
 capture :: Report a -> IO String
-capture = fmap fst . hCapture [stderr] . (`execStateT` ReportState 0 True mempty)
+capture = fmap fst . hCapture [stderr] . (`execStateT` ReportState 0 True False mempty)
 
 -- like capture, but with interactivity set to False
 capture_ :: Report a -> IO String
-capture_ = fmap fst . hCapture [stderr] . (`execStateT` ReportState 0 False mempty)
+capture_ = fmap fst . hCapture [stderr] . (`execStateT` ReportState 0 False False mempty)
 
 spec :: Spec
 spec = do
