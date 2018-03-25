@@ -158,14 +158,14 @@ reportStart loc expression testType = do
 
 reportFailure :: Location -> Expression -> [String] -> Report ()
 reportFailure loc expression err = do
-  report (printf "### Failure in %s: expression `%s'" (show loc) expression)
+  report (printf "%s: failure: expression `%s'" (show loc) expression)
   mapM_ report err
   report ""
   updateSummary (Summary 0 1 0 1)
 
 reportError :: Location -> Expression -> String -> Report ()
 reportError loc expression err = do
-  report (printf "### Error in %s: expression `%s'" (show loc) expression)
+  report (printf "%s: error: expression `%s'" (show loc) expression)
   report err
   report ""
   updateSummary (Summary 0 1 1 0)
