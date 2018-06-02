@@ -66,7 +66,7 @@ matrix:
 before_install:
   - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
   - CABAL_OPTS=""
-  - if ["$GHCVER" == "head"] ; then CABAL_OPTS="$CABAL_OPTS --allow-newer" ; fi
+  - if [ "$GHCVER" = "head" ] ; then CABAL_OPTS="$CABAL_OPTS --allow-newer" ; fi
   - ghc --version
   - cabal --version
   - travis_retry cabal update
