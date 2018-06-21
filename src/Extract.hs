@@ -33,7 +33,10 @@ import           NameSet (NameSet)
 import           Coercion (Coercion)
 #endif
 
+#if __GLASGOW_HASKELL__ < 805
 import           FastString (unpackFS)
+#endif
+
 import           Digraph (flattenSCCs)
 
 import           System.Posix.Internals (c_getpid)
