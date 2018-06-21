@@ -189,7 +189,7 @@ extractFromModule m = Module name (listToMaybe $ map snd setup) (map snd docs)
 
 -- | Extract all docstrings from given module.
 docStringsFromModule :: ParsedModule -> [(Maybe String, Located String)]
-docStringsFromModule mod = map (fmap (toLocated . fmap unpackDocString)) docs
+docStringsFromModule mod = map (fmap (toLocated . fmap unpackHDS)) docs
   where
     source   = (unLoc . pm_parsed_source) mod
 
@@ -278,6 +278,8 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
       DocCommentNamed name doc -> (Just name, L loc doc)
       _                        -> (Nothing, L loc $ docDeclDoc x)
 
+#if __GLASGOW_HASKELL__ < 805
 -- | Convert a docstring to a plain string.
-unpackDocString :: HsDocString -> String
-unpackDocString (HsDocString s) = unpackFS s
+unpackHDS :: HsDocString -> String
+unpackHDS (HsDocString s) = unpackFS s
+#endif
