@@ -1,11 +1,11 @@
--- This file has been generated from package.yaml by hpack version 0.27.0.
+-- This file has been generated from package.yaml by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 03a9b0f4a629d8ae1361038b83b10eb6e4847761565ed78ae4d1b2046e6d0c0f
+-- hash: d9e1502a7c11bbf6626127a98ee976799f47df80bfa8ec5693f37717bff0db96
 
 name:           doctest
-version:        0.15.0
+version:        0.15.1
 synopsis:       Test interactive Haskell examples
 description:    The doctest program checks examples in source code comments.  It is modeled
                 after doctest for Python (<http://docs.python.org/library/doctest.html>).
@@ -21,7 +21,6 @@ author:         Simon Hengel <sol@typeful.net>
 maintainer:     Simon Hengel <sol@typeful.net>
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     CHANGES
     example/example.cabal
