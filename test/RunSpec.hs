@@ -128,7 +128,7 @@ spec = do
               "### Started execution at test/integration/failing/Foo.hs:5."
             , "### example:"
             , "23"
-            , "test/integration/failing/Foo.hs:5: failure: expression `23'"
+            , "test/integration/failing/Foo.hs:5: failure in expression `23'"
             , "expected: 42"
             , " but got: 23"
             , ""
