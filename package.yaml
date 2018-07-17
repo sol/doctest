@@ -1,5 +1,5 @@
 name:             doctest
-version:          0.16.0.1
+version:          0.16.1
 synopsis:         Test interactive Haskell examples
 description: |
   The doctest program checks examples in source code comments.  It is modeled
@@ -64,12 +64,11 @@ tests:
     c-sources: test/integration/with-cbits/foo.c
     dependencies:
     - HUnit
-    - hspec         >= 1.5.1
+    - hspec         >= 2.3.0
     - QuickCheck    >= 2.11.3
     - stringbuilder >= 0.4
     - silently      >= 1.2.4
     - setenv
-    - with-location
     - mockery
 
   doctests:

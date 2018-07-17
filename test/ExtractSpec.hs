@@ -1,9 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ConstraintKinds #-}
 module ExtractSpec (main, spec) where
 
 import           Test.Hspec
 import           Test.HUnit
-import           Data.WithLocation
 
 import           Panic (GhcException (..))
 
@@ -13,7 +13,7 @@ import           System.FilePath
 
 import           Orphans ()
 
-shouldGive :: WithLocation ((String, String) -> [Module String] -> Assertion)
+shouldGive :: HasCallStack => (String, String) -> [Module String] -> Assertion
 (d, m) `shouldGive` expected = do
   r <- map (fmap unLoc) `fmap` extract ["-i" ++ dir, dir </> m]
   r `shouldBe` expected

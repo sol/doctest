@@ -1,3 +1,6 @@
+Changes in 0.16.1
+  - Remove dependency on `with-location`
+
 Changes in 0.16.0.1
   - Bump bounds to allow GHC 8.6. (#210)
 
