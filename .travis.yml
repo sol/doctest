@@ -76,7 +76,7 @@ before_install:
   - CABAL_OPTS=""
   - |
     case "$GHCVER" in
-    head | 8.6.*)
+    head )
       CABAL_OPTS="$CABAL_OPTS --allow-newer"
       ;;
     esac
