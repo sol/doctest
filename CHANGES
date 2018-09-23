@@ -1,3 +1,9 @@
+Changes in 0.16.0.1
+  - Bump bounds to allow GHC 8.6. (#210)
+
+Changes in 0.16.0
+  - Output format has changed to (hopefully) be more machine consumable. (#200)
+
 Changes in 0.15.0
   - Add `--verbose` for printing each test as it is run
 
