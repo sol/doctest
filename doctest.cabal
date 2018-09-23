@@ -1,8 +1,10 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3f2294fd9f8fe9ae2eb369fd4a69655cb28a2ba502010c947eaf4f71d450abf8
+-- hash: a0a8f594bcfea432d72e7483b677695aa5e6f7ff4080ff154279428a11b2053a
 
 name:           doctest
 version:        0.16.0
@@ -20,13 +22,17 @@ copyright:      (c) 2009-2018 Simon Hengel
 author:         Simon Hengel <sol@typeful.net>
 maintainer:     Simon Hengel <sol@typeful.net>
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    CHANGES
     example/example.cabal
     example/src/Example.hs
     example/test/doctests.hs
-    README.markdown
+    test/parse/multiple-examples/Foo.hs
+    test/parse/no-examples/Fib.hs
+    test/parse/non-exported/Fib.hs
+    test/parse/property/Fib.hs
+    test/parse/setup-empty/Foo.hs
+    test/parse/setup-only/Foo.hs
+    test/parse/simple/Fib.hs
     test/extract/argument-list/Foo.hs
     test/extract/comment-order/Foo.hs
     test/extract/declaration/Foo.hs
@@ -91,15 +97,10 @@ extra-source-files:
     test/integration/trailing-whitespace/Foo.hs
     test/integration/with-cbits/Bar.hs
     test/integration/with-cbits/foo.c
-    test/parse/multiple-examples/Foo.hs
-    test/parse/no-examples/Fib.hs
-    test/parse/non-exported/Fib.hs
-    test/parse/property/Fib.hs
-    test/parse/setup-empty/Foo.hs
-    test/parse/setup-only/Foo.hs
-    test/parse/simple/Fib.hs
     test/sandbox/bad.config
     test/sandbox/cabal.sandbox.config
+    CHANGES
+    README.markdown
 
 source-repository head
   type: git
@@ -135,7 +136,7 @@ library
     , deepseq
     , directory
     , filepath
-    , ghc >=7.0 && <8.6
+    , ghc >=7.0 && <8.7
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -157,7 +158,7 @@ executable doctest
     , directory
     , doctest
     , filepath
-    , ghc >=7.0 && <8.6
+    , ghc >=7.0 && <8.7
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -178,7 +179,7 @@ test-suite doctests
     , directory
     , doctest
     , filepath
-    , ghc >=7.0 && <8.6
+    , ghc >=7.0 && <8.7
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -236,7 +237,7 @@ test-suite spec
     , deepseq
     , directory
     , filepath
-    , ghc >=7.0 && <8.6
+    , ghc >=7.0 && <8.7
     , ghc-paths >=0.1.0.9
     , hspec >=1.5.1
     , mockery
