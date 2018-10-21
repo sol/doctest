@@ -33,7 +33,7 @@ import           NameSet (NameSet)
 import           Coercion (Coercion)
 #endif
 
-#if __GLASGOW_HASKELL__ < 805
+#if __GLASGOW_HASKELL__ < 806
 import           FastString (unpackFS)
 #endif
 
@@ -89,7 +89,7 @@ mapMG :: (ModSummary -> ModSummary) -> ModuleGraph -> ModuleGraph
 mapMG = map
 #endif
 
-#if __GLASGOW_HASKELL__ < 805
+#if __GLASGOW_HASKELL__ < 806
 addQuoteInclude :: [String] -> [String] -> [String]
 addQuoteInclude includes new = new ++ includes
 #endif
@@ -205,7 +205,7 @@ docStringsFromModule mod = map (fmap (toLocated . fmap unpackHDS)) docs
     header  = [(Nothing, x) | Just x <- [hsmodHaddockModHeader source]]
 #if __GLASGOW_HASKELL__ < 710
     exports = [(Nothing, L loc doc) | L loc (IEDoc doc) <- concat (hsmodExports source)]
-#elif __GLASGOW_HASKELL__ < 805
+#elif __GLASGOW_HASKELL__ < 806
     exports = [(Nothing, L loc doc) | L loc (IEDoc doc) <- maybe [] unLoc (hsmodExports source)]
 #else
     exports = [(Nothing, L loc doc) | L loc (IEDoc _ doc) <- maybe [] unLoc (hsmodExports source)]
@@ -262,7 +262,7 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
       -- Top-level documentation has to be treated separately, because it has
       -- no location information attached.  The location information is
       -- attached to HsDecl instead.
-#if __GLASGOW_HASKELL__ < 805
+#if __GLASGOW_HASKELL__ < 806
       DocD x -> select (fromDocDecl loc x)
 #else
       DocD _ x -> select (fromDocDecl loc x)
@@ -281,7 +281,7 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
       DocCommentNamed name doc -> (Just name, L loc doc)
       _                        -> (Nothing, L loc $ docDeclDoc x)
 
-#if __GLASGOW_HASKELL__ < 805
+#if __GLASGOW_HASKELL__ < 806
 -- | Convert a docstring to a plain string.
 unpackHDS :: HsDocString -> String
 unpackHDS (HsDocString s) = unpackFS s
