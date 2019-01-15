@@ -6,6 +6,7 @@ module Options (
 , defaultMagic
 , defaultFastMode
 , defaultPreserveIt
+, defaultInterpret
 , defaultVerbose
 , parseOptions
 #ifdef TEST
@@ -29,18 +30,19 @@ import           Interpreter (ghc)
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --preserve-it | --no-magic | --no-interpret | --verbose | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
   , ""
   , "Options:"
-  , "  --fast         disable :reload between example groups"
-  , "  --preserve-it  preserve the `it` variable between examples"
-  , "  --verbose      print each test as it is run"
-  , "  --help         display this help and exit"
-  , "  --version      output version information and exit"
-  , "  --info         output machine-readable version information and exit"
+  , "  --fast          disable :reload between example groups"
+  , "  --preserve-it   preserve the `it` variable between examples"
+  , "  --no-interpret  :m + load modules, don't interpret (implies --no-magic)"
+  , "  --verbose       print each test as it is run"
+  , "  --help          display this help and exit"
+  , "  --version       output version information and exit"
+  , "  --info          output machine-readable version information and exit"
   ]
 
 version :: String
@@ -74,6 +76,7 @@ data Run = Run {
 , runMagicMode :: Bool
 , runFastMode :: Bool
 , runPreserveIt :: Bool
+, runInterpret :: Bool
 , runVerbose :: Bool
 } deriving (Eq, Show)
 
@@ -89,18 +92,22 @@ defaultPreserveIt = False
 defaultVerbose :: Bool
 defaultVerbose = False
 
+defaultInterpret :: Bool
+defaultInterpret = True
+
 parseOptions :: [String] -> Result Run
 parseOptions args
   | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
   | "--version" `elem` args = Output versionInfo
-  | otherwise = case  fmap (fmap (fmap stripOptGhc))
-                   .  fmap (fmap stripVerbose)
+  | otherwise = case  fmap (fmap (fmap (fmap stripOptGhc)))
+                   .  fmap (fmap (fmap stripVerbose))
+                   .  fmap (fmap stripNoInterpret)
                    .  fmap stripPreserveIt
                    .  stripFast
                   <$> stripNoMagic args of
-      (magicMode, (fastMode, (preserveIt, (verbose, (warning, xs))))) ->
-        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt verbose)
+      (magicMode, (fastMode, (preserveIt, (interpretMode, (verbose, (warning, xs)))))) ->
+        Result (Run (maybeToList warning) xs (magicMode && interpretMode) fastMode preserveIt interpretMode verbose)
 
 stripNoMagic :: [String] -> (Bool, [String])
 stripNoMagic = stripFlag (not defaultMagic) "--no-magic"
@@ -110,6 +117,9 @@ stripFast = stripFlag (not defaultFastMode) "--fast"
 
 stripPreserveIt :: [String] -> (Bool, [String])
 stripPreserveIt = stripFlag (not defaultPreserveIt) "--preserve-it"
+
+stripNoInterpret :: [String] -> (Bool, [String])
+stripNoInterpret = stripFlag (not defaultInterpret) "--no-interpret"
 
 stripVerbose :: [String] -> (Bool, [String])
 stripVerbose = stripFlag (not defaultVerbose) "--verbose"

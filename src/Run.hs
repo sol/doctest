@@ -43,7 +43,7 @@ import qualified Interpreter
 doctest :: [String] -> IO ()
 doctest args0 = case parseOptions args0 of
   Output s -> putStr s
-  Result (Run warnings args_ magicMode fastMode preserveIt verbose) -> do
+  Result (Run warnings args_ magicMode fastMode preserveIt interpretMode verbose) -> do
     mapM_ (hPutStrLn stderr) warnings
     hFlush stderr
 
@@ -60,7 +60,7 @@ doctest args0 = case parseOptions args0 of
         addDistArgs <- getAddDistArgs
         return (addDistArgs $ packageDBArgs ++ expandedArgs)
 
-    r <- doctestWithOptions fastMode preserveIt verbose args `E.catch` \e -> do
+    r <- doctestWithOptions fastMode preserveIt interpretMode verbose args `E.catch` \e -> do
       case fromException e of
         Just (UsageError err) -> do
           hPutStrLn stderr ("doctest: " ++ err)
@@ -123,11 +123,17 @@ getAddDistArgs = do
 isSuccess :: Summary -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
 
-doctestWithOptions :: Bool -> Bool -> Bool -> [String] -> IO Summary
-doctestWithOptions fastMode preserveIt verbose args = do
+doctestWithOptions :: Bool -> Bool -> Bool -> Bool -> [String] -> IO Summary
+doctestWithOptions fastMode preserveIt interpretMode verbose args = do
 
   -- get examples from Haddock comments
   modules <- getDocTests args
 
-  Interpreter.withInterpreter args $ \repl -> withCP65001 $ do
-    runModules fastMode preserveIt verbose repl modules
+  let safeHead []    = Nothing
+      safeHead (x:_) = Just x
+
+  let args' | not interpretMode = filter (\a -> safeHead a == Just '-') args
+            | otherwise         = args
+
+  Interpreter.withInterpreter args' $ \repl -> withCP65001 $ do
+    runModules fastMode preserveIt interpretMode verbose repl modules

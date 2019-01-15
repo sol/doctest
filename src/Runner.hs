@@ -59,11 +59,11 @@ instance Semigroup Summary where
     (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Run all examples from a list of modules.
-runModules :: Bool -> Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt verbose repl modules = do
+runModules :: Bool -> Bool -> Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
+runModules fastMode preserveIt noInterpret verbose repl modules = do
   isInteractive <- hIsTerminalDevice stderr
   ReportState _ _ _ s <- (`execStateT` ReportState 0 isInteractive verbose mempty {sExamples = c}) $ do
-    forM_ modules $ runModule fastMode preserveIt repl
+    forM_ modules $ runModule fastMode preserveIt noInterpret repl
 
     verboseReport "# Final summary:"
     gets (show . reportStateSummary) >>= report
@@ -115,8 +115,8 @@ overwrite msg = do
   liftIO (hPutStr stderr str)
 
 -- | Run all examples from given module.
-runModule :: Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
-runModule fastMode preserveIt repl (Module module_ setup examples) = do
+runModule :: Bool -> Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
+runModule fastMode preserveIt interpretMode repl (Module module_ setup examples) = do
 
   Summary _ _ e0 f0 <- gets reportStateSummary
 
@@ -137,7 +137,12 @@ runModule fastMode preserveIt repl (Module module_ setup examples) = do
         -- https://ghc.haskell.org/trac/ghc/ticket/5904, which results in a
         -- panic on GHC 7.4.1 if you do the :reload second.
         void $ Interpreter.safeEval repl ":reload"
-      void $ Interpreter.safeEval repl $ ":m *" ++ module_
+
+      -- if we are not intepretting, we just load the module.
+      void $ Interpreter.safeEval repl $
+        if interpretMode 
+        then ":m *" ++ module_
+        else ":m +" ++ module_
 
       when preserveIt $
         -- Evaluate a dumb expression to populate the 'it' variable NOTE: This is

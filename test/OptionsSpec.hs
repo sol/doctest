@@ -14,11 +14,11 @@ spec = do
     let warning = ["WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."]
     it "strips --optghc" $
       property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
+        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultInterpret defaultVerbose)
 
     it "strips --optghc=" $
       property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
+        parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultInterpret defaultVerbose)
 
     describe "--no-magic" $ do
       context "without --no-magic" $ do
@@ -46,6 +46,18 @@ spec = do
       context "with --preserve-it" $ do
         it "preserves the `it` variable" $ do
           runPreserveIt <$> parseOptions ["--preserve-it"] `shouldBe` Result True
+
+    describe "--no-interpret" $ do
+      context "without --no-interpret" $ do
+        it "interprets modules" $ do
+          runInterpret <$> parseOptions [] `shouldBe` Result True
+
+      context "with --no-interpret" $ do
+        it "loads modules" $ do
+          runInterpret <$> parseOptions ["--no-interpret"] `shouldBe` Result False
+
+        it "disables magic mode" $ do
+          runMagicMode <$> parseOptions ["--no-interpret"] `shouldBe` Result False
 
     context "with --help" $ do
       it "outputs usage information" $ do
