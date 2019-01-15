@@ -44,22 +44,22 @@ matrix:
           packages:
             - ghc-8.2.1
             - cabal-install-1.24
-    - env: GHCVER=8.4.1 CABALVER=head
+    - env: GHCVER=8.4.4 CABALVER=2.4
       addons:
         apt:
           sources:
             - hvr-ghc
           packages:
-            - ghc-8.4.1
-            - cabal-install-head
-    - env: GHCVER=8.6.1 CABALVER=head
+            - ghc-8.4.4
+            - cabal-install-2.4
+    - env: GHCVER=8.6.3 CABALVER=2.4
       addons:
         apt:
           sources:
             - hvr-ghc
           packages:
-            - ghc-8.6.1
-            - cabal-install-head
+            - ghc-8.6.3
+            - cabal-install-2.4
     - env: GHCVER=head CABALVER=head
       addons:
         apt:
