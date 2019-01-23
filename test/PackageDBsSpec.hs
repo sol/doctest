@@ -44,30 +44,34 @@ spec = around_ clearEnv $ do
     context "without a cabal sandbox present" $ do
       around_ (inTempDirectory) $ do
         it "uses global and user when no env or sandboxing used" $ do
-          getPackageDBsFromEnv `shouldReturn` PackageDBs True True []
+          getPackageDBsFromEnv `shouldReturn` PackageDBs True True [] Nothing
 
         it "respects GHC_PACKAGE_PATH" $
           withEnv "GHC_PACKAGE_PATH" (combineDirs ["foo", "bar", ""]) $ do
-            getPackageDBsFromEnv `shouldReturn` PackageDBs False True ["foo", "bar"]
+            getPackageDBsFromEnv `shouldReturn` PackageDBs False True ["foo", "bar"] Nothing
 
         it "HASKELL_PACKAGE_SANDBOXES trumps GHC_PACKAGE_PATH" $
           withEnv "GHC_PACKAGE_PATH" (combineDirs ["foo1", "bar1", ""]) $ do
           withEnv "HASKELL_PACKAGE_SANDBOXES" (combineDirs ["foo2", "bar2", ""]) $ do
-            getPackageDBsFromEnv `shouldReturn` PackageDBs False True ["foo2", "bar2"]
+            getPackageDBsFromEnv `shouldReturn` PackageDBs False True ["foo2", "bar2"] Nothing
 
         it "HASKELL_PACKAGE_SANDBOX trumps GHC_PACKAGE_PATH" $
           withEnv "GHC_PACKAGE_PATH" (combineDirs ["foo1", "bar1", ""]) $ do
           withEnv "HASKELL_PACKAGE_SANDBOX" (combineDirs ["foo2"]) $ do
+            getPackageDBsFromEnv `shouldReturn` PackageDBs True True ["foo2"] Nothing
 
-            getPackageDBsFromEnv `shouldReturn` PackageDBs True True ["foo2"]
+        it "HASKELL_PACKAGE_SANDBOX with explicit package ids" $
+          withEnv "HASKELL_PACKAGE_SANDBOX" (combineDirs ["foo2"]) $ do
+          withEnv "HASKELL_PACKAGE_IDS" (unwords ["pkg1-1.0", "pkgX-1.1.1-HASHHERE"]) $ do
+            getPackageDBsFromEnv `shouldReturn` PackageDBs True True ["foo2"] (Just ["pkg1-1.0", "pkgX-1.1.1-HASHHERE"])
 
     context "with a cabal sandbox present" $ do
       around_ (withCurrentDirectory "test/sandbox") $ do
         it "respects cabal sandboxes" $ do
             getPackageDBsFromEnv `shouldReturn`
-              PackageDBs False True ["/home/me/doctest-haskell/.cabal-sandbox/i386-osx-ghc-7.6.3-packages.conf.d"]
+              PackageDBs False True ["/home/me/doctest-haskell/.cabal-sandbox/i386-osx-ghc-7.6.3-packages.conf.d"] Nothing
 
         it "GHC_PACKAGE_PATH takes precedence" $
           withEnv "GHC_PACKAGE_PATH" (combineDirs ["foo", "bar"]) $ do
             getPackageDBsFromEnv `shouldReturn`
-              PackageDBs False False ["foo", "bar"]
+              PackageDBs False False ["foo", "bar"] Nothing

@@ -22,6 +22,7 @@ data PackageDBs = PackageDBs
     -- | Unsupported on GHC < 7.6
     , includeGlobal :: Bool
     , extraDBs :: [FilePath]
+    , explicitPackageIds :: Maybe [String]
     }
     deriving (Show, Eq)
 
@@ -31,21 +32,29 @@ data ArgStyle = Pre76 | Post76
 
 -- | Determine command line arguments to be passed to GHC to set databases correctly
 --
--- >>> dbArgs Post76 (PackageDBs False True [])
--- ["-no-user-package-db"]
+-- >>> dbArgs Post76 (PackageDBs False True [] (Just ["x-1.0.0-ABCDEFGH"]))
+-- ["-no-user-package-db","-hide-all-packages","-package-id","x-1.0.0-ABCDEFGH"]
 --
--- >>> dbArgs Pre76 (PackageDBs True True ["somedb"])
+-- >>> dbArgs Pre76 (PackageDBs True True ["somedb"] Nothing)
 -- ["-package-conf","somedb"]
 dbArgs :: ArgStyle -> PackageDBs -> [String]
-dbArgs Post76 (PackageDBs user global extras) =
+dbArgs Post76 (PackageDBs user global extras mPackageIds) =
     (if user then id else ("-no-user-package-db":)) $
     (if global then id else ("-no-global-package-db":)) $
-    concatMap (\extra -> ["-package-db", extra]) extras
-dbArgs Pre76 (PackageDBs _ False _) =
+    foldr (\extra -> ("-package-db":).( extra:)) (maybePackageIdArgs mPackageIds) extras
+dbArgs Pre76 (PackageDBs _ False _ _) =
     error "Global package database must be included with GHC < 7.6"
-dbArgs Pre76 (PackageDBs user True extras) =
+dbArgs Pre76 (PackageDBs user True extras _) =
     (if user then id else ("-no-user-package-conf":)) $
     concatMap (\extra -> ["-package-conf", extra]) extras
+
+-- | hide all packages and add explicit package ids if those
+-- were specified
+maybePackageIdArgs :: Maybe [String] -> [String]
+maybePackageIdArgs Nothing = []
+maybePackageIdArgs (Just pids) =
+  "-hide-all-packages":
+  concatMap (\extra -> ["-package-id", extra]) pids
 
 -- | The argument style to be used with the current GHC version
 buildArgStyle :: ArgStyle
@@ -60,6 +69,18 @@ buildArgStyle = Pre76
 getPackageDBsFromEnv :: IO PackageDBs
 getPackageDBsFromEnv = do
     env <- getEnvironment
+    let packageIds = words <$> lookup "HASKELL_PACKAGE_IDS" env
+        fromEnvMulti s = PackageDBs
+            { includeUser = False
+            , includeGlobal = global
+            , extraDBs = splitSearchPath s'
+            , explicitPackageIds = packageIds
+            }
+          where
+            (s', global) =
+                case reverse s of
+                    c:rest | c == searchPathSeparator -> (reverse rest, True)
+                    _ -> (s, False)
     case () of
         ()
             | Just sandboxes <- lookup "HASKELL_PACKAGE_SANDBOXES" env
@@ -69,6 +90,7 @@ getPackageDBsFromEnv = do
                     { includeUser = True
                     , includeGlobal = True
                     , extraDBs = [extra]
+                    , explicitPackageIds = packageIds
                     }
             | Just sandboxes <- lookup "GHC_PACKAGE_PATH" env
                 -> return $ fromEnvMulti sandboxes
@@ -77,19 +99,8 @@ getPackageDBsFromEnv = do
                           >>= Sandbox.getSandboxConfigFile
                           >>= Sandbox.getPackageDbDir
                 return $ case eres :: Either SomeException FilePath of
-                    Left _ -> PackageDBs True True []
-                    Right db -> PackageDBs False True [db]
-  where
-    fromEnvMulti s = PackageDBs
-        { includeUser = False
-        , includeGlobal = global
-        , extraDBs = splitSearchPath s'
-        }
-      where
-        (s', global) =
-            case reverse s of
-                c:rest | c == searchPathSeparator -> (reverse rest, True)
-                _ -> (s, False)
+                    Left _ -> PackageDBs True True [] Nothing
+                    Right db -> PackageDBs False True [db] Nothing
 
 -- | Get the package DB flags for the current GHC version and from the
 -- environment.
