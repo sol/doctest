@@ -69,7 +69,7 @@ buildArgStyle = Pre76
 getPackageDBsFromEnv :: IO PackageDBs
 getPackageDBsFromEnv = do
     env <- getEnvironment
-    let packageIds = words <$> lookup "HASKELL_PACKAGE_IDS" env
+    let packageIds = fmap words $ lookup "HASKELL_PACKAGE_IDS" env
         fromEnvMulti s = PackageDBs
             { includeUser = False
             , includeGlobal = global
