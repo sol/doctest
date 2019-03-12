@@ -54,7 +54,7 @@ fib n = fib (n - 1) + fib (n - 2)
 
 (A comment line starting with `>>>` denotes an _expression_.
 All comment lines following an expression denote the _result_ of that expression.
-Result is defined by what an
+Result is defined by what a
 [REPL](http://en.wikipedia.org/wiki/Read-eval-print_loop) (e.g. ghci)
 prints to `stdout` and `stderr` when evaluating that expression.)
 
@@ -156,7 +156,7 @@ haddock does not strip leading whitespace. The expected output has whitespace
 stripped relative to the :}.
 
 Some peculiarities on the ghci side mean that whitespace at the very start is lost.
-This breaks the example `broken`, since the the x and y are aligned from ghci's
+This breaks the example `broken`, since the x and y aren't aligned from ghci's
 perspective.  A workaround is to avoid leading space, or add a newline such
 that the indentation does not matter:
 
@@ -294,7 +294,7 @@ of the test-suite or executable running `doctest`.
 
 ### Hiding examples from Haddock
 
-You can put examples into [named chunks] [named-chunks], and not refer to them
+You can put examples into [named chunks][named-chunks], and not refer to them
 in the export list.  That way they will not be part of the generated Haddock
 documentation, but Doctest will still find them.
 
@@ -312,7 +312,7 @@ There's two sets of GHC extensions involved when running Doctest:
 
 1. The set of GHC extensions that are active when compiling the module code
 (excluding the doctest examples). The easiest way to specify these extensions
-is through [LANGUAGE pragmas] [language-pragma] in your source files.
+is through [LANGUAGE pragmas][language-pragma] in your source files.
 (Doctest will not look at your cabal file.)
 2. The set of GHC extensions that are active when executing the Doctest
 examples. (These are not influenced by the LANGUAGE pragmas in the file.) The
@@ -337,7 +337,7 @@ the Doctest examples.
 
 If you want to omit the information which language extensions are enabled from
 the Doctest examples you can use the method described in [Hiding examples from
-Haddock] (#hiding-examples-from-haddock), e.g.:
+Haddock](#hiding-examples-from-haddock), e.g.:
 
 ```haskell
 -- $
