@@ -47,6 +47,10 @@ import           Location hiding (unLoc)
 import           Util (convertDosLineEndings)
 import           PackageDBs (getPackageDBArgs)
 
+#if __GLASGOW_HASKELL__ >= 806
+import           DynamicLoading (initializePlugins)
+#endif
+
 -- | A wrapper around `SomeException`, to allow for a custom `Show` instance.
 newtype ExtractError = ExtractError SomeException
   deriving Typeable
@@ -107,7 +111,7 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
   mods' <- if needsTemplateHaskellOrQQ mods then enableCompilation mods else return mods
 
   let sortedMods = flattenSCCs (topSortModuleGraph False mods' Nothing)
-  reverse <$> mapM (parseModule >=> typecheckModule >=> loadModule) sortedMods
+  reverse <$> mapM (loadModPlugins >=> parseModule >=> typecheckModule >=> loadModule) sortedMods
   where
     -- copied from Haddock/Interface.hs
     enableCompilation :: ModuleGraph -> Ghc ModuleGraph
@@ -161,6 +165,16 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
       , stubDir    = Just f
       , includePaths = addQuoteInclude (includePaths d) [f]
       }
+
+#if __GLASGOW_HASKELL__ >= 806
+    -- Since GHC 8.6, plugins are initialized on a per module basis
+    loadModPlugins modsum = do
+      hsc_env <- getSession
+      dynflags' <- liftIO (initializePlugins hsc_env (GHC.ms_hspp_opts modsum))
+      return $ modsum { ms_hspp_opts = dynflags' }
+#else
+    loadModPlugins = return
+#endif
 
 -- | Extract all docstrings from given list of files/modules.
 --
