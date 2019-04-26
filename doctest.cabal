@@ -230,7 +230,7 @@ test-suite spec
       test/integration/with-cbits/foo.c
   build-depends:
       HUnit
-    , QuickCheck >=2.11.3
+    , QuickCheck >=2.13.1
     , base >=4.5 && <5
     , base-compat >=0.7.0
     , code-page >=0.1
