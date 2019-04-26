@@ -4,46 +4,46 @@ language: c
 
 matrix:
   include:
-    - env: GHCVER=7.6.3 CABALVER=1.24
+    - env: GHCVER=7.6.3 CABALVER=2.4
       addons:
         apt:
           sources:
             - hvr-ghc
           packages:
             - ghc-7.6.3
-            - cabal-install-1.24
-    - env: GHCVER=7.8.4 CABALVER=1.24
+            - cabal-install-2.4
+    - env: GHCVER=7.8.4 CABALVER=2.4
       addons:
         apt:
           sources:
             - hvr-ghc
           packages:
             - ghc-7.8.4
-            - cabal-install-1.24
-    - env: GHCVER=7.10.3 CABALVER=1.24
+            - cabal-install-2.4
+    - env: GHCVER=7.10.3 CABALVER=2.4
       addons:
         apt:
           sources:
             - hvr-ghc
           packages:
             - ghc-7.10.3
-            - cabal-install-1.24
-    - env: GHCVER=8.0.2 CABALVER=1.24
+            - cabal-install-2.4
+    - env: GHCVER=8.0.2 CABALVER=2.4
       addons:
         apt:
           sources:
             - hvr-ghc
           packages:
             - ghc-8.0.2
-            - cabal-install-1.24
-    - env: GHCVER=8.2.1 CABALVER=1.24
+            - cabal-install-2.4
+    - env: GHCVER=8.2.1 CABALVER=2.4
       addons:
         apt:
           sources:
             - hvr-ghc
           packages:
             - ghc-8.2.1
-            - cabal-install-1.24
+            - cabal-install-2.4
     - env: GHCVER=8.4.4 CABALVER=2.4
       addons:
         apt:
@@ -82,10 +82,10 @@ before_install:
     esac
   - ghc --version
   - cabal --version
-  - travis_retry cabal update
+  - travis_retry cabal v1-update
   - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
-  - cabal install --enable-tests --only-dep $CABAL_OPTS
+  - cabal v1-install --enable-tests --only-dep $CABAL_OPTS
 
 script:
-  - (cd ghci-wrapper && cabal configure --enable-tests --ghc-options=-Werror $CABAL_OPTS && cabal build && cabal test)
-  - cabal configure --enable-tests --ghc-options=-Werror $CABAL_OPTS && cabal build && cabal test
+  - (cd ghci-wrapper && cabal v1-configure --enable-tests --ghc-options=-Werror $CABAL_OPTS && cabal v1-build && cabal v1-test)
+  - cabal v1-configure --enable-tests --ghc-options=-Werror $CABAL_OPTS && cabal v1-build && cabal v1-test
