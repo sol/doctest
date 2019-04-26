@@ -1,3 +1,6 @@
+NEXT
+  - Fix loading plugins in doctests. (#224)
+
 Changes in 0.16.1
   - Remove dependency on `with-location`
 
