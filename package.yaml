@@ -65,7 +65,7 @@ tests:
     dependencies:
     - HUnit
     - hspec         >= 2.3.0
-    - QuickCheck    >= 2.11.3
+    - QuickCheck    >= 2.13.1
     - stringbuilder >= 0.4
     - silently      >= 1.2.4
     - setenv
