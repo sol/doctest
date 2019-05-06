@@ -1,8 +1,6 @@
-NEXT
+Changes in 0.16.1
   - Fix loading plugins in doctests. (#224)
   - Require QuickCheck 2.13.1 or newer.
-
-Changes in 0.16.1
   - Remove dependency on `with-location`
 
 Changes in 0.16.0.1
