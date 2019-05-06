@@ -1,3 +1,5 @@
+Changes in HEAD (unreleased)
+
 Changes in 0.16.1
   - Fix loading plugins in doctests. (#224)
   - Require QuickCheck 2.13.1 or newer.
