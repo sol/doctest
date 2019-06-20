@@ -136,8 +136,10 @@ spec = do
             , "Examples: 1  Tried: 1  Errors: 0  Failures: 1"
         ]
 
+#if __GLASGOW_HASKELL__ >= 802
     it "can deal with potentially problematic GHC options" $ do
       hSilence [stderr] $ doctest ["-fdiagnostics-color=always", "test/integration/color/Foo.hs"]
+#endif
 
   describe "doctestWithOptions" $ do
     context "on parse error" $ do
