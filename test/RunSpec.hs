@@ -136,6 +136,9 @@ spec = do
             , "Examples: 1  Tried: 1  Errors: 0  Failures: 1"
         ]
 
+    it "can deal with potentially problematic GHC options" $ do
+      hSilence [stderr] $ doctest ["-fdiagnostics-color=always", "test/integration/color/Foo.hs"]
+
   describe "doctestWithOptions" $ do
     context "on parse error" $ do
       let action = withCurrentDirectory "test/integration/parse-error" (doctestWithDefaultOptions ["Foo.hs"])
