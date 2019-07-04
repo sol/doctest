@@ -92,7 +92,7 @@ spec = do
             ]
 
   describe "mkRes UnexpectedResult" $ do
-    it "returns Equal when output matches" $ do
+    it "returns NotEqual when output matches" $ do
       property $ \xs -> do
         mkRes UnexpectedResult (map fromString xs) xs `shouldSatisfy` isNotEqual
 
@@ -136,12 +136,12 @@ spec = do
                                 ]
 
     context "when output does not match" $ do
-      it "constructs failure message" $ do
+      it "returns Equal" $ do
         mkRes UnexpectedResult ["foo"] ["bar"] `shouldBe` Equal
 
-      it "constructs failure message for multi-line output" $ do
+      it "returns equal for multi-line output" $ do
         mkRes UnexpectedResult ["foo", "bar"] ["foo", "baz"] `shouldBe` Equal
 
       context "when any output line contains \"unsafe\" characters" $ do
-        it "uses show to format output lines" $ do
+        it "returns equal" $ do
           mkRes UnexpectedResult ["foo\160bar"] ["foo bar"] `shouldBe` Equal
