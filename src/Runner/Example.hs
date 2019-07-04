@@ -12,30 +12,35 @@ import           Parse
 data Result = Equal | NotEqual [String]
   deriving (Eq, Show)
 
+
 mkResult :: ExpectedResult -> [String] -> Result
-mkResult expected actual
+mkResult (ExpectedResult expected) actual
   | expected `matches` actual = Equal
   | otherwise = NotEqual (formatNotEqual expected actual)
-  where
-    chunksMatch :: [LineChunk] -> String -> Bool
-    chunksMatch [] "" = True
-    chunksMatch [LineChunk xs] ys = stripEnd xs == stripEnd ys
-    chunksMatch (LineChunk x : xs) ys =
-        x `isPrefixOf` ys && xs `chunksMatch` drop (length x) ys
-    chunksMatch zs@(WildCardChunk : xs) (_:ys) =
-        xs `chunksMatch` ys || zs `chunksMatch` ys
-    chunksMatch _ _ = False
+mkResult (UnexpectedResult expected) actual
+  -- TODO(sandy): make a formatequal
+  | expected `matches` actual = NotEqual (formatNotEqual expected actual)
+  | otherwise = Equal
 
-    matches :: ExpectedResult -> [String] -> Bool
-    matches (ExpectedLine x : xs) (y : ys) = x `chunksMatch` y && xs `matches` ys
-    matches (WildCardLine : xs) ys | xs `matches` ys = True
-    matches zs@(WildCardLine : _) (_ : ys) = zs `matches` ys
-    matches [] [] = True
-    matches [] _  = False
-    matches _  [] = False
+chunksMatch :: [LineChunk] -> String -> Bool
+chunksMatch [] "" = True
+chunksMatch [LineChunk xs] ys = stripEnd xs == stripEnd ys
+chunksMatch (LineChunk x : xs) ys =
+    x `isPrefixOf` ys && xs `chunksMatch` drop (length x) ys
+chunksMatch zs@(WildCardChunk : xs) (_:ys) =
+    xs `chunksMatch` ys || zs `chunksMatch` ys
+chunksMatch _ _ = False
+
+matches :: [ExpectedLine] -> [String] -> Bool
+matches (ExpectedLine x : xs) (y : ys) = x `chunksMatch` y && xs `matches` ys
+matches (WildCardLine : xs) ys | xs `matches` ys = True
+matches zs@(WildCardLine : _) (_ : ys) = zs `matches` ys
+matches [] [] = True
+matches [] _  = False
+matches _  [] = False
 
 
-formatNotEqual :: ExpectedResult -> [String] -> [String]
+formatNotEqual :: [ExpectedLine] -> [String] -> [String]
 formatNotEqual expected_ actual = formatLines "expected: " expected ++ formatLines " but got: " actual
   where
     expected :: [String]

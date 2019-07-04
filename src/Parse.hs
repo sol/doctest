@@ -6,7 +6,7 @@ module Parse (
 , DocTest (..)
 , Interaction
 , Expression
-, ExpectedResult
+, ExpectedResult (..)
 , ExpectedLine (..)
 , LineChunk (..)
 , getDocTests
@@ -44,7 +44,12 @@ instance IsString ExpectedLine where
     fromString = ExpectedLine . return . LineChunk
 
 type Expression = String
-type ExpectedResult = [ExpectedLine]
+data ExpectedResult
+  = ExpectedResult
+    { getExpectedLines :: [ExpectedLine] }
+  | UnexpectedResult
+    { getExpectedLines :: [ExpectedLine] }
+  deriving (Eq, Show)
 
 type Interaction = (Expression, ExpectedResult)
 
@@ -125,7 +130,7 @@ toInteraction (Located loc x) xs = Located loc $
   (
     (strip   cleanedE)  -- we do not care about leading and trailing
                         -- whitespace in expressions, so drop them
-  , map mkExpectedLine result_
+  , mkExpectedResultCtor (concat result_) $ map mkExpectedLine result_
   )
   where
     -- 1. drop trailing whitespace from the prompt, remember the prefix
@@ -152,14 +157,23 @@ toInteraction (Located loc x) xs = Located loc $
 tryStripPrefix :: String -> String -> String
 tryStripPrefix prefix ys = fromMaybe ys $ stripPrefix prefix ys
 
+mkExpectedResultCtor :: String -> [ExpectedLine] -> ExpectedResult
+mkExpectedResultCtor x
+    | "!!!" `isPrefixOf` x = UnexpectedResult
+    | otherwise = ExpectedResult
+
 mkExpectedLine :: String -> ExpectedLine
 mkExpectedLine x = case x of
     "<BLANKLINE>" -> ""
     "..." -> WildCardLine
     _ -> ExpectedLine $ mkLineChunks x
 
+dropPrefix :: Eq a => [a] -> [a] -> [a]
+dropPrefix prefix str = fromMaybe str $ stripPrefix prefix str
+
+
 mkLineChunks :: String -> [LineChunk]
-mkLineChunks = finish . foldr go (0, [], [])
+mkLineChunks = finish . foldr go (0, [], []) . dropPrefix "!!!"
   where
     mkChunk :: String -> [LineChunk]
     mkChunk "" = []

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d5abcdee934975b9568a6a1bc0ee5c43fe8a4ef688cb3c0797de506fe2df0005
+-- hash: fa92185bfdd4cfc520c50219ff6acaa72d01c9718ce06bec9019a7ad2e04fe49
 
 name:           doctest
 version:        0.16.1.1
@@ -62,6 +62,7 @@ extra-source-files:
     test/integration/bugfixWorkingDirectory/description
     test/integration/bugfixWorkingDirectory/examples/Fib.hs
     test/integration/bugfixWorkingDirectory/Fib.hs
+    test/integration/color/Foo.hs
     test/integration/custom-package-conf/Bar.hs
     test/integration/custom-package-conf/foo/doctest-foo.cabal
     test/integration/custom-package-conf/foo/Foo.hs

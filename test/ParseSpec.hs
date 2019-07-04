@@ -18,7 +18,7 @@ group :: Writer [DocTest] () -> Writer [[DocTest]] ()
 group g = tell [execWriter g]
 
 ghci :: Expression -> Builder -> Writer [DocTest] ()
-ghci expressions expected = tell [Example expressions $ (map fromString . lines . build) expected]
+ghci expressions expected = tell [Example expressions $ ExpectedResult $ (map fromString . lines . build) expected]
 
 prop_ :: Expression -> Writer [DocTest] ()
 prop_ e = tell [Property e]
@@ -84,7 +84,7 @@ spec = do
 
     it "keeps modules that only contain setup code" $ do
       getDocTests ["test/parse/setup-only/Foo.hs"] `shouldGive` do
-        tell [Module "Foo" (Just [Example "foo" ["23"]]) []]
+        tell [Module "Foo" (Just [Example "foo" $ ExpectedResult ["23"]]) []]
 
   describe "parseInteractions (an internal function)" $ do
 
@@ -94,18 +94,18 @@ spec = do
       parse_ $ do
         ">>> foo"
         "23"
-      `shouldBe` [("foo", ["23"])]
+      `shouldBe` [("foo", ExpectedResult ["23"])]
 
     it "drops whitespace as appropriate" $ do
       parse_ $ do
         "    >>> foo   "
         "    23"
-      `shouldBe` [("foo", ["23"])]
+      `shouldBe` [("foo", ExpectedResult ["23"])]
 
     it "parses an interaction without a result" $ do
       parse_ $ do
         ">>> foo"
-      `shouldBe` [("foo", [])]
+      `shouldBe` [("foo", ExpectedResult [])]
 
     it "works with a complex example" $ do
       parse_ $ do
@@ -121,7 +121,7 @@ spec = do
         "23"
         ""
         "baz"
-      `shouldBe` [("foo", ["23"]), ("baz", []), ("bar", ["23"])]
+      `shouldBe` [("foo", ExpectedResult ["23"]), ("baz", ExpectedResult []), ("bar", ExpectedResult ["23"])]
 
     it "attaches location information to parsed interactions" $ do
       let loc = Located . Location "Foo.hs"
@@ -138,7 +138,7 @@ spec = do
         "10"
         ""
         "11"
-      r `shouldBe` [loc 26 $ ("4", ["5"]), loc 29 $ ("7", []), loc 31 $ ("9", ["10"])]
+      r `shouldBe` [loc 26 $ ("4", ExpectedResult ["5"]), loc 29 $ ("7", ExpectedResult []), loc 31 $ ("9", ExpectedResult ["10"])]
 
     it "basic multiline" $ do
       parse_ $ do
@@ -147,21 +147,21 @@ spec = do
         "some"
         ":}"
         "output"
-      `shouldBe` [(":{ first\n next\nsome\n:}", ["output"])]
+      `shouldBe` [(":{ first\n next\nsome\n:}", ExpectedResult ["output"])]
 
     it "multiline align output" $ do
       parse_ $ do
         ">>> :{ first"
         "  :}"
         "  output"
-      `shouldBe` [(":{ first\n:}", ["output"])]
+      `shouldBe` [(":{ first\n:}", ExpectedResult ["output"])]
 
     it "multiline align output with >>>" $ do
       parse_ $ do
         " >>> :{ first"
         " >>> :}"
         " output"
-      `shouldBe` [(":{ first\n:}", ["output"])]
+      `shouldBe` [(":{ first\n:}", ExpectedResult ["output"])]
 
     it "parses wild cards lines" $ do
       parse_ $ do
@@ -169,13 +169,24 @@ spec = do
         " foo"
         " ..."
         " bar"
-      `shouldBe` [("action", ["foo", WildCardLine, "bar"])]
+      `shouldBe` [("action", ExpectedResult ["foo", WildCardLine, "bar"])]
 
     it "parses wild card chunks" $ do
       parse_ $ do
         " >>> action"
         " foo ... bar"
-      `shouldBe` [("action", [ExpectedLine ["foo ", WildCardChunk, " bar"]])]
+      `shouldBe` [("action", ExpectedResult [ExpectedLine ["foo ", WildCardChunk, " bar"]])]
+
+  describe "jank" $ do
+    let parse_ = map unLoc . parseInteractions . noLocation . build
+
+    it "parses wild cards lines" $ do
+      parse_ $ do
+        " >>> action"
+        " !!!foo"
+        " ..."
+        " bar"
+      `shouldBe` [("action", UnexpectedResult ["foo", WildCardLine, "bar"])]
 
   describe " parseProperties (an internal function)" $ do
     let parse_ = map unLoc . parseProperties . noLocation . build
