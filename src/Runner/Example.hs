@@ -16,10 +16,9 @@ data Result = Equal | NotEqual [String]
 mkResult :: ExpectedResult -> [String] -> Result
 mkResult (ExpectedResult expected) actual
   | expected `matches` actual = Equal
-  | otherwise = NotEqual (formatNotEqual expected actual)
+  | otherwise = NotEqual (formatNotEqual "expected" expected actual)
 mkResult (UnexpectedResult expected) actual
-  -- TODO(sandy): make a formatequal
-  | expected `matches` actual = NotEqual (formatNotEqual expected actual)
+  | expected `matches` actual = NotEqual (formatNotEqual "didn't expect" expected actual)
   | otherwise = Equal
 
 chunksMatch :: [LineChunk] -> String -> Bool
@@ -40,8 +39,8 @@ matches [] _  = False
 matches _  [] = False
 
 
-formatNotEqual :: [ExpectedLine] -> [String] -> [String]
-formatNotEqual expected_ actual = formatLines "expected: " expected ++ formatLines " but got: " actual
+formatNotEqual :: String -> [ExpectedLine] -> [String] -> [String]
+formatNotEqual expected_message expected_ actual = formatLines (expected_message ++ ": ") expected ++ formatLines " but got: " actual
   where
     expected :: [String]
     expected = map (\x -> case x of
@@ -63,6 +62,7 @@ formatNotEqual expected_ actual = formatLines "expected: " expected ++ formatLin
       []   -> [message]
       where
         padding = replicate (length message) ' '
+
 
 lineChunkToString :: LineChunk -> String
 lineChunkToString WildCardChunk = "..."

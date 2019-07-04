@@ -22,8 +22,8 @@ instance Arbitrary Line where
                           , (1, WildCardLines . getNonEmpty <$> arbitrary)
                           ]
 
-lineToExpected :: [Line] -> ExpectedResult
-lineToExpected = ExpectedResult .
+lineToExpected :: ([ExpectedLine] -> ExpectedResult) -> [Line] -> ExpectedResult
+lineToExpected ctor = ctor .
     (map $ \x -> case x of
                   PlainLine str -> fromString str
                   WildCardLines _ -> WildCardLine)
@@ -33,49 +33,51 @@ lineToActual = concatMap $ \x -> case x of
                                PlainLine str -> [str]
                                WildCardLines xs -> xs
 
-mkExpectedResult :: [ExpectedLine] -> [String] -> Runner.Example.Result
-mkExpectedResult a b = mkResult (ExpectedResult a) b
+mkRes :: ([ExpectedLine] -> ExpectedResult) -> [ExpectedLine] -> [String] -> Runner.Example.Result
+mkRes ctor a b = mkResult (ctor a) b
 
-mkUnexpectedResult :: [ExpectedLine] -> [String] -> Runner.Example.Result
-mkUnexpectedResult a b = mkResult (UnexpectedResult a) b
+isNotEqual :: Runner.Example.Result -> Bool
+isNotEqual (NotEqual _) = True
+isNotEqual _ = False
+
 
 spec :: Spec
 spec = do
-  describe "mkExpectedResult" $ do
+  describe "mkRes ExpectedResult" $ do
     it "returns Equal when output matches" $ do
       property $ \xs -> do
-        mkExpectedResult (map fromString xs) xs `shouldBe` Equal
+        mkRes ExpectedResult (map fromString xs) xs `shouldBe` Equal
 
     it "ignores trailing whitespace" $ do
-      mkExpectedResult ["foo\t"] ["foo  "] `shouldBe` Equal
+      mkRes ExpectedResult ["foo\t"] ["foo  "] `shouldBe` Equal
 
     context "with WildCardLine" $ do
       it "matches zero lines" $ do
-        mkExpectedResult ["foo", WildCardLine, "bar"] ["foo", "bar"]
+        mkRes ExpectedResult ["foo", WildCardLine, "bar"] ["foo", "bar"]
             `shouldBe` Equal
 
       it "matches an arbitrary number of lines" $ do
-        mkExpectedResult ["foo", WildCardLine, "bar"] ["foo", "baz", "bazoom", "bar"]
+        mkRes ExpectedResult ["foo", WildCardLine, "bar"] ["foo", "baz", "bazoom", "bar"]
             `shouldBe` Equal
 
       it "matches an arbitrary number of lines (quickcheck)" $ do
-        property $ \xs -> mkResult (lineToExpected xs) (lineToActual xs)
+        property $ \xs -> mkResult (lineToExpected ExpectedResult xs) (lineToActual xs)
             `shouldBe` Equal
 
     context "with WildCardChunk" $ do
       it "matches an arbitrary line chunk" $ do
-        mkExpectedResult [ExpectedLine ["foo", WildCardChunk, "bar"]] ["foo baz bar"]
+        mkRes ExpectedResult [ExpectedLine ["foo", WildCardChunk, "bar"]] ["foo baz bar"]
             `shouldBe` Equal
 
     context "when output does not match" $ do
       it "constructs failure message" $ do
-        mkExpectedResult ["foo"] ["bar"] `shouldBe` NotEqual [
+        mkRes ExpectedResult ["foo"] ["bar"] `shouldBe` NotEqual [
             "expected: foo"
           , " but got: bar"
           ]
 
       it "constructs failure message for multi-line output" $ do
-        mkExpectedResult ["foo", "bar"] ["foo", "baz"] `shouldBe` NotEqual [
+        mkRes ExpectedResult ["foo", "bar"] ["foo", "baz"] `shouldBe` NotEqual [
             "expected: foo"
           , "          bar"
           , " but got: foo"
@@ -84,40 +86,46 @@ spec = do
 
       context "when any output line contains \"unsafe\" characters" $ do
         it "uses show to format output lines" $ do
-          mkExpectedResult ["foo\160bar"] ["foo bar"] `shouldBe` NotEqual [
+          mkRes ExpectedResult ["foo\160bar"] ["foo bar"] `shouldBe` NotEqual [
               "expected: \"foo\\160bar\""
             , " but got: \"foo bar\""
             ]
 
-  describe "mkUnexpectedResult" $ do
+  describe "mkRes UnexpectedResult" $ do
     it "returns Equal when output matches" $ do
       property $ \xs -> do
-        mkUnexpectedResult (map fromString xs) xs `shouldBe` NotEqual [""]
+        mkRes UnexpectedResult (map fromString xs) xs `shouldSatisfy` isNotEqual
 
     it "ignores trailing whitespace" $ do
-      mkUnexpectedResult ["foo\t"] ["foo  "] `shouldBe` NotEqual [""]
+      mkRes UnexpectedResult ["foo\t"] ["foo  "] `shouldBe` NotEqual [""]
 
     context "with WildCardLine" $ do
       it "matches zero lines" $ do
-        mkUnexpectedResult ["foo", WildCardLine, "bar"] ["foo", "bar"]
+        mkRes UnexpectedResult ["foo", WildCardLine, "bar"] ["foo", "bar"]
             `shouldBe` NotEqual [""]
 
       it "matches an arbitrary number of lines" $ do
-        mkUnexpectedResult ["foo", WildCardLine, "bar"] ["foo", "baz", "bazoom", "bar"]
+        mkRes UnexpectedResult ["foo", WildCardLine, "bar"] ["foo", "baz", "bazoom", "bar"]
             `shouldBe` NotEqual [""]
+
+      it "matches an arbitrary number of lines (quickcheck)" $ do
+        property $ \xs -> mkResult (lineToExpected UnexpectedResult xs) (lineToActual xs)
+            `shouldSatisfy` isNotEqual
 
     context "with WildCardChunk" $ do
       it "matches an arbitrary line chunk" $ do
-        mkUnexpectedResult [ExpectedLine ["foo", WildCardChunk, "bar"]] ["foo baz bar"]
-            `shouldBe` NotEqual [""]
+        mkRes UnexpectedResult [ExpectedLine ["foo", WildCardChunk, "bar"]] ["foo baz bar"]
+            `shouldBe` NotEqual [ "didn't expect: foo...bar"
+                                , " but got: foo baz bar"
+                                ]
 
     context "when output does not match" $ do
       it "constructs failure message" $ do
-        mkUnexpectedResult ["foo"] ["bar"] `shouldBe` Equal
+        mkRes UnexpectedResult ["foo"] ["bar"] `shouldBe` Equal
 
       it "constructs failure message for multi-line output" $ do
-        mkUnexpectedResult ["foo", "bar"] ["foo", "baz"] `shouldBe` Equal
+        mkRes UnexpectedResult ["foo", "bar"] ["foo", "baz"] `shouldBe` Equal
 
       context "when any output line contains \"unsafe\" characters" $ do
         it "uses show to format output lines" $ do
-          mkUnexpectedResult ["foo\160bar"] ["foo bar"] `shouldBe` Equal
+          mkRes UnexpectedResult ["foo\160bar"] ["foo bar"] `shouldBe` Equal
