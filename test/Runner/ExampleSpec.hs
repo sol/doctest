@@ -97,16 +97,32 @@ spec = do
         mkRes UnexpectedResult (map fromString xs) xs `shouldSatisfy` isNotEqual
 
     it "ignores trailing whitespace" $ do
-      mkRes UnexpectedResult ["foo\t"] ["foo  "] `shouldBe` NotEqual [""]
+      mkRes UnexpectedResult ["foo\t"] ["foo  "]
+          `shouldBe` NotEqual ["didn't expect: \"foo\\t\""
+                              ," but got: \"foo  \""
+                              ]
 
     context "with WildCardLine" $ do
       it "matches zero lines" $ do
         mkRes UnexpectedResult ["foo", WildCardLine, "bar"] ["foo", "bar"]
-            `shouldBe` NotEqual [""]
+            `shouldBe` NotEqual ["didn't expect: foo"
+                                ,"               ..."
+                                ,"               bar"
+                                ," but got: foo"
+                                ,"          bar"
+                                ]
 
       it "matches an arbitrary number of lines" $ do
         mkRes UnexpectedResult ["foo", WildCardLine, "bar"] ["foo", "baz", "bazoom", "bar"]
-            `shouldBe` NotEqual [""]
+            `shouldBe` NotEqual ["didn't expect: foo"
+                                ,"               ..."
+                                ,"               bar"
+                                ," but got: foo"
+                                ,"          baz"
+                                ,"          bazoom"
+                                ,"          bar"
+                                ]
+
 
       it "matches an arbitrary number of lines (quickcheck)" $ do
         property $ \xs -> mkResult (lineToExpected UnexpectedResult xs) (lineToActual xs)
