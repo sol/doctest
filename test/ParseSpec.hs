@@ -177,7 +177,7 @@ spec = do
         " foo ... bar"
       `shouldBe` [("action", ExpectedResult [ExpectedLine ["foo ", WildCardChunk, " bar"]])]
 
-  describe "jank" $ do
+  describe "parse unexpected" $ do
     let parse_ = map unLoc . parseInteractions . noLocation . build
 
     it "parses wild cards lines" $ do
