@@ -58,21 +58,27 @@ spec = do
     it "defaults ambiguous type variables to Integer" $ withInterpreter [] $ \repl -> do
       runProperty repl "reverse xs == xs" >>= (`shouldSatisfy` isFailure)
 
-  describe "freeVariables" $ do
-    it "finds a free variables in a term" $ withInterpreter [] $ \repl -> do
-      freeVariables repl "x" `shouldReturn` ["x"]
+  describe "propertyType" $ do
+    it "finds free variables in a term" $ withInterpreter [] $ \repl -> do
+      propertyType repl "x" `shouldReturn` QuickCheck ["x"]
 
     it "ignores duplicates" $ withInterpreter [] $ \repl -> do
-      freeVariables repl "x == x" `shouldReturn` ["x"]
+      propertyType repl "x == x" `shouldReturn` QuickCheck ["x"]
 
     it "works for terms with multiple names" $ withInterpreter [] $ \repl -> do
-      freeVariables repl "\\z -> x + y + z == foo 23" `shouldReturn` ["x", "y", "foo"]
+      propertyType repl "\\z -> x + y + z == foo 23" `shouldReturn` QuickCheck ["x", "y", "foo"]
 
     it "works for names that contain a prime" $ withInterpreter [] $ \repl -> do
-      freeVariables repl "x' == y''" `shouldReturn` ["x'", "y''"]
+      propertyType repl "x' == y''" `shouldReturn` QuickCheck ["x'", "y''"]
 
     it "works for names that are similar to other names that are in scope" $ withInterpreter [] $ \repl -> do
-      freeVariables repl "length_" `shouldReturn` ["length_"]
+      propertyType repl "length_" `shouldReturn` QuickCheck ["length_"]
+
+    it "identifies simple properties without free variables"  $ withInterpreter [] $ \repl -> do
+      propertyType repl "True" `shouldReturn` Simple
+
+    it "identifies QuickCheck properties without free variables"  $ withInterpreter [] $ \repl -> do
+      propertyType repl "Just True" `shouldReturn` QuickCheck []
 
   describe "parseNotInScope" $ do
     context "when error message was produced by GHC 7.4.1" $ do

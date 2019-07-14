@@ -1,10 +1,12 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE LambdaCase #-}
 module Property (
   runProperty
 , PropertyResult (..)
 #ifdef TEST
-, freeVariables
+, PropertyType (..)
+, propertyType
 , parseNotInScope
 #endif
 ) where
@@ -17,6 +19,7 @@ import           Util
 import           Interpreter (Interpreter)
 import qualified Interpreter
 import           Parse
+import           Runner.Example
 
 -- | The result of evaluating an interaction.
 data PropertyResult =
@@ -25,14 +28,38 @@ data PropertyResult =
   | Error String
   deriving (Eq, Show)
 
+-- | The type (not in the "type system" sense) of a property
+data PropertyType = Simple | QuickCheck [String] | Unknown
+  deriving (Eq, Show)
+
 runProperty :: Interpreter -> Expression -> IO PropertyResult
 runProperty repl expression = do
+  propertyType repl expression >>= \case
+    Simple -> runSimpleProperty repl expression
+    QuickCheck vs -> runQuickCheckProperty repl expression vs
+    Unknown -> runQuickCheckProperty repl expression []
+
+-- | Run a property with no free variables (that is, no QuickCheck
+-- required).
+runSimpleProperty :: Interpreter -> Expression -> IO PropertyResult
+runSimpleProperty repl expression = do
+  r <- fmap lines <$> Interpreter.safeEval repl expression
+  case r of
+    Left err -> return (Error err)
+    Right actual -> case mkResult expected actual of
+      NotEqual err -> return $ Failure (unlines err)
+      Equal -> return Success
+  where
+    expected = [ExpectedLine [LineChunk "True"]]
+
+-- | Run a property with one or more free variables using QuickCheck.
+runQuickCheckProperty :: Interpreter -> Expression -> [String] -> IO PropertyResult
+runQuickCheckProperty repl expression vs = do
   _ <- Interpreter.safeEval repl "import Test.QuickCheck ((==>))"
   _ <- Interpreter.safeEval repl "import Test.QuickCheck.All (polyQuickCheck)"
   _ <- Interpreter.safeEval repl "import Language.Haskell.TH (mkName)"
   _ <- Interpreter.safeEval repl ":set -XTemplateHaskell"
-  r <- freeVariables repl expression >>=
-       (Interpreter.safeEval repl . quickCheck expression)
+  r <- Interpreter.safeEval repl $ quickCheck expression vs
   case r of
     Left err -> do
       return (Error err)
@@ -46,13 +73,23 @@ runProperty repl expression = do
       "let doctest_prop " ++ unwords vars ++ " = " ++ term ++ "\n" ++
       "$(polyQuickCheck (mkName \"doctest_prop\"))"
 
--- | Find all free variables in given term.
+
+-- | Determing what type of property a term corresponds to.
 --
--- GHCi is used to detect free variables.
-freeVariables :: Interpreter -> String -> IO [String]
-freeVariables repl term = do
+-- GHCi is used to determing the type.
+--
+-- If the type is Bool the property is simple and does not need QuickCheck.
+--
+-- Otherwise we assume QuickCheck will be needed. If GHCi reported any free
+-- variables they are extracted for passing to QuickCheck.
+propertyType :: Interpreter -> String -> IO PropertyType
+propertyType repl term = do
   r <- Interpreter.safeEval repl (":type " ++ term)
-  return (either (const []) (nub . parseNotInScope) r)
+  case r of
+    Left _ -> return Unknown
+    Right s -> if " :: Bool\n" `isSuffixOf` s
+      then return Simple
+      else return $ QuickCheck (parseNotInScope s)
 
 -- | Parse and return all variables that are not in scope from a ghc error
 -- message.
