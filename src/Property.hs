@@ -43,7 +43,7 @@ runProperty repl expression = do
 -- required).
 runSimpleProperty :: Interpreter -> Expression -> IO PropertyResult
 runSimpleProperty repl expression = do
-  r <- fmap lines <$> Interpreter.safeEval repl expression
+  r <- fmap lines `fmap` Interpreter.safeEval repl expression
   case r of
     Left err -> return (Error err)
     Right actual -> case mkResult expected actual of
