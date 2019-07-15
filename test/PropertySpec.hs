@@ -18,7 +18,10 @@ spec :: Spec
 spec = do
   describe "runProperty" $ do
     it "reports a failing property" $ withInterpreter [] $ \repl -> do
-      runProperty repl "False" `shouldReturn` Failure "*** Failed! Falsified (after 1 test):"
+      runProperty repl "const False (x :: Int)" `shouldReturn` Failure "*** Failed! Falsified (after 1 test):\n0"
+
+    it "reports a failing simple property" $ withInterpreter [] $ \repl -> do
+      runProperty repl "False" `shouldReturn` Failure "expected: True\n but got: False\n"
 
     it "runs a Bool property" $ withInterpreter [] $ \repl -> do
       runProperty repl "True" `shouldReturn` Success
