@@ -84,9 +84,9 @@ spec = do
     it "respects HASKELL_PACKAGE_SANDBOX" $ do
       withCurrentDirectory "test/integration/custom-package-conf/foo" $ do
         ExitSuccess <- rawSystem "ghc-pkg" ["init", "../packages"]
-        ExitSuccess <- rawSystem "cabal" ["configure", "--disable-optimization", "--disable-library-profiling", "--package-db=../packages"]
-        ExitSuccess <- rawSystem "cabal" ["build"]
-        ExitSuccess <- rawSystem "cabal" ["register", "--inplace"]
+        ExitSuccess <- rawSystem "cabal" ["v1-configure", "--disable-optimization", "--disable-library-profiling", "--package-db=../packages"]
+        ExitSuccess <- rawSystem "cabal" ["v1-build"]
+        ExitSuccess <- rawSystem "cabal" ["v1-register", "--inplace"]
         return ()
 
       withEnv "HASKELL_PACKAGE_SANDBOX" "test/integration/custom-package-conf/packages" $ do
