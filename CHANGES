@@ -2,6 +2,7 @@ Changes in HEAD (unreleased)
   - Add doctest's necessary-for-operation options to GHC's command
     line at the end, so that they over-ride anything provided by the
     user. (#233)
+  - Allow GHC 8.8.
 
 Changes in 0.16.1
   - Fix loading plugins in doctests. (#224)
