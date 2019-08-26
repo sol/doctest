@@ -1,4 +1,4 @@
-Changes in HEAD (unreleased)
+Changes in 0.16.2
   - Add doctest's necessary-for-operation options to GHC's command
     line at the end, so that they over-ride anything provided by the
     user. (#233)
