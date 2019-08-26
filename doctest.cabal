@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 054c0dc8424973cf7749e5ffcc93906350b4e00d37b8670bd9a7178e14eff2d1
+-- hash: 5cc030c2d812828564b9725382af262e688b5005f8fff23c961b5ac94d7d22e1
 
 name:           doctest
-version:        0.16.1.1
+version:        0.16.2
 synopsis:       Test interactive Haskell examples
 description:    The doctest program checks examples in source code comments.  It is modeled
                 after doctest for Python (<http://docs.python.org/library/doctest.html>).
