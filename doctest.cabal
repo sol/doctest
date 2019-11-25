@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.32.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5cc030c2d812828564b9725382af262e688b5005f8fff23c961b5ac94d7d22e1
+-- hash: c49494d6a77aec3f741c557db5db5fecb5c705acb3a4d36aad26c6b77921946f
 
 name:           doctest
 version:        0.16.2
@@ -20,7 +20,7 @@ license:        MIT
 license-file:   LICENSE
 copyright:      (c) 2009-2018 Simon Hengel
 author:         Simon Hengel <sol@typeful.net>
-maintainer:     Simon Hengel <sol@typeful.net>
+maintainer:     quasicomputational <quasicomputational@gmail.com>
 build-type:     Simple
 extra-source-files:
     example/example.cabal
