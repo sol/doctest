@@ -118,9 +118,11 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
     enableCompilation modGraph = do
 #if __GLASGOW_HASKELL__ < 707
       let enableComp d = d { hscTarget = defaultObjectTarget }
-#else
+#elif __GLASGOW_HASKELL__ < 809
       let enableComp d = let platform = targetPlatform d
                          in d { hscTarget = defaultObjectTarget platform }
+#else
+      let enableComp d = d { hscTarget = defaultObjectTarget d }
 #endif
       modifySessionDynFlags enableComp
       -- We need to update the DynFlags of the ModSummaries as well.
