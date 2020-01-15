@@ -131,6 +131,7 @@ spec = do
             , "test/integration/failing/Foo.hs:5: failure in expression `23'"
             , "expected: 42"
             , " but got: 23"
+            , "          ^"
             , ""
             , "# Final summary:"
             , "Examples: 1  Tried: 1  Errors: 0  Failures: 1"
