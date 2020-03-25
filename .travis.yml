@@ -60,13 +60,13 @@ matrix:
           packages:
             - ghc-8.6.3
             - cabal-install-2.4
-    - env: GHCVER=8.8.1 CABALVER=3.0
+    - env: GHCVER=8.8.3 CABALVER=3.0
       addons:
         apt:
           sources:
             - hvr-ghc
           packages:
-            - ghc-8.8.1
+            - ghc-8.8.3
             - cabal-install-3.0
     - env: GHCVER=8.10.1 CABALVER=head
       addons:
@@ -86,7 +86,6 @@ matrix:
             - cabal-install-head
   allow_failures:
     - env: GHCVER=head CABALVER=head
-    - env: GHCVER=8.10.1 CABALVER=head
 
 before_install:
   - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
