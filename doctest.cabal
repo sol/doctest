@@ -137,7 +137,7 @@ library
     , deepseq
     , directory
     , filepath
-    , ghc >=7.0 && <8.9
+    , ghc >=7.0 && <8.11
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -159,7 +159,7 @@ executable doctest
     , directory
     , doctest
     , filepath
-    , ghc >=7.0 && <8.9
+    , ghc >=7.0 && <8.11
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -180,7 +180,7 @@ test-suite doctests
     , directory
     , doctest
     , filepath
-    , ghc >=7.0 && <8.9
+    , ghc >=7.0 && <8.11
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -238,7 +238,7 @@ test-suite spec
     , deepseq
     , directory
     , filepath
-    , ghc >=7.0 && <8.9
+    , ghc >=7.0 && <8.11
     , ghc-paths >=0.1.0.9
     , hspec >=2.3.0
     , mockery
