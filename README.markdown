@@ -66,6 +66,9 @@ You may produce Haddock documentation for that module with:
 
     haddock -h Fib.hs -o doc/
 
+`doctest` will fail on comments that `haddock` also doesn't like.
+Sometimes (e.g., (https://github.com/sol/doctest/issues/251)[#251]), this means that `doctest` will fail on input that GHC accepts.
+
 ### Example groups
 
 Examples from a single Haddock comment are grouped together and share the same
