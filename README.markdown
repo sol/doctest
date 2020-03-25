@@ -69,6 +69,9 @@ You may produce Haddock documentation for that module with:
 `doctest` will fail on comments that `haddock` also doesn't like.
 Sometimes (e.g., (https://github.com/sol/doctest/issues/251)[#251]), this means that `doctest` will fail on input that GHC accepts.
 
+`doctest` likes UTF-8. If you are running it with, e.g., `LC_ALL=C`,
+you may need to invoke `doctest` with `LC_ALL=C.UTF-8`.
+
 ### Example groups
 
 Examples from a single Haddock comment are grouped together and share the same
