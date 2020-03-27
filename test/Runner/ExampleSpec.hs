@@ -6,6 +6,7 @@ import           Prelude.Compat
 
 import           Data.String
 import           Test.Hspec
+import           Test.Hspec.Core.QuickCheck (modifyMaxSize)
 import           Test.QuickCheck
 
 import           Parse
@@ -59,9 +60,11 @@ spec = do
         mkResult ["foo", WildCardLine, "bar"] ["foo", "baz", "bazoom", "bar"]
             `shouldBe` Equal
 
-      it "matches an arbitrary number of lines (quickcheck)" $ do
-        property $ \xs -> mkResult (lineToExpected xs) (lineToActual xs)
-            `shouldBe` Equal
+      -- See https://github.com/sol/doctest/issues/259
+      modifyMaxSize (const 8) $
+        it "matches an arbitrary number of lines (quickcheck)" $ do
+          property $ \xs -> mkResult (lineToExpected xs) (lineToActual xs)
+              `shouldBe` Equal
 
     context "with WildCardChunk" $ do
       it "matches an arbitrary line chunk" $ do
