@@ -102,7 +102,7 @@ prependText s (ChunksDivergence mt wct) = ChunksDivergence (s++mt) (s++wct)
 prependWildcard :: ChunksDivergence -> ChunksDivergence
 prependWildcard (ChunksDivergence mt wct) = ChunksDivergence mt ('.':wct)
 
-data LinesDivergence = LinesDivergence { mismatchLineNo :: Int, partialLine :: String }
+data LinesDivergence = LinesDivergence { _mismatchLineNo :: Int, _partialLine :: String }
   deriving (Show)
 
 incLineNo :: LinesDivergence -> LinesDivergence
