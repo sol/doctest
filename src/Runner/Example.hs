@@ -9,14 +9,20 @@ import           Util
 
 import           Parse
 
+maxBy :: (Ord a) => (b -> a) -> b -> b -> b
+maxBy f x y = case compare (f x) (f y) of
+  LT -> y
+  EQ -> x
+  GT -> x
+
 data Result = Equal | NotEqual [String]
   deriving (Eq, Show)
 
 mkResult :: ExpectedResult -> [String] -> Result
 mkResult expected_ actual_ =
   case expected `matches` actual of
-  FullMatch                 -> Equal
-  PartialMatch row expanded -> NotEqual (formatNotEqual expected actual expanded row)
+  Full            -> Equal
+  Partial partial -> NotEqual (formatNotEqual expected actual partial)
   where
     -- use show to escape special characters in output lines if any output line
     -- contains any unsafe character
@@ -38,80 +44,72 @@ mkResult expected_ actual_ =
     isSafe :: Char -> Bool
     isSafe c = c == ' ' || (isPrint c && (not . isSpace) c)
 
-    chunksMatch :: [LineChunk] -> String -> LineMatch
-    chunksMatch [] "" = FullLineMatch
+    chunksMatch :: [LineChunk] -> String -> Match ChunksDivergence
+    chunksMatch [] "" = Full
     chunksMatch [LineChunk xs] ys =
       if stripEnd xs == stripEnd ys
-      then FullLineMatch
-      else matchingPrefix xs ys
+      then Full
+      else Partial $ matchingPrefix xs ys
     chunksMatch (LineChunk x : xs) ys =
       if x `isPrefixOf` ys
-      then (xs `chunksMatch` drop (length x) ys) `prependText` x
-      else matchingPrefix x ys
+      then fmap (prependText x) $ (xs `chunksMatch` drop (length x) ys)
+      else Partial $ matchingPrefix x ys
     chunksMatch zs@(WildCardChunk : xs) (_:ys) =
-      let resWithoutWC = xs `chunksMatch` ys in
-      let resWithWC = zs `chunksMatch` ys in
-      let res = longerMatch resWithoutWC resWithWC in
-      prependWildcard res
-    chunksMatch [WildCardChunk] [] = FullLineMatch
-    chunksMatch (WildCardChunk:_) [] = PartialLineMatch "" ""
-    chunksMatch [] (_:_) = PartialLineMatch "" ""
+      -- Prefer longer matches.
+      fmap prependWildcard $ maxBy
+        (fmap $ length . matchText)
+        (chunksMatch xs ys)
+        (chunksMatch zs ys)
+    chunksMatch [WildCardChunk] [] = Full
+    chunksMatch (WildCardChunk:_) [] = Partial (ChunksDivergence "" "")
+    chunksMatch [] (_:_) = Partial (ChunksDivergence "" "")
 
     matchingPrefix xs ys =
       let common = fmap fst (takeWhile (\(x, y) -> x == y) (xs `zip` ys)) in
-      PartialLineMatch common common
+      ChunksDivergence common common
 
-    matches :: ExpectedResult -> [String] -> Match
+    matches :: ExpectedResult -> [String] -> Match LinesDivergence
     matches (ExpectedLine x : xs) (y : ys) =
       case x `chunksMatch` y of
-      FullLineMatch -> incLineNo $ xs `matches` ys
-      PartialLineMatch _ expanded -> PartialMatch 1 expanded
+      Full -> fmap incLineNo $ xs `matches` ys
+      Partial partial -> Partial (LinesDivergence 1 (expandedWildcards partial))
     matches zs@(WildCardLine : xs) us@(_ : ys) =
+      -- Prefer longer matches, and later ones of equal length.
       let matchWithoutWC = xs `matches` us in
-      let matchWithWC    = zs `matches` ys in
-      matchWithoutWC `matchMax` (incLineNo matchWithWC)
-      where
-        matchMax FullMatch _ = FullMatch
-        matchMax _ FullMatch = FullMatch
-        matchMax m1 m2 =
-          if length (partialLine m1) > length (partialLine m2)
-          then m1
-          else if length (partialLine m2) > length (partialLine m2)
-          then m2
-          else if mismatchLineNo m1 > mismatchLineNo m2
-          then m1
-          else m2
-    matches [WildCardLine] [] = FullMatch
-    matches [] [] = FullMatch
-    matches [] _  = PartialMatch 1 ""
-    matches _  [] = PartialMatch 1 ""
+      let matchWithWC    = fmap incLineNo (zs `matches` ys) in
+      let key (LinesDivergence lineNo line) = (length line, lineNo) in
+      maxBy (fmap key) matchWithoutWC matchWithWC
+    matches [WildCardLine] [] = Full
+    matches [] [] = Full
+    matches [] _  = Partial (LinesDivergence 1 "")
+    matches _  [] = Partial (LinesDivergence 1 "")
 
-data LineMatch = FullLineMatch | PartialLineMatch { matchingText :: String, _expandedWildcards :: String }
+-- Note: order of constructors matters, so that full matches sort as
+-- greater than partial.
+data Match a = Partial a | Full
+  deriving (Eq, Ord, Show)
+
+instance Functor Match where
+  fmap f (Partial a) = Partial (f a)
+  fmap _ Full = Full
+
+data ChunksDivergence = ChunksDivergence { matchText :: String, expandedWildcards :: String }
   deriving (Show)
 
-prependText :: LineMatch -> String -> LineMatch
-prependText FullLineMatch _ = FullLineMatch
-prependText (PartialLineMatch mt wct) s = PartialLineMatch (s++mt) (s++wct)
+prependText :: String -> ChunksDivergence -> ChunksDivergence
+prependText s (ChunksDivergence mt wct) = ChunksDivergence (s++mt) (s++wct)
 
-prependWildcard :: LineMatch -> LineMatch
-prependWildcard FullLineMatch = FullLineMatch
-prependWildcard (PartialLineMatch mt wct) = PartialLineMatch mt ('.':wct)
+prependWildcard :: ChunksDivergence -> ChunksDivergence
+prependWildcard (ChunksDivergence mt wct) = ChunksDivergence mt ('.':wct)
 
-longerMatch :: LineMatch -> LineMatch -> LineMatch
-longerMatch FullLineMatch _ = FullLineMatch
-longerMatch _ FullLineMatch = FullLineMatch
-longerMatch m1 m2 =
-  if length (matchingText m1) > length (matchingText m2) then m1 else m2
-
-data Match = FullMatch | PartialMatch { mismatchLineNo :: Int, partialLine :: String }
+data LinesDivergence = LinesDivergence { _mismatchLineNo :: Int, _partialLine :: String }
   deriving (Show)
 
-incLineNo :: Match -> Match
-incLineNo FullMatch = FullMatch
-incLineNo (PartialMatch lineNo partialLineMatch) = PartialMatch (lineNo + 1) partialLineMatch
+incLineNo :: LinesDivergence -> LinesDivergence
+incLineNo (LinesDivergence lineNo partialLineMatch) = LinesDivergence (lineNo + 1) partialLineMatch
 
-formatNotEqual :: ExpectedResult -> [String] -> String -> Int -> [String]
-formatNotEqual expected_ actual expanded row = formatLines "expected: " expected ++ formatLines " but got: " (lineMarker wildcard expanded row actual)
+formatNotEqual :: ExpectedResult -> [String] -> LinesDivergence -> [String]
+formatNotEqual expected_ actual partial = formatLines "expected: " expected ++ formatLines " but got: " (lineMarker wildcard partial actual)
   where
     expected :: [String]
     expected = map (\x -> case x of
@@ -142,8 +140,8 @@ transformExcpectedLine f (ExpectedLine xs) =
   ) xs
 transformExcpectedLine _ WildCardLine = WildCardLine
 
-lineMarker :: Bool -> String -> Int -> [String] -> [String]
-lineMarker wildcard expanded row actual =
+lineMarker :: Bool -> LinesDivergence -> [String] -> [String]
+lineMarker wildcard (LinesDivergence row expanded) actual =
   let (pre, post) = splitAt row actual in
   pre ++
   [(if wildcard && length expanded > 30

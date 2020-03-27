@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3d7f2d7e8e9004ee6c85c07fd6ad6a650c1d0339af9e4277127949ce36409596
+-- hash: 53ffc034338153cc76d198a3ba3f05173f47d8bfe1c186f319401ec35e58446a
 
 name:           doctest
 version:        0.16.2
@@ -241,6 +241,7 @@ test-suite spec
     , ghc >=7.0 && <8.11
     , ghc-paths >=0.1.0.9
     , hspec >=2.3.0
+    , hspec-core >=2.3.0
     , mockery
     , process
     , setenv
