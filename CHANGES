@@ -1,4 +1,4 @@
-NEXT
+Changes in 0.16.3
   - Add a cursor to highlight the differing portion between the
     expected and actual output. (#249)
   - GHC 8.10 compatibility. (#247, #257)
