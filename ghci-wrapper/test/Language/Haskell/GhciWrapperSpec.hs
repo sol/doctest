@@ -96,3 +96,8 @@ spec = do
       it "does not fail on marker expression (bug fix)" $ withInterpreter $ \ghci -> do
         ghci ":set -XOverloadedStrings -Wall -Werror" `shouldReturn` ""
         ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
+
+    context "with NoImplicitPrelude" $ do
+      it "works" $ withInterpreter $ \ghci -> do
+        ghci ":set -XNoImplicitPrelude" `shouldReturn` ""
+        ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
