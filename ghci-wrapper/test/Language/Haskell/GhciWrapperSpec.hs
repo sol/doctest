@@ -101,3 +101,9 @@ spec = do
       it "works" $ withInterpreter $ \ghci -> do
         ghci ":set -XNoImplicitPrelude" `shouldReturn` ""
         ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
+
+    context "with a strange String type" $ do
+      it "works" $ withInterpreter $ \ghci -> do
+        ghci "type String = Int" `shouldReturn` ""
+        ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
+
