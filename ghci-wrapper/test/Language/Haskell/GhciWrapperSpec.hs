@@ -5,7 +5,7 @@ import           Test.Hspec
 import           System.IO.Silently
 
 import           Control.Exception
-import           Data.List (isSuffixOf)
+import           Data.List (isSuffixOf, isInfixOf)
 
 import           Language.Haskell.GhciWrapper (Interpreter, Config(..), defaultConfig)
 import qualified Language.Haskell.GhciWrapper as Interpreter
@@ -81,7 +81,7 @@ spec = do
 
     it "gives an error message for identifiers that are not in scope" $ withInterpreter $ \ghci -> do
 #if __GLASGOW_HASKELL__ >= 800
-      ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Variable not in scope: foo\n")
+      ghci "foo" >>= (`shouldSatisfy` isInfixOf "Variable not in scope: foo")
 #elif __GLASGOW_HASKELL__ >= 707
       ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: \8216foo\8217\n")
 #else
@@ -91,3 +91,19 @@ spec = do
       it "prints prompt" $ do
         withInterpreterConfig defaultConfig{configVerbose = True} $ \ghci -> do
           Interpreter.eval ghci "print 23" `shouldReturn` "Prelude> 23\nPrelude> "
+
+    context "with -XOverloadedStrings, -Wall and -Werror" $ do
+      it "does not fail on marker expression (bug fix)" $ withInterpreter $ \ghci -> do
+        ghci ":set -XOverloadedStrings -Wall -Werror" `shouldReturn` ""
+        ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
+
+    context "with NoImplicitPrelude" $ do
+      it "works" $ withInterpreter $ \ghci -> do
+        ghci ":set -XNoImplicitPrelude" `shouldReturn` ""
+        ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
+
+    context "with a strange String type" $ do
+      it "works" $ withInterpreter $ \ghci -> do
+        ghci "type String = Int" `shouldReturn` ""
+        ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
+

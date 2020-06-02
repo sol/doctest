@@ -102,7 +102,7 @@ putExpression :: Interpreter -> Bool -> String -> IO ()
 putExpression Interpreter{hIn = stdin} preserveIt e = do
   hPutStrLn stdin e
   when preserveIt $ hPutStrLn stdin $ "let " ++ itMarker ++ " = it"
-  hPutStrLn stdin marker
+  hPutStrLn stdin (marker ++ " :: Data.String.String")
   when preserveIt $ hPutStrLn stdin $ "let it = " ++ itMarker
   hFlush stdin
 
@@ -142,5 +142,5 @@ evalIt repl expr = do
 -- | Evaluate an expression
 evalEcho :: Interpreter -> String -> IO String
 evalEcho repl expr = do
-  putExpression repl True expr
+  putExpression repl False expr
   getResult True repl
