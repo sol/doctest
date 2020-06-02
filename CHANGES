@@ -1,3 +1,8 @@
+Changes in 0.17
+  - #266:
+    - doctest now annotates its internal marker string as a `String`, to prevent misbehaviour in `OverloadedStrings` environments. This has a theoretical chance of breakage; if you're affected, please open an issue.
+    - `evalEcho` no longer preserves `it`.
+
 Changes in 0.16.3
   - Add a cursor to highlight the differing portion between the
     expected and actual output. (#249)
