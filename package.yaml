@@ -29,7 +29,7 @@ ghc-options: -Wall
 dependencies:
 - base >= 4.5 && < 5
 - base-compat >= 0.7.0
-- ghc >= 7.0 && < 8.11
+- ghc >= 7.0 && < 9.1
 - syb >= 0.3
 - code-page >= 0.1
 - deepseq
@@ -38,6 +38,11 @@ dependencies:
 - process
 - ghc-paths >= 0.1.0.9
 - transformers
+
+when:
+  - condition: impl(ghc>=8.11)
+    dependencies:
+    - exceptions
 
 library:
   source-dirs:

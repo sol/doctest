@@ -1,16 +1,16 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6671c3bec33afff6873246f7b4a0f0b525135af9e29d05ba1a45d528979511ac
+-- hash: bc5b28df6d1ba7069d1dacee1914ab861df5a61ab4b4b5865db813b198e6bbb0
 
 name:           doctest
 version:        0.17
 synopsis:       Test interactive Haskell examples
 description:    The doctest program checks examples in source code comments.  It is modeled
-                after doctest for Python (<https://docs.python.org/3/library/doctest.html>).
+                after doctest for Python (<http://docs.python.org/library/doctest.html>).
                 .
                 Documentation is at <https://github.com/sol/doctest#readme>.
 category:       Testing
@@ -137,11 +137,14 @@ library
     , deepseq
     , directory
     , filepath
-    , ghc >=7.0 && <8.11
+    , ghc >=7.0 && <9.1
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
     , transformers
+  if impl(ghc>=8.11)
+    build-depends:
+        exceptions
   default-language: Haskell2010
 
 executable doctest
@@ -159,11 +162,14 @@ executable doctest
     , directory
     , doctest
     , filepath
-    , ghc >=7.0 && <8.11
+    , ghc >=7.0 && <9.1
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
     , transformers
+  if impl(ghc>=8.11)
+    build-depends:
+        exceptions
   default-language: Haskell2010
 
 test-suite doctests
@@ -180,11 +186,14 @@ test-suite doctests
     , directory
     , doctest
     , filepath
-    , ghc >=7.0 && <8.11
+    , ghc >=7.0 && <9.1
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
     , transformers
+  if impl(ghc>=8.11)
+    build-depends:
+        exceptions
   default-language: Haskell2010
 
 test-suite spec
@@ -238,7 +247,7 @@ test-suite spec
     , deepseq
     , directory
     , filepath
-    , ghc >=7.0 && <8.11
+    , ghc >=7.0 && <9.1
     , ghc-paths >=0.1.0.9
     , hspec >=2.3.0
     , hspec-core >=2.3.0
@@ -249,4 +258,7 @@ test-suite spec
     , stringbuilder >=0.4
     , syb >=0.3
     , transformers
+  if impl(ghc>=8.11)
+    build-depends:
+        exceptions
   default-language: Haskell2010

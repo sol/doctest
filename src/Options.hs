@@ -23,7 +23,11 @@ import           Data.Maybe
 
 import qualified Paths_doctest
 import           Data.Version (showVersion)
+#if __GLASGOW_HASKELL__ < 811
 import           Config as GHC
+#else
+import           GHC.Settings.Config as GHC
+#endif
 import           Interpreter (ghc)
 
 usage :: String
@@ -47,7 +51,7 @@ version :: String
 version = showVersion Paths_doctest.version
 
 ghcVersion :: String
-ghcVersion = GHC.cProjectVersion
+ghcVersion = cProjectVersion
 
 versionInfo :: String
 versionInfo = unlines [

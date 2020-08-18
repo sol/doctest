@@ -2,9 +2,15 @@
 module Location where
 
 import           Control.DeepSeq (deepseq, NFData(rnf))
+#if __GLASGOW_HASKELL__ < 811
 import           SrcLoc hiding (Located)
 import qualified SrcLoc as GHC
 import           FastString (unpackFS)
+#else
+import           GHC.Types.SrcLoc hiding (Located)
+import qualified GHC.Types.SrcLoc as GHC
+import           GHC.Data.FastString (unpackFS)
+#endif
 
 #if __GLASGOW_HASKELL__ < 702
 import           Outputable (showPpr)
@@ -62,6 +68,12 @@ toLocation loc
     start = srcSpanStart loc
 #else
 toLocation loc = case loc of
+#if __GLASGOW_HASKELL__ < 811
   UnhelpfulSpan str -> UnhelpfulLocation (unpackFS str)
-  RealSrcSpan sp    -> Location (unpackFS . srcSpanFile $ sp) (srcSpanStartLine sp)
+  RealSrcSpan sp
+#else
+  UnhelpfulSpan str -> UnhelpfulLocation (unpackFS $ unhelpfulSpanFS str)
+  RealSrcSpan sp _
+#endif
+    -> Location (unpackFS . srcSpanFile $ sp) (srcSpanStartLine sp)
 #endif

@@ -6,7 +6,7 @@ import           Control.Monad
 #if __GLASGOW_HASKELL__ < 710
 import           Control.Applicative
 #endif
-import           Control.Exception
+import           Control.Exception hiding (bracket_)
 import           Data.List (partition, isSuffixOf)
 import           Data.Maybe
 #if __GLASGOW_HASKELL__ < 710
@@ -19,12 +19,20 @@ import           Data.Generics
 #if __GLASGOW_HASKELL__ < 707
 import           GHC hiding (flags, Module, Located)
 import           MonadUtils (liftIO, MonadIO)
-#else
+import           Exception (ExceptionMonad)
+#elif __GLASGOW_HASKELL__ < 811
 import           GHC hiding (Module, Located)
 import           DynFlags
 import           MonadUtils (liftIO)
-#endif
 import           Exception (ExceptionMonad)
+#else
+import           GHC hiding (Module, Located)
+import           GHC.Driver.Session
+import           GHC.Driver.Backend (platformDefaultBackend)
+import           Control.Monad.IO.Class (liftIO)
+import           GHC.Utils.Exception (ExceptionMonad)
+import           Control.Monad.Catch (bracket_)
+#endif
 import           System.Directory
 import           System.FilePath
 
@@ -37,7 +45,11 @@ import           Coercion (Coercion)
 import           FastString (unpackFS)
 #endif
 
+#if __GLASGOW_HASKELL__ < 811
 import           Digraph (flattenSCCs)
+#else
+import           GHC.Data.Graph.Directed (flattenSCCs)
+#endif
 
 import           System.Posix.Internals (c_getpid)
 
@@ -48,7 +60,13 @@ import           Util (convertDosLineEndings)
 import           PackageDBs (getPackageDBArgs)
 
 #if __GLASGOW_HASKELL__ >= 806
+
+#if __GLASGOW_HASKELL__ < 811
 import           DynamicLoading (initializePlugins)
+#else
+import           GHC.Runtime.Loader (initializePlugins)
+#endif
+
 #endif
 
 -- | A wrapper around `SomeException`, to allow for a custom `Show` instance.
@@ -121,8 +139,10 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
 #elif __GLASGOW_HASKELL__ < 809
       let enableComp d = let platform = targetPlatform d
                          in d { hscTarget = defaultObjectTarget platform }
-#else
+#elif __GLASGOW_HASKELL__ < 811
       let enableComp d = d { hscTarget = defaultObjectTarget d }
+#else
+      let enableComp d = d { backend = platformDefaultBackend (targetPlatform d) }
 #endif
       modifySessionDynFlags enableComp
       -- We need to update the DynFlags of the ModSummaries as well.
@@ -159,7 +179,11 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
     -- | A variant of 'gbracket' where the return value from the first computation
     -- is not required.
     gbracket_ :: ExceptionMonad m => m a -> m b -> m c -> m c
+#if __GLASGOW_HASKELL__ < 811
     gbracket_ before_ after thing = gbracket before_ (const after) (const thing)
+#else
+    gbracket_ = bracket_
+#endif
 
     setOutputDir f d = d {
         objectDir  = Just f

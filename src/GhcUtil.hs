@@ -6,13 +6,20 @@ import           GHC.Paths (libdir)
 import           Control.Exception
 import           GHC hiding (flags)
 import           DynFlags (dopt_set)
-#else
+import           Panic (throwGhcException)
+import           MonadUtils (liftIO)
+#elif __GLASGOW_HASKELL__ < 811
 import           GHC
 import           DynFlags (gopt_set)
-#endif
 import           Panic (throwGhcException)
-
 import           MonadUtils (liftIO)
+#else
+import           GHC
+import           GHC.Driver.Session (gopt_set)
+import           GHC.Utils.Panic (throwGhcException)
+import           Control.Monad.IO.Class (liftIO)
+#endif
+
 import           System.Exit (exitFailure)
 
 #if __GLASGOW_HASKELL__ < 702
@@ -83,7 +90,11 @@ setHaddockMode dynflags = (dopt_set dynflags Opt_Haddock) {
 #else
 setHaddockMode dynflags = (gopt_set dynflags Opt_Haddock) {
 #endif
-      hscTarget = HscNothing
-    , ghcMode   = CompManager
-    , ghcLink   = NoLink
+#if __GLASGOW_HASKELL__ < 811
+    hscTarget = HscNothing,
+#else
+    backend   = NoBackend,
+#endif
+    ghcMode   = CompManager,
+    ghcLink   = NoLink
     }
