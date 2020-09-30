@@ -54,20 +54,20 @@ new Config{..} args_ = do
   setMode stdin_
   setMode stdout_
   let interpreter = Interpreter {hIn = stdin_, hOut = stdout_, process = processHandle}
-  _ <- eval interpreter "import System.IO"
-  _ <- eval interpreter "import GHC.IO.Handle"
+  _ <- eval interpreter "import qualified System.IO"
+  _ <- eval interpreter "import qualified GHC.IO.Handle"
   -- The buffering of stdout and stderr is NoBuffering
-  _ <- eval interpreter "hDuplicateTo stdout stderr"
+  _ <- eval interpreter "GHC.IO.Handle.hDuplicateTo System.IO.stdout System.IO.stderr"
   -- Now the buffering of stderr is BlockBuffering Nothing
   -- In this situation, GHC 7.7 does not flush the buffer even when
   -- error happens.
-  _ <- eval interpreter "hSetBuffering stdout LineBuffering"
-  _ <- eval interpreter "hSetBuffering stderr LineBuffering"
+  _ <- eval interpreter "GHC.IO.Handle.hSetBuffering System.IO.stdout GHC.IO.Handle.LineBuffering"
+  _ <- eval interpreter "GHC.IO.Handle.hSetBuffering System.IO.stderr GHC.IO.Handle.LineBuffering"
 
   -- this is required on systems that don't use utf8 as default encoding (e.g.
   -- Windows)
-  _ <- eval interpreter "hSetEncoding stdout utf8"
-  _ <- eval interpreter "hSetEncoding stderr utf8"
+  _ <- eval interpreter "GHC.IO.Handle.hSetEncoding System.IO.stdout GHC.IO.Handle.utf8"
+  _ <- eval interpreter "GHC.IO.Handle.hSetEncoding System.IO.stderr GHC.IO.Handle.utf8"
 
   _ <- eval interpreter ":m - System.IO"
   _ <- eval interpreter ":m - GHC.IO.Handle"
