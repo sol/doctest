@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 91bcc4835263e32dea79bfc514fa9b67ff53c7b1c43a1e39dbc63a1f6e4ee773
+-- hash: 5674031bd3f71d4f5145f202bcc91ece6fcba2af996648e59db34328d6725f4b
 
 name:           doctest
 version:        0.17
@@ -71,6 +71,7 @@ extra-source-files:
     test/integration/failing/Foo.hs
     test/integration/it/Foo.hs
     test/integration/it/Setup.hs
+    test/integration/local-stderr-binding/A.hs
     test/integration/multiline/Multiline.hs
     test/integration/parse-error/Foo.hs
     test/integration/property-bool-with-type-signature/Foo.hs
@@ -81,6 +82,7 @@ extra-source-files:
     test/integration/property-setup/Foo.hs
     test/integration/setup-skip-on-failure/Foo.hs
     test/integration/setup/Foo.hs
+    test/integration/system-io-imported/A.hs
     test/integration/template-haskell-bugfix/Main.hs
     test/integration/template-haskell-bugfix/Printf.hs
     test/integration/template-haskell/Foo.hs
