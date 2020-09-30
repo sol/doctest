@@ -1,3 +1,5 @@
+name: ghci-wrapper
+
 dependencies:
   - base == 4.*
   - process
