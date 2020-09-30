@@ -81,22 +81,6 @@ spec = do
         , "Try `doctest --help' for more information."
         ]
 
-    it "respects HASKELL_PACKAGE_SANDBOX" $ do
-      withCurrentDirectory "test/integration/custom-package-conf/foo" $ do
-        ExitSuccess <- rawSystem "ghc-pkg" ["init", "../packages"]
-        ExitSuccess <- rawSystem "cabal" ["v1-configure", "--disable-optimization", "--disable-library-profiling", "--package-db=../packages"]
-        ExitSuccess <- rawSystem "cabal" ["v1-build"]
-        ExitSuccess <- rawSystem "cabal" ["v1-register", "--inplace"]
-        return ()
-
-      withEnv "HASKELL_PACKAGE_SANDBOX" "test/integration/custom-package-conf/packages" $ do
-        hCapture_ [stderr] (doctest ["test/integration/custom-package-conf/Bar.hs"])
-          `shouldReturn` "Examples: 2  Tried: 2  Errors: 0  Failures: 0\n"
-
-      `E.finally` do
-        rmDir "test/integration/custom-package-conf/packages/"
-        rmDir "test/integration/custom-package-conf/foo/dist/"
-
     it "prints verbose description of a specification" $ do
       (r, ()) <- hCapture [stderr] $ doctest ["--verbose", "test/integration/testSimple/Fib.hs"]
       r `shouldBe` unlines [

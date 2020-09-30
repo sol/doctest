@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5674031bd3f71d4f5145f202bcc91ece6fcba2af996648e59db34328d6725f4b
+-- hash: 08c296b67e1ff54f151daac0aca78fb78df990a150ac779734358c5ff2128fc2
 
 name:           doctest
 version:        0.17
@@ -100,8 +100,6 @@ extra-source-files:
     test/integration/trailing-whitespace/Foo.hs
     test/integration/with-cbits/Bar.hs
     test/integration/with-cbits/foo.c
-    test/sandbox/bad.config
-    test/sandbox/cabal.sandbox.config
     CHANGES
     README.markdown
 
@@ -128,7 +126,6 @@ library
       Run
       Runner
       Runner.Example
-      Sandbox
       Util
       Language.Haskell.GhciWrapper
       Paths_doctest
@@ -204,7 +201,6 @@ test-suite spec
       Runner.ExampleSpec
       RunnerSpec
       RunSpec
-      SandboxSpec
       UtilSpec
       Extract
       GhcUtil
@@ -217,7 +213,6 @@ test-suite spec
       Run
       Runner
       Runner.Example
-      Sandbox
       Test.DocTest
       Util
       Language.Haskell.GhciWrapper
