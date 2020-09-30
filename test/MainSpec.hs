@@ -167,3 +167,12 @@ spec = do
     it "template-haskell-bugfix" $ do
       doctest "template-haskell-bugfix" ["Main.hs"]
         (cases 2)
+
+    it "doesn't clash with user bindings of stdout/stderr" $ do
+      doctest "local-stderr-binding" ["A.hs"]
+        (cases 1)
+
+    it "doesn't get confused by doctests using System.IO imports" $ do
+      doctest "system-io-imported" ["A.hs"]
+        (cases 1)
+
