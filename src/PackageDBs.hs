@@ -12,8 +12,6 @@ module PackageDBs
 
 import System.Environment (getEnvironment)
 import System.FilePath (splitSearchPath, searchPathSeparator)
-import Control.Exception (try, SomeException)
-import System.Directory (getCurrentDirectory)
 
 -- | Full stack of GHC package databases
 data PackageDBs = PackageDBs
