@@ -8,15 +8,8 @@ import           Test.Hspec
 import           System.Exit
 
 import qualified Control.Exception as E
-#if __GLASGOW_HASKELL__ < 707
-import           System.Cmd
-#else
-import           System.Process
-#endif
-import           System.Directory (getCurrentDirectory, setCurrentDirectory, removeDirectoryRecursive)
+import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           Data.List.Compat
-
-import           System.Environment.Compat
 
 import           System.IO.Silently
 import           System.IO (stderr)
@@ -32,16 +25,6 @@ withCurrentDirectory workingDir action = do
   E.bracket getCurrentDirectory setCurrentDirectory $ \_ -> do
     setCurrentDirectory workingDir
     action
-
-rmDir :: FilePath -> IO ()
-rmDir dir = removeDirectoryRecursive dir `E.catch` (const $ return () :: E.IOException -> IO ())
-
-withEnv :: String -> String -> IO a -> IO a
-withEnv k v action = E.bracket save restore $ \_ -> do
-  setEnv k v >> action
-  where
-    save    = lookup k <$> getEnvironment
-    restore = maybe (unsetEnv k) (setEnv k)
 
 main :: IO ()
 main = hspec spec
