@@ -67,7 +67,7 @@ You may produce Haddock documentation for that module with:
     haddock -h Fib.hs -o doc/
 
 `doctest` will fail on comments that `haddock` also doesn't like.
-Sometimes (e.g., (https://github.com/sol/doctest/issues/251)[#251]), this means that `doctest` will fail on input that GHC accepts.
+Sometimes (e.g., [#251](https://github.com/sol/doctest/issues/251)), this means that `doctest` will fail on input that GHC accepts.
 
 `doctest` likes UTF-8. If you are running it with, e.g., `LC_ALL=C`,
 you may need to invoke `doctest` with `LC_ALL=C.UTF-8`.
