@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.3.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a5f986d148ee2304fff5f9d670fcb819b4c821e8f1c9f43497020870a53475ef
+-- hash: c14b9da5050841efed2f5e6937a099c16d318cbf4331ec7b0d5869842363b845
 
 name:           doctest
 version:        0.18
@@ -126,6 +126,7 @@ library
       Run
       Runner
       Runner.Example
+      ThreadPool
       Util
       Language.Haskell.GhciWrapper
       Paths_doctest
@@ -214,6 +215,7 @@ test-suite spec
       Runner
       Runner.Example
       Test.DocTest
+      ThreadPool
       Util
       Language.Haskell.GhciWrapper
       Paths_doctest
