@@ -7,6 +7,7 @@ module Options (
 , defaultFastMode
 , defaultPreserveIt
 , defaultVerbose
+, defaultIsolateModules
 , parseOptions
 #ifdef TEST
 , usage
@@ -29,18 +30,19 @@ import           Interpreter (ghc)
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | --isolate-modules | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
   , ""
   , "Options:"
-  , "  --fast         disable :reload between example groups"
-  , "  --preserve-it  preserve the `it` variable between examples"
-  , "  --verbose      print each test as it is run"
-  , "  --help         display this help and exit"
-  , "  --version      output version information and exit"
-  , "  --info         output machine-readable version information and exit"
+  , "  --fast            disable :reload between example groups"
+  , "  --preserve-it     preserve the `it` variable between examples"
+  , "  --verbose         print each test as it is run"
+  , "  --isolate-modules use new ghci process for each module"
+  , "  --help            display this help and exit"
+  , "  --version         output version information and exit"
+  , "  --info            output machine-readable version information and exit"
   ]
 
 version :: String
@@ -75,7 +77,11 @@ data Run = Run {
 , runFastMode :: Bool
 , runPreserveIt :: Bool
 , runVerbose :: Bool
+, runIsolateModules :: Bool
 } deriving (Eq, Show)
+
+defaultIsolateModules :: Bool
+defaultIsolateModules = False
 
 defaultMagic :: Bool
 defaultMagic = True
@@ -94,13 +100,17 @@ parseOptions args
   | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
   | "--version" `elem` args = Output versionInfo
-  | otherwise = case  fmap (fmap (fmap stripOptGhc))
+  | otherwise = case  fmap (fmap (fmap (fmap stripOptGhc)))
+                   .  fmap (fmap (fmap stripIsolateModules))
                    .  fmap (fmap stripVerbose)
                    .  fmap stripPreserveIt
                    .  stripFast
                   <$> stripNoMagic args of
-      (magicMode, (fastMode, (preserveIt, (verbose, (warning, xs))))) ->
-        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt verbose)
+      (magicMode, (fastMode, (preserveIt, (verbose, (isolate, (warning, xs)))))) ->
+        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt verbose isolate)
+
+stripIsolateModules :: [String] -> (Bool, [String])
+stripIsolateModules = stripFlag (not defaultIsolateModules) "--isolate-modules"
 
 stripNoMagic :: [String] -> (Bool, [String])
 stripNoMagic = stripFlag (not defaultMagic) "--no-magic"

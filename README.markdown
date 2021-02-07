@@ -392,6 +392,11 @@ You can find real world examples of `Doctest` being used below:
   * [base Data/Maybe.hs](https://github.com/ghc/ghc/blob/669cbef03c220de43b0f88f2b2238bf3c02ed64c/libraries/base/Data/Maybe.hs#L36-L79)
   * [base Data/Functor.hs](https://github.com/ghc/ghc/blob/669cbef03c220de43b0f88f2b2238bf3c02ed64c/libraries/base/Data/Functor.hs#L34-L64)
 
+## Test dependencies
+By default `doctest` runs all test in the same GHCi session. This means some
+operations, e.g. `:set -XTypeApplications`, carry over to the new module creating
+a potentially unexpected dependency between tests. In order to isolate tests,
+you can use `--isolate-modules`.
 
 ## Doctest extensions
 

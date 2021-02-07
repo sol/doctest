@@ -25,7 +25,12 @@ import qualified Options
 import           Run
 
 doctestWithDefaultOptions :: [String] -> IO Summary
-doctestWithDefaultOptions = doctestWithOptions Options.defaultFastMode Options.defaultPreserveIt Options.defaultVerbose
+doctestWithDefaultOptions =
+  doctestWithOptions
+    Options.defaultFastMode
+    Options.defaultPreserveIt
+    Options.defaultVerbose
+    Options.defaultIsolateModules
 
 withCurrentDirectory :: FilePath -> IO a -> IO a
 withCurrentDirectory workingDir action = do
