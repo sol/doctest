@@ -127,6 +127,7 @@ library
       Runner
       Runner.Example
       Sandbox
+      ThreadPool
       Util
       Language.Haskell.GhciWrapper
       Paths_doctest
@@ -216,6 +217,7 @@ test-suite spec
       Runner
       Runner.Example
       Sandbox
+      ThreadPool
       Test.DocTest
       Util
       Language.Haskell.GhciWrapper
