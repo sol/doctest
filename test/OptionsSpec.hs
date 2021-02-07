@@ -14,11 +14,11 @@ spec = do
     let warning = ["WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."]
     it "strips --optghc" $
       property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose defaultIsolateModules defaultNThreads)
+        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose defaultIsolateModules defaultNThreads defaultUsePackageDb)
 
     it "strips --optghc=" $
       property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose defaultIsolateModules defaultNThreads)
+        parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose defaultIsolateModules defaultNThreads defaultUsePackageDb)
 
     describe "--no-magic" $ do
       context "without --no-magic" $ do
