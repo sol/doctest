@@ -8,6 +8,7 @@ module Options (
 , defaultPreserveIt
 , defaultVerbose
 , defaultIsolateModules
+, defaultNThreads
 , parseOptions
 #ifdef TEST
 , usage
@@ -19,18 +20,22 @@ module Options (
 import           Prelude ()
 import           Prelude.Compat
 
+import           Control.Arrow (second)
 import           Data.List.Compat
 import           Data.Maybe
+import           GHC.Conc (numCapabilities)
 
 import qualified Paths_doctest
 import           Data.Version (showVersion)
 import           Config as GHC
 import           Interpreter (ghc)
 
+import           Text.Read (readMaybe)
+
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | --isolate-modules | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | --isolate-modules | -jN | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
@@ -78,7 +83,11 @@ data Run = Run {
 , runPreserveIt :: Bool
 , runVerbose :: Bool
 , runIsolateModules :: Bool
+, runThreads :: Int
 } deriving (Eq, Show)
+
+defaultNThreads :: Int
+defaultNThreads = 1
 
 defaultIsolateModules :: Bool
 defaultIsolateModules = False
@@ -100,14 +109,27 @@ parseOptions args
   | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
   | "--version" `elem` args = Output versionInfo
-  | otherwise = case  fmap (fmap (fmap (fmap stripOptGhc)))
+  | otherwise = case  fmap (fmap (fmap (fmap (fmap stripOptGhc))))
+                   .  fmap (fmap (fmap (fmap stripThreads)))
                    .  fmap (fmap (fmap stripIsolateModules))
                    .  fmap (fmap stripVerbose)
                    .  fmap stripPreserveIt
                    .  stripFast
                   <$> stripNoMagic args of
-      (magicMode, (fastMode, (preserveIt, (verbose, (isolate, (warning, xs)))))) ->
-        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt verbose isolate)
+      (magicMode, (fastMode, (preserveIt, (verbose, (isolate, (nThreads, (warning, xs))))))) ->
+        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt verbose isolate nThreads)
+
+-- | Parse /-jN/ where /N/ is a number. If /N/ is empty or parsed to 0,
+-- use 'numCapabilities'.
+stripThreads :: [String] -> (Int, [String])
+stripThreads [] = (defaultNThreads, [])
+stripThreads (('-':'j':nThreads0):args)
+  | null nThreads0
+  = (numCapabilities, args)
+  | Just nThreads1 <- readMaybe nThreads0
+  = (if nThreads1 <= 0 then numCapabilities else nThreads1, args)
+stripThreads (arg:args) =
+  second (arg:) (stripThreads args)
 
 stripIsolateModules :: [String] -> (Bool, [String])
 stripIsolateModules = stripFlag (not defaultIsolateModules) "--isolate-modules"

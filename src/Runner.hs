@@ -62,12 +62,25 @@ instance Semigroup Summary where
     (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Run all examples from a list of modules.
-runModules :: Bool -> Bool -> Bool -> Either [String] Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt verbose replE modules = do
+runModules
+  :: Bool
+  -- ^ Fast mode
+  -> Bool
+  -- ^ Preserve it
+  -> Bool
+  -- ^ Verbose output
+  -> Int
+  -- ^ Number of threads
+  -> Either [String] Interpreter
+  -- ^ Arguments for isolate interpreter or shared interpreter
+  -> [Module [Located DocTest]]
+  -- ^ Modules to test
+  -> IO Summary
+runModules fastMode preserveIt verbose nThreads replE modules = do
   isInteractive <- hIsTerminalDevice stderr
 
   -- Start a thread pool. It sends status updates to this thread through 'output'.
-  (input, output) <- makeThreadPool 1 (runModule fastMode preserveIt replE)
+  (input, output) <- makeThreadPool nThreads (runModule fastMode preserveIt replE)
 
   -- Send instructions to threads
   liftIO (mapM_ (writeChan input) modules)

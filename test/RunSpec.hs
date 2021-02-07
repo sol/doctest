@@ -31,6 +31,7 @@ doctestWithDefaultOptions =
     Options.defaultPreserveIt
     Options.defaultVerbose
     Options.defaultIsolateModules
+    Options.defaultNThreads
 
 withCurrentDirectory :: FilePath -> IO a -> IO a
 withCurrentDirectory workingDir action = do

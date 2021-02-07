@@ -26,7 +26,7 @@ doctest = doctestWithPreserveIt defaultPreserveIt
 
 doctestWithPreserveIt :: HasCallStack => Bool -> FilePath -> [String] -> Summary -> Assertion
 doctestWithPreserveIt preserveIt workingDir args expected = do
-  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithOptions defaultFastMode preserveIt defaultVerbose defaultIsolateModules args)
+  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithOptions defaultFastMode preserveIt defaultVerbose defaultIsolateModules defaultNThreads args)
   assertEqual label expected actual
   where
     label = workingDir ++ " " ++ show args

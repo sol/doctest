@@ -398,6 +398,20 @@ operations, e.g. `:set -XTypeApplications`, carry over to the new module creatin
 a potentially unexpected dependency between tests. In order to isolate tests,
 you can use `--isolate-modules`.
 
+## Parallel tests
+Run tests in parallel with `-jN`. Either `-j` or `-j0` sets the number of threads
+to `GHC.Conc.numCapabilities`. The default is `-j1`. Any other `N` implies
+`N` threads and `--isolate-modules`. Make sure to compile your doctest binary
+with `-threaded -with-rtsopts=-N`. For example:
+
+```
+test-suite doctests
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  main-is:          doctests.hs
+  ghc-options:      -Wall -Wcompat -threaded -with-rtsopts=-N
+```
+
 ## Doctest extensions
 
   * [doctest-discover](https://github.com/karun012/doctest-discover)
