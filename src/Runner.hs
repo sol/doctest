@@ -18,9 +18,11 @@ import           Data.Monoid hiding ((<>))
 import           Control.Applicative
 #endif
 
+import           Control.Concurrent (writeChan, readChan, Chan)
 import           Control.Monad hiding (forM_)
 import           Text.Printf (printf)
 import           System.IO (hPutStrLn, hPutStr, stderr, hIsTerminalDevice)
+import           System.IO.CodePage (withCP65001)
 import           Data.Foldable (forM_)
 
 import           Control.Monad.Trans.State
@@ -32,6 +34,7 @@ import           Parse
 import           Location
 import           Property
 import           Runner.Example
+import           ThreadPool (makeThreadPool)
 
 -- | Summary of a test run.
 data Summary = Summary {
@@ -59,18 +62,51 @@ instance Semigroup Summary where
     (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Run all examples from a list of modules.
-runModules :: Bool -> Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt verbose repl modules = do
+runModules
+  :: Bool
+  -- ^ Fast mode
+  -> Bool
+  -- ^ Preserve it
+  -> Bool
+  -- ^ Verbose output
+  -> Int
+  -- ^ Number of threads
+  -> Either [String] Interpreter
+  -- ^ Arguments for isolate interpreter or shared interpreter
+  -> [Module [Located DocTest]]
+  -- ^ Modules to test
+  -> IO Summary
+runModules fastMode preserveIt verbose nThreads replE modules = do
   isInteractive <- hIsTerminalDevice stderr
-  ReportState _ _ _ s <- (`execStateT` ReportState 0 isInteractive verbose mempty {sExamples = c}) $ do
-    forM_ modules $ runModule fastMode preserveIt repl
 
+  -- Start a thread pool. It sends status updates to this thread through 'output'.
+  (input, output) <- makeThreadPool nThreads (runModule fastMode preserveIt replE)
+
+  -- Send instructions to threads
+  liftIO (mapM_ (writeChan input) modules)
+
+  let
+    nExamples = (sum . map count) modules
+    initState = ReportState 0 isInteractive verbose mempty {sExamples = nExamples}
+
+  ReportState _ _ _ s <- (`execStateT` initState) $ do
+    consumeUpdates output (length modules)
     verboseReport "# Final summary:"
     gets (show . reportStateSummary) >>= report
 
   return s
-  where
-    c = (sum . map count) modules
+ where
+  consumeUpdates _output 0 = pure ()
+  consumeUpdates output modsLeft = do
+    update <- liftIO (readChan output)
+    consumeUpdates output =<<
+      case update of
+        UpdateSuccess loc -> reportSuccess loc >> reportProgress >> pure modsLeft
+        UpdateFailure loc expr errs -> reportFailure loc expr errs >> pure modsLeft
+        UpdateError loc expr err -> reportError loc expr err >> pure modsLeft
+        UpdateVerbose msg -> verboseReport msg >> pure modsLeft
+        UpdateStart loc expr msg -> reportStart loc expr msg >> pure modsLeft
+        UpdateModuleDone -> pure (modsLeft - 1)
 
 -- | Count number of expressions in given module.
 count :: Module [Located DocTest] -> Int
@@ -115,20 +151,28 @@ overwrite msg = do
   liftIO (hPutStr stderr str)
 
 -- | Run all examples from given module.
-runModule :: Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
-runModule fastMode preserveIt repl (Module module_ setup examples) = do
+runModule
+  :: Bool
+  -> Bool
+  -> Either [String] Interpreter
+  -> Chan ReportUpdate
+  -> Module [Located DocTest]
+  -> IO ()
+runModule fastMode preserveIt (Left args) output mod_ = do
+  Interpreter.withInterpreter args $ \repl -> withCP65001 $
+    runModule fastMode preserveIt (Right repl) output mod_
 
-  Summary _ _ e0 f0 <- gets reportStateSummary
-
-  forM_ setup $
-    runTestGroup preserveIt repl reload
-
-  Summary _ _ e1 f1 <- gets reportStateSummary
+runModule fastMode preserveIt (Right repl) output (Module module_ setup examples) = do
+  successes <- mapM (runTestGroup preserveIt repl reload output) setup
 
   -- only run tests, if setup does not produce any errors/failures
-  when (e0 == e1 && f0 == f1) $
-    forM_ examples $
-      runTestGroup preserveIt repl setup_
+  when (and successes) (mapM_ (runTestGroup preserveIt repl setup_ output) examples)
+
+  -- Signal main thread a module has been tested
+  writeChan output UpdateModuleDone
+
+  pure ()
+
   where
     reload :: IO ()
     reload = do
@@ -152,6 +196,20 @@ runModule fastMode preserveIt repl (Module module_ setup examples) = do
         Property _  -> return ()
         Example e _ -> void $ safeEvalWith preserveIt repl e
 
+data ReportUpdate
+  = UpdateSuccess Location
+  -- ^ Test succeeded
+  | UpdateFailure Location Expression [String]
+  -- ^ Test failed with unexpected result
+  | UpdateError Location Expression String
+  -- ^ Test failed with an error
+  | UpdateVerbose String
+  -- ^ Message to send when verbose output is activated
+  | UpdateModuleDone
+  -- ^ All examples tested in module
+  | UpdateStart Location Expression String
+  -- ^ Indicate test has started executing (verbose output)
+
 reportStart :: Location -> Expression -> String -> Report ()
 reportStart loc expression testType = do
   verboseReport (printf "### Started execution at %s.\n### %s:\n%s" (show loc) testType expression)
@@ -170,9 +228,9 @@ reportError loc expression err = do
   report ""
   updateSummary (Summary 0 1 1 0)
 
-reportSuccess :: Report ()
-reportSuccess = do
-  verboseReport "### Successful!\n"
+reportSuccess :: Location -> Report ()
+reportSuccess loc = do
+  verboseReport (printf "### Successful `%s'!\n" (show loc))
   updateSummary (Summary 0 1 0 0)
 
 verboseReport :: String -> Report ()
@@ -194,26 +252,30 @@ reportProgress = do
 --
 -- The interpreter state is zeroed with @:reload@ first.  This means that you
 -- can reuse the same 'Interpreter' for several test groups.
-runTestGroup :: Bool -> Interpreter -> IO () -> [Located DocTest] -> Report ()
-runTestGroup preserveIt repl setup tests = do
+runTestGroup :: Bool -> Interpreter -> IO () -> Chan ReportUpdate -> [Located DocTest] -> IO Bool
+runTestGroup preserveIt repl setup output tests = do
 
-  reportProgress
+  setup
+  successExamples <- runExampleGroup preserveIt repl output examples
 
-  liftIO setup
-  runExampleGroup preserveIt repl examples
-
-  forM_ properties $ \(loc, expression) -> do
+  successesProperties <- forM properties $ \(loc, expression) -> do
     r <- do
-      liftIO setup
-      reportStart loc expression "property"
-      liftIO $ runProperty repl expression
+      setup
+      writeChan output (UpdateStart loc expression "property")
+      runProperty repl expression
+
     case r of
-      Success ->
-        reportSuccess
+      Success -> do
+        writeChan output (UpdateSuccess loc)
+        pure True
       Error err -> do
-        reportError loc expression err
+        writeChan output (UpdateError loc expression err)
+        pure False
       Failure msg -> do
-        reportFailure loc expression [msg]
+        writeChan output (UpdateFailure loc expression [msg])
+        pure False
+
+  pure (successExamples && and successesProperties)
   where
     properties = [(loc, p) | Located loc (Property p) <- tests]
 
@@ -223,22 +285,25 @@ runTestGroup preserveIt repl setup tests = do
 -- |
 -- Execute all expressions from given example in given 'Interpreter' and verify
 -- the output.
-runExampleGroup :: Bool -> Interpreter -> [Located Interaction] -> Report ()
-runExampleGroup preserveIt repl = go
+runExampleGroup :: Bool -> Interpreter -> Chan ReportUpdate -> [Located Interaction] -> IO Bool
+runExampleGroup preserveIt repl output = go
   where
     go ((Located loc (expression, expected)) : xs) = do
-      reportStart loc expression "example"
-      r <- fmap lines <$> liftIO (safeEvalWith preserveIt repl expression)
+      writeChan output (UpdateStart loc expression "example")
+      r <- fmap lines <$> safeEvalWith preserveIt repl expression
       case r of
         Left err -> do
-          reportError loc expression err
+          writeChan output (UpdateError loc expression err)
+          pure False
         Right actual -> case mkResult expected actual of
           NotEqual err -> do
-            reportFailure loc expression err
+            writeChan output (UpdateFailure loc expression err)
+            pure False
           Equal -> do
-            reportSuccess
+            writeChan output (UpdateSuccess loc)
             go xs
-    go [] = return ()
+    go [] =
+      pure True
 
 safeEvalWith :: Bool -> Interpreter -> String -> IO (Either String String)
 safeEvalWith preserveIt

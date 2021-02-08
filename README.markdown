@@ -392,6 +392,34 @@ You can find real world examples of `Doctest` being used below:
   * [base Data/Maybe.hs](https://github.com/ghc/ghc/blob/669cbef03c220de43b0f88f2b2238bf3c02ed64c/libraries/base/Data/Maybe.hs#L36-L79)
   * [base Data/Functor.hs](https://github.com/ghc/ghc/blob/669cbef03c220de43b0f88f2b2238bf3c02ed64c/libraries/base/Data/Functor.hs#L34-L64)
 
+## Test dependencies
+By default `doctest` runs all test in the same GHCi session. This means some
+operations, e.g. `:set -XTypeApplications`, carry over to the new module creating
+a potentially unexpected dependency between tests. In order to isolate tests,
+you can use `--isolate-modules`.
+
+Note that by default each module (and its dependencies) will be recompiled for
+each GHCi sessions. If you're using cabal-doctest consider using
+`--use-package-db` to load functions from a precompiled package.
+
+## Parallel tests
+Run tests in parallel with `-jN`. Either `-j` or `-j0` sets the number of threads
+to `GHC.Conc.numCapabilities`. The default is `-j1`. Any other `N` implies
+`N` threads and `--isolate-modules`. Make sure to compile your doctest binary
+with `-threaded -with-rtsopts=-N`. For example:
+
+```
+test-suite doctests
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  main-is:          doctests.hs
+  ghc-options:      -Wall -Wcompat -threaded -with-rtsopts=-N
+```
+
+
+## Use precompiled code to run tests
+When using `cabal-doctest`, `doctest` has access to precompiled function
+definitions. To use them, pass in `--use-package-db`.
 
 ## Doctest extensions
 

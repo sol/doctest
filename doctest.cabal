@@ -129,6 +129,7 @@ library
       Runner
       Runner.Example
       Sandbox
+      ThreadPool
       Util
       Language.Haskell.GhciWrapper
       Paths_doctest
@@ -136,6 +137,7 @@ library
       base >=4.5 && <5
     , base-compat >=0.7.0
     , code-page >=0.1
+    , containers
     , deepseq
     , directory
     , filepath
@@ -178,6 +180,7 @@ test-suite doctests
       base >=4.5 && <5
     , base-compat >=0.7.0
     , code-page >=0.1
+    , containers
     , deepseq
     , directory
     , doctest
@@ -218,6 +221,7 @@ test-suite spec
       Runner
       Runner.Example
       Sandbox
+      ThreadPool
       Test.DocTest
       Util
       Language.Haskell.GhciWrapper
@@ -237,6 +241,7 @@ test-suite spec
     , base >=4.5 && <5
     , base-compat >=0.7.0
     , code-page >=0.1
+    , containers
     , deepseq
     , directory
     , filepath

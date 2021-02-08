@@ -7,6 +7,9 @@ module Options (
 , defaultFastMode
 , defaultPreserveIt
 , defaultVerbose
+, defaultIsolateModules
+, defaultNThreads
+, defaultUsePackageDb
 , parseOptions
 #ifdef TEST
 , usage
@@ -18,29 +21,35 @@ module Options (
 import           Prelude ()
 import           Prelude.Compat
 
+import           Control.Arrow (second)
 import           Data.List.Compat
 import           Data.Maybe
+import           GHC.Conc (numCapabilities)
 
 import qualified Paths_doctest
 import           Data.Version (showVersion)
 import           Config as GHC
 import           Interpreter (ghc)
 
+import           Text.Read (readMaybe)
+
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | --isolate-modules --use-package-db | -jN | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
   , ""
   , "Options:"
-  , "  --fast         disable :reload between example groups"
-  , "  --preserve-it  preserve the `it` variable between examples"
-  , "  --verbose      print each test as it is run"
-  , "  --help         display this help and exit"
-  , "  --version      output version information and exit"
-  , "  --info         output machine-readable version information and exit"
+  , "  --fast            disable :reload between example groups"
+  , "  --preserve-it     preserve the `it` variable between examples"
+  , "  --verbose         print each test as it is run"
+  , "  --isolate-modules use new ghci process for each module"
+  , "  --use-package-db  load function definitions from package db"
+  , "  --help            display this help and exit"
+  , "  --version         output version information and exit"
+  , "  --info            output machine-readable version information and exit"
   ]
 
 version :: String
@@ -75,7 +84,19 @@ data Run = Run {
 , runFastMode :: Bool
 , runPreserveIt :: Bool
 , runVerbose :: Bool
+, runIsolateModules :: Bool
+, runThreads :: Int
+, runUsePackageDb :: Bool
 } deriving (Eq, Show)
+
+defaultNThreads :: Int
+defaultNThreads = 1
+
+defaultUsePackageDb :: Bool
+defaultUsePackageDb = False
+
+defaultIsolateModules :: Bool
+defaultIsolateModules = False
 
 defaultMagic :: Bool
 defaultMagic = True
@@ -94,13 +115,34 @@ parseOptions args
   | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
   | "--version" `elem` args = Output versionInfo
-  | otherwise = case  fmap (fmap (fmap stripOptGhc))
+  | otherwise = case  fmap (fmap (fmap (fmap (fmap (fmap stripOptGhc)))))
+                   .  fmap (fmap (fmap (fmap (fmap stripUsePackageDb))))
+                   .  fmap (fmap (fmap (fmap stripThreads)))
+                   .  fmap (fmap (fmap stripIsolateModules))
                    .  fmap (fmap stripVerbose)
                    .  fmap stripPreserveIt
                    .  stripFast
                   <$> stripNoMagic args of
-      (magicMode, (fastMode, (preserveIt, (verbose, (warning, xs))))) ->
-        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt verbose)
+      (magicMode, (fastMode, (preserveIt, (verbose, (isolate, (nThreads, (usePackageDb, (warning, xs)))))))) ->
+        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt verbose isolate nThreads usePackageDb)
+
+-- | Parse /-jN/ where /N/ is a number. If /N/ is empty or parsed to 0,
+-- use 'numCapabilities'.
+stripThreads :: [String] -> (Int, [String])
+stripThreads [] = (defaultNThreads, [])
+stripThreads (('-':'j':nThreads0):args)
+  | null nThreads0
+  = (numCapabilities, args)
+  | Just nThreads1 <- readMaybe nThreads0
+  = (if nThreads1 <= 0 then numCapabilities else nThreads1, args)
+stripThreads (arg:args) =
+  second (arg:) (stripThreads args)
+
+stripUsePackageDb :: [String] -> (Bool, [String])
+stripUsePackageDb = stripFlag (not defaultUsePackageDb) "--use-package-db"
+
+stripIsolateModules :: [String] -> (Bool, [String])
+stripIsolateModules = stripFlag (not defaultIsolateModules) "--isolate-modules"
 
 stripNoMagic :: [String] -> (Bool, [String])
 stripNoMagic = stripFlag (not defaultMagic) "--no-magic"
