@@ -1,0 +1,86 @@
+name: doctest-CI
+on:
+  - push
+  - pull_request
+jobs:
+  linux:
+    name: doctest-CI Linux - GHC ${{ matrix.ghc }}
+    runs-on: ubuntu-18.04
+    container:
+      image: buildpack-deps:bionic
+    continue-on-error: ${{ matrix.allow-failure }}
+    strategy:
+      matrix:
+        include:
+          - ghc: "8.10.1"
+            cabal: "3.2"
+            allow-failure: false
+          - ghc: "8.8.3"
+            cabal: "3.0"
+            allow-failure: false
+          - ghc: "8.6.5"
+            cabal: "2.4"
+            allow-failure: false
+          - ghc: "8.4.4"
+            cabal: "2.4"
+            allow-failure: false
+          - ghc: "8.2.2"
+            cabal: "2.4"
+            allow-failure: false
+          - ghc: "8.0.2"
+            cabal: "2.4"
+            allow-failure: false
+          - ghc: "7.10.3"
+            cabal: "2.4"
+            allow-failure: false
+          - ghc: "7.8.4"
+            cabal: "2.4"
+            allow-failure: false
+          - ghc: "7.6.3"
+            cabal: "2.4"
+            allow-failure: false
+      fail-fast: false
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: apt
+        run: |
+          apt-get update
+          apt-get install -y software-properties-common
+          apt-add-repository -y 'ppa:hvr/ghc'
+          apt-get update
+          apt-get install -y "ghc-$GHC_VERSION" "cabal-install-$CABAL_VERSION"
+        env:
+          GHC_VERSION: ${{ matrix.ghc }}
+          CABAL_VERSION: ${{ matrix.cabal }}
+
+      - name: env vars
+        run: |
+          echo "LC_ALL=C.UTF-8" >> $GITHUB_ENV
+          echo "/opt/ghc/$GHC_VERSION/bin:/opt/cabal/$CABAL_VERSION/bin:$PATH" >> $GITHUB_PATH
+          CABAL_OPTS=""
+          case "$GHC_VERSION" in
+          head )
+            CABAL_OPTS="$CABAL_OPTS --allow-newer"
+            ;;
+          esac
+          printf 'CABAL_OPTS=%s' "$CABAL_OPTS" >> $GITHUB_ENV
+        env:
+          GHC_VERSION: ${{ matrix.ghc }}
+          CABAL_VERSION: ${{ matrix.cabal }}
+
+      - name: haskell deps
+        run: |
+          ghc --version
+          cabal --version
+          cabal v1-update
+          sed -i 's/^jobs:/-- jobs:/' "${HOME}/.cabal/config"
+          cd "$GITHUB_WORKSPACE"
+          cabal v1-install --enable-tests --only-dep $CABAL_OPTS
+
+      - name: script
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          (cd ghci-wrapper && cabal v1-configure --enable-tests --ghc-options=-Werror $CABAL_OPTS && cabal v1-build && cabal v1-test)
+          cabal v1-configure --enable-tests --ghc-options=-Werror $CABAL_OPTS && cabal v1-build && cabal v1-test
