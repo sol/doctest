@@ -12,9 +12,6 @@ module PackageDBs
 
 import System.Environment (getEnvironment)
 import System.FilePath (splitSearchPath, searchPathSeparator)
-import qualified Sandbox
-import Control.Exception (try, SomeException)
-import System.Directory (getCurrentDirectory)
 
 -- | Full stack of GHC package databases
 data PackageDBs = PackageDBs
@@ -55,30 +52,16 @@ buildArgStyle = Post76
 buildArgStyle = Pre76
 #endif
 
--- | Determine the PackageDBs based on the environment and cabal sandbox
--- information
+-- | Determine the PackageDBs based on the environment.
 getPackageDBsFromEnv :: IO PackageDBs
 getPackageDBsFromEnv = do
     env <- getEnvironment
-    case () of
+    return $ case () of
         ()
-            | Just sandboxes <- lookup "HASKELL_PACKAGE_SANDBOXES" env
-                -> return $ fromEnvMulti sandboxes
-            | Just extra <- lookup "HASKELL_PACKAGE_SANDBOX" env
-                -> return PackageDBs
-                    { includeUser = True
-                    , includeGlobal = True
-                    , extraDBs = [extra]
-                    }
-            | Just sandboxes <- lookup "GHC_PACKAGE_PATH" env
-                -> return $ fromEnvMulti sandboxes
-            | otherwise -> do
-                eres <- try $ getCurrentDirectory
-                          >>= Sandbox.getSandboxConfigFile
-                          >>= Sandbox.getPackageDbDir
-                return $ case eres :: Either SomeException FilePath of
-                    Left _ -> PackageDBs True True []
-                    Right db -> PackageDBs False True [db]
+            | Just packageDBs <- lookup "GHC_PACKAGE_PATH" env
+                -> fromEnvMulti packageDBs
+            | otherwise
+                -> PackageDBs True True []
   where
     fromEnvMulti s = PackageDBs
         { includeUser = False

@@ -1,5 +1,6 @@
 Unreleased
   - Don't use unqualified references to `stderr` or `stdout` which may collide with definitions in user code. (#201)
+  - Remove support for cabal-install sandboxes. They have been obsoleted in practice by Nix-style builds in cabal-install (i.e., the `v2-*` commands) and stack.
 
 Changes in 0.17
   - #266:
