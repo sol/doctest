@@ -18,8 +18,12 @@ module Options (
 import           Prelude ()
 import           Prelude.Compat
 
+import           Control.Monad.Trans.RWS (RWS, execRWS)
+import qualified Control.Monad.Trans.RWS as RWS
+
+import           Control.Monad (when)
 import           Data.List.Compat
-import           Data.Maybe
+import           Data.Monoid (Endo (Endo))
 
 import qualified Paths_doctest
 import           Data.Version (showVersion)
@@ -89,40 +93,79 @@ defaultPreserveIt = False
 defaultVerbose :: Bool
 defaultVerbose = False
 
+defaultRun :: Run
+defaultRun = Run {
+  runWarnings = []
+, runOptions = []
+, runMagicMode = defaultMagic
+, runFastMode = defaultFastMode
+, runPreserveIt = defaultPreserveIt
+, runVerbose = defaultVerbose
+}
+
+modifyWarnings :: ([String] -> [String]) -> Run -> Run
+modifyWarnings f run = run { runWarnings = f (runWarnings run) }
+
+setOptions :: [String] -> Run -> Run
+setOptions opts run = run { runOptions = opts }
+
+setMagicMode :: Bool -> Run -> Run
+setMagicMode magic run = run { runMagicMode = magic }
+
+setFastMode :: Bool -> Run -> Run
+setFastMode fast run = run { runFastMode = fast }
+
+setPreserveIt :: Bool -> Run -> Run
+setPreserveIt preserveIt run = run { runPreserveIt = preserveIt }
+
+setVerbose :: Bool -> Run -> Run
+setVerbose verbose run = run { runVerbose = verbose }
+
 parseOptions :: [String] -> Result Run
 parseOptions args
   | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
   | "--version" `elem` args = Output versionInfo
-  | otherwise = case  fmap (fmap (fmap stripOptGhc))
-                   .  fmap (fmap stripVerbose)
-                   .  fmap stripPreserveIt
-                   .  stripFast
-                  <$> stripNoMagic args of
-      (magicMode, (fastMode, (preserveIt, (verbose, (warning, xs))))) ->
-        Result (Run (maybeToList warning) xs magicMode fastMode preserveIt verbose)
+  | otherwise = case execRWS parse () args of
+      (xs, Endo setter) ->
+        Result (setOptions xs $ setter defaultRun)
+    where
+      parse :: RWS () (Endo Run) [String] ()
+      parse = do
+        stripNoMagic
+        stripFast
+        stripPreserveIt
+        stripVerbose
+        stripOptGhc
 
-stripNoMagic :: [String] -> (Bool, [String])
-stripNoMagic = stripFlag (not defaultMagic) "--no-magic"
+stripNoMagic :: RWS () (Endo Run) [String] ()
+stripNoMagic = stripFlag (setMagicMode False) "--no-magic"
 
-stripFast :: [String] -> (Bool, [String])
-stripFast = stripFlag (not defaultFastMode) "--fast"
+stripFast :: RWS () (Endo Run) [String] ()
+stripFast = stripFlag (setFastMode True) "--fast"
 
-stripPreserveIt :: [String] -> (Bool, [String])
-stripPreserveIt = stripFlag (not defaultPreserveIt) "--preserve-it"
+stripPreserveIt :: RWS () (Endo Run) [String] ()
+stripPreserveIt = stripFlag (setPreserveIt True) "--preserve-it"
 
-stripVerbose :: [String] -> (Bool, [String])
-stripVerbose = stripFlag (not defaultVerbose) "--verbose"
+stripVerbose :: RWS () (Endo Run) [String] ()
+stripVerbose = stripFlag (setVerbose True) "--verbose"
 
-stripFlag :: Bool -> String -> [String] -> (Bool, [String])
-stripFlag enableIt flag args = ((flag `elem` args) == enableIt, filter (/= flag) args)
+stripFlag :: (Run -> Run) -> String -> RWS () (Endo Run) [String] ()
+stripFlag setter flag = do
+  args <- RWS.get
+  when (flag `elem` args) $
+    RWS.tell (Endo setter)
+  RWS.put (filter (/= flag) args)
 
-stripOptGhc :: [String] -> (Maybe Warning, [String])
-stripOptGhc = go
+stripOptGhc :: RWS () (Endo Run) [String] ()
+stripOptGhc = do
+  issueWarning <- RWS.state go
+  when issueWarning $
+    RWS.tell $ Endo $ modifyWarnings (++ [warning])
   where
     go args = case args of
-      [] -> (Nothing, [])
-      "--optghc" : opt : rest -> (Just warning, opt : snd (go rest))
-      opt : rest -> maybe (fmap (opt :)) (\x (_, xs) -> (Just warning, x : xs)) (stripPrefix "--optghc=" opt) (go rest)
+      [] -> (False, [])
+      "--optghc" : opt : rest -> (True, opt : snd (go rest))
+      opt : rest -> maybe (fmap (opt :)) (\x (_, xs) -> (True, x : xs)) (stripPrefix "--optghc=" opt) (go rest)
 
     warning = "WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."
