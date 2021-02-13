@@ -33,12 +33,6 @@ jobs:
           - ghc: "7.10.3"
             cabal: "2.4"
             allow-failure: false
-          - ghc: "7.8.4"
-            cabal: "2.4"
-            allow-failure: false
-          - ghc: "7.6.3"
-            cabal: "2.4"
-            allow-failure: false
       fail-fast: false
     steps:
       - name: checkout
