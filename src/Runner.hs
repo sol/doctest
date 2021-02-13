@@ -34,6 +34,7 @@ import           Location
 import           Property
 import           Runner.Example
 import           ThreadPool (makeThreadPool)
+import           System.IO.CodePage (withCP65001)
 
 -- | Summary of a test run.
 data Summary = Summary {
@@ -61,12 +62,27 @@ instance Semigroup Summary where
     (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 -- | Run all examples from a list of modules.
-runModules :: Bool -> Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt verbose repl modules = do
+runModules
+  :: Bool
+  -- ^ Fast mode
+  -> Bool
+  -- ^ Preserve it
+  -> Bool
+  -- ^ Verbose
+  -> Either [String] Interpreter
+  -- ^ If /Left/: each module is tested in its own GHCi session to prevent
+  -- dependencies between modules. The strings are the arguments passed to the
+  -- GHCi process.
+  --
+  -- If /Right/: modules are tested using the same GHCi process.
+  -> [Module [Located DocTest]]
+  -- ^ Modules under test
+  -> IO Summary
+runModules fastMode preserveIt verbose replE modules = do
   isInteractive <- hIsTerminalDevice stderr
 
   -- Start a thread pool. It sends status updates to this thread through 'output'.
-  (input, output) <- makeThreadPool 1 (runModule fastMode preserveIt repl)
+  (input, output) <- makeThreadPool 1 (runModule fastMode preserveIt replE)
 
   -- Send instructions to threads
   liftIO (mapM_ (writeChan input) modules)
@@ -140,11 +156,16 @@ overwrite msg = do
 runModule
   :: Bool
   -> Bool
-  -> Interpreter
+  -> Either [String] Interpreter
   -> Chan ReportUpdate
   -> Module [Located DocTest]
   -> IO ()
-runModule fastMode preserveIt repl output (Module module_ setup examples) = do
+runModule fastMode preserveIt (Left ghciArgs) output mod_ = do
+  Interpreter.withInterpreter ghciArgs $ \repl ->
+    withCP65001 $
+      runModule fastMode preserveIt (Right repl) output mod_
+
+runModule fastMode preserveIt (Right repl) output (Module module_ setup examples) = do
 
   successes <- mapM (runTestGroup preserveIt repl reload output) setup
 

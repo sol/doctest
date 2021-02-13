@@ -7,6 +7,7 @@ module Options (
 , defaultFastMode
 , defaultPreserveIt
 , defaultVerbose
+, defaultIsolateModules
 , parseOptions
 #ifdef TEST
 , usage
@@ -33,18 +34,19 @@ import           Interpreter (ghc)
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | --no-isolate-modules | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
   , ""
   , "Options:"
-  , "  --fast         disable :reload between example groups"
-  , "  --preserve-it  preserve the `it` variable between examples"
-  , "  --verbose      print each test as it is run"
-  , "  --help         display this help and exit"
-  , "  --version      output version information and exit"
-  , "  --info         output machine-readable version information and exit"
+  , "  --fast               disable :reload between example groups"
+  , "  --preserve-it        preserve the `it` variable between examples"
+  , "  --verbose            print each test as it is run"
+  , "  --no-isolate-modules disable module isolation; run all tests in single GHCi session"
+  , "  --help               display this help and exit"
+  , "  --version            output version information and exit"
+  , "  --info               output machine-readable version information and exit"
   ]
 
 version :: String
@@ -79,6 +81,7 @@ data Run = Run {
 , runFastMode :: Bool
 , runPreserveIt :: Bool
 , runVerbose :: Bool
+, runIsolateModules :: Bool
 } deriving (Eq, Show)
 
 defaultMagic :: Bool
@@ -93,6 +96,9 @@ defaultPreserveIt = False
 defaultVerbose :: Bool
 defaultVerbose = False
 
+defaultIsolateModules :: Bool
+defaultIsolateModules = True
+
 defaultRun :: Run
 defaultRun = Run {
   runWarnings = []
@@ -101,6 +107,7 @@ defaultRun = Run {
 , runFastMode = defaultFastMode
 , runPreserveIt = defaultPreserveIt
 , runVerbose = defaultVerbose
+, runIsolateModules = defaultIsolateModules
 }
 
 modifyWarnings :: ([String] -> [String]) -> Run -> Run
@@ -121,6 +128,9 @@ setPreserveIt preserveIt run = run { runPreserveIt = preserveIt }
 setVerbose :: Bool -> Run -> Run
 setVerbose verbose run = run { runVerbose = verbose }
 
+setIsolateModules :: Bool -> Run -> Run
+setIsolateModules isolate run = run { runIsolateModules = isolate }
+
 parseOptions :: [String] -> Result Run
 parseOptions args
   | "--help" `elem` args = Output usage
@@ -137,6 +147,10 @@ parseOptions args
         stripPreserveIt
         stripVerbose
         stripOptGhc
+        stripNoIsolateModules
+
+stripNoIsolateModules :: RWS () (Endo Run) [String] ()
+stripNoIsolateModules = stripFlag (setIsolateModules False) "--no-isolate-modules"
 
 stripNoMagic :: RWS () (Endo Run) [String] ()
 stripNoMagic = stripFlag (setMagicMode False) "--no-magic"

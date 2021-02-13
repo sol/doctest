@@ -8,17 +8,41 @@ import           Test.QuickCheck
 
 import           Options
 
+defaultRun :: Run
+defaultRun = Run
+  { runWarnings = []
+  , runOptions = []
+  , runMagicMode = defaultMagic
+  , runFastMode = defaultFastMode
+  , runPreserveIt = defaultPreserveIt
+  , runVerbose = defaultVerbose
+  , runIsolateModules = defaultIsolateModules
+  }
+
 spec :: Spec
 spec = do
   describe "parseOptions" $ do
     let warning = ["WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."]
     it "strips --optghc" $
       property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
+        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys)
+        `shouldBe`
+        Result (defaultRun{runWarnings=warning, runOptions=xs ++ ["foobar"] ++ ys})
 
     it "strips --optghc=" $
       property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
+        parseOptions (xs ++ ["--optghc=foobar"] ++ ys)
+        `shouldBe`
+        Result (defaultRun{runWarnings=warning, runOptions=xs ++ ["foobar"] ++ ys})
+
+    describe "--no-isolate-modules" $ do
+      context "without --no-isolate-modules" $ do
+        it "enables module isolation" $ do
+          runIsolateModules <$> parseOptions [] `shouldBe` Result True
+
+      context "with --no-isolate-modules" $ do
+        it "disables module isolation" $ do
+          runIsolateModules <$> parseOptions ["--no-isolate-modules"] `shouldBe` Result False
 
     describe "--no-magic" $ do
       context "without --no-magic" $ do
