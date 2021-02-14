@@ -1,5 +1,7 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+
 module MainSpec (main, spec) where
 
 import           Test.Hspec
@@ -24,12 +26,38 @@ withCurrentDirectory workingDir action = do
 doctest :: HasCallStack => FilePath -> [String] -> Summary -> Assertion
 doctest = doctestWithPreserveIt defaultPreserveIt
 
-doctestWithPreserveIt :: HasCallStack => Bool -> FilePath -> [String] -> Summary -> Assertion
-doctestWithPreserveIt preserveIt workingDir args expected = do
-  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithOptions defaultFastMode preserveIt defaultVerbose args)
+doctestWithOpts :: HasCallStack => Bool -> Bool -> Bool -> Bool -> FilePath -> [String] -> Summary -> Assertion
+doctestWithOpts fastMode preserveIt verbose isolate workingDir args expected = do
+  actual <-
+    withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $
+      doctestWithOptions fastMode preserveIt verbose isolate args)
   assertEqual label expected actual
   where
     label = workingDir ++ " " ++ show args
+
+doctestWithPreserveIt :: HasCallStack => Bool -> FilePath -> [String] -> Summary -> Assertion
+doctestWithPreserveIt preserveIt workingDir args expected =
+  doctestWithOpts
+    defaultFastMode
+    preserveIt
+    defaultVerbose
+    defaultIsolateModules
+    workingDir
+    args
+    expected
+
+#if __GLASGOW_HASKELL__ > 710
+doctestWithModuleIsolation :: HasCallStack => Bool -> FilePath -> [String] -> Summary -> Assertion
+doctestWithModuleIsolation isolate workingDir args expected =
+  doctestWithOpts
+    defaultFastMode
+    defaultPreserveIt
+    defaultVerbose
+    isolate
+    workingDir
+    args
+    expected
+#endif
 
 cases :: Int -> Summary
 cases n = Summary n n 0 0
@@ -139,6 +167,18 @@ spec = do
       doctest "property-setup" ["Foo.hs"]
         (cases 3)
 
+#if __GLASGOW_HASKELL__ > 710
+  -- Example uses TypeApplications to trigger isolation errors, which was only
+  -- introduced in GHC 8.0.
+  describe "doctest (module isolation)" $ do
+    it "should fail with module isolation" $ do
+      doctestWithModuleIsolation True "module-isolation" ["TestA.hs", "TestB.hs"]
+        (cases 3) {sFailures = 1}
+    it "should work without module isolation" $ do
+      doctestWithModuleIsolation False "module-isolation" ["TestA.hs", "TestB.hs"]
+        (cases 3)
+#endif
+
   describe "doctest (regression tests)" $ do
     it "bugfixWorkingDirectory" $ do
       doctest "bugfixWorkingDirectory" ["Fib.hs"]
@@ -175,4 +215,3 @@ spec = do
     it "doesn't get confused by doctests using System.IO imports" $ do
       doctest "system-io-imported" ["A.hs"]
         (cases 1)
-

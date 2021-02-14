@@ -18,7 +18,12 @@ import qualified Options
 import           Run
 
 doctestWithDefaultOptions :: [String] -> IO Summary
-doctestWithDefaultOptions = doctestWithOptions Options.defaultFastMode Options.defaultPreserveIt Options.defaultVerbose
+doctestWithDefaultOptions =
+  doctestWithOptions
+    Options.defaultFastMode
+    Options.defaultPreserveIt
+    Options.defaultVerbose
+    Options.defaultIsolateModules
 
 withCurrentDirectory :: FilePath -> IO a -> IO a
 withCurrentDirectory workingDir action = do
@@ -70,7 +75,7 @@ spec = do
           "### Started execution at test/integration/testSimple/Fib.hs:5."
         , "### example:"
         , "fib 10"
-        , "### Successful!"
+        , "### Successful `test/integration/testSimple/Fib.hs:5'!"
         , ""
         , "# Final summary:"
         , "Examples: 1  Tried: 1  Errors: 0  Failures: 0"
@@ -82,7 +87,7 @@ spec = do
           "### Started execution at test/integration/property-bool/Foo.hs:4."
         , "### property:"
         , "True"
-        , "### Successful!"
+        , "### Successful `test/integration/property-bool/Foo.hs:4'!"
         , ""
         , "# Final summary:"
         , "Examples: 1  Tried: 1  Errors: 0  Failures: 0"
