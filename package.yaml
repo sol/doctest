@@ -1,5 +1,5 @@
 name:             doctest
-version:          0.18
+version:          0.18.1
 synopsis:         Test interactive Haskell examples
 description: |
   The doctest program checks examples in source code comments.  It is modeled
@@ -15,6 +15,18 @@ maintainer:       quasicomputational <quasicomputational@gmail.com>
 
 github: sol/doctest
 
+tested-with:
+- GHC == 7.6.3
+- GHC == 7.8.4
+- GHC == 7.10.3
+- GHC == 8.0.2
+- GHC == 8.2.2
+- GHC == 8.4.4
+- GHC == 8.6.5
+- GHC == 8.8.4
+- GHC == 8.10.4
+- GHC == 9.0.1
+
 extra-source-files:
 - example/**/*
 - test/parse/**/*
@@ -28,11 +40,12 @@ ghc-options: -Wall
 dependencies:
 - base >= 4.5 && < 5
 - base-compat >= 0.7.0
-- ghc >= 7.0 && < 8.11
+- ghc >= 7.0 && < 9.1
 - syb >= 0.3
 - code-page >= 0.1
 - deepseq
 - directory
+- exceptions
 - filepath
 - process
 - ghc-paths >= 0.1.0.9

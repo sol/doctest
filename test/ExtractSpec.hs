@@ -1,11 +1,18 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+
 module ExtractSpec (main, spec) where
 
 import           Test.Hspec
 import           Test.HUnit
 
+
+#if __GLASGOW_HASKELL__ < 900
 import           Panic (GhcException (..))
+#else
+import           GHC.Utils.Panic (GhcException (..))
+#endif
 
 import           Extract
 import           Location

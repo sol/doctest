@@ -1,4 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Bar where
 
-bar = [|23|]
+import Language.Haskell.TH.Lib (ExpQ)
+
+bar :: ExpQ
+bar = [| 23 |]

@@ -20,7 +20,12 @@ import           System.IO
 import           System.IO.CodePage (withCP65001)
 
 import qualified Control.Exception as E
+
+#if __GLASGOW_HASKELL__ < 900
 import           Panic
+#else
+import           GHC.Utils.Panic
+#endif
 
 import           PackageDBs
 import           Parse

@@ -19,12 +19,25 @@ import           Data.Generics
 #if __GLASGOW_HASKELL__ < 707
 import           GHC hiding (flags, Module, Located)
 import           MonadUtils (liftIO, MonadIO)
-#else
+#elif __GLASGOW_HASKELL__ < 900
 import           GHC hiding (Module, Located)
 import           DynFlags
 import           MonadUtils (liftIO)
+#else
+import           GHC hiding (Module, Located)
+import           GHC.Driver.Session
+import           GHC.Utils.Monad (liftIO)
 #endif
+
+#if __GLASGOW_HASKELL__ < 900
+import           Digraph (flattenSCCs)
 import           Exception (ExceptionMonad)
+#else
+import           GHC.Data.Graph.Directed (flattenSCCs)
+import           GHC.Utils.Exception (ExceptionMonad)
+import           Control.Monad.Catch (generalBracket)
+#endif
+
 import           System.Directory
 import           System.FilePath
 
@@ -37,8 +50,6 @@ import           Coercion (Coercion)
 import           FastString (unpackFS)
 #endif
 
-import           Digraph (flattenSCCs)
-
 import           System.Posix.Internals (c_getpid)
 
 import           GhcUtil (withGhc)
@@ -48,7 +59,11 @@ import           Util (convertDosLineEndings)
 import           PackageDBs (getPackageDBArgs)
 
 #if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ < 900
 import           DynamicLoading (initializePlugins)
+#else
+import           GHC.Runtime.Loader (initializePlugins)
+#endif
 #endif
 
 -- | A wrapper around `SomeException`, to allow for a custom `Show` instance.
@@ -159,7 +174,11 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
     -- | A variant of 'gbracket' where the return value from the first computation
     -- is not required.
     gbracket_ :: ExceptionMonad m => m a -> m b -> m c -> m c
+#if __GLASGOW_HASKELL__ < 900
     gbracket_ before_ after thing = gbracket before_ (const after) (const thing)
+#else
+    gbracket_ before_ after thing = fst <$> generalBracket before_ (\ _ _ -> after) (const thing)
+#endif
 
     setOutputDir f d = d {
         objectDir  = Just f

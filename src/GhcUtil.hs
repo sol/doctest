@@ -8,11 +8,25 @@ import           GHC hiding (flags)
 import           DynFlags (dopt_set)
 #else
 import           GHC
+#if __GLASGOW_HASKELL__ < 900
 import           DynFlags (gopt_set)
+#else
+import           GHC.Driver.Session (gopt_set)
 #endif
-import           Panic (throwGhcException)
+#endif
 
+#if __GLASGOW_HASKELL__ < 900
+import           Panic (throwGhcException)
+#else
+import           GHC.Utils.Panic (throwGhcException)
+#endif
+
+#if __GLASGOW_HASKELL__ < 900
 import           MonadUtils (liftIO)
+#else
+import           GHC.Utils.Monad (liftIO)
+#endif
+
 import           System.Exit (exitFailure)
 
 #if __GLASGOW_HASKELL__ < 702

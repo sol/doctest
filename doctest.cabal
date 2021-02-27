@@ -1,13 +1,13 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.3.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a5f986d148ee2304fff5f9d670fcb819b4c821e8f1c9f43497020870a53475ef
+-- hash: 781a0fe09544b8cc10f51558efad9e88d8fe71482c263dcdad8b5b67badface5
 
 name:           doctest
-version:        0.18
+version:        0.18.1
 synopsis:       Test interactive Haskell examples
 description:    The doctest program checks examples in source code comments.  It is modeled
                 after doctest for Python (<https://docs.python.org/3/library/doctest.html>).
@@ -22,6 +22,17 @@ copyright:      (c) 2009-2018 Simon Hengel
 author:         Simon Hengel <sol@typeful.net>
 maintainer:     quasicomputational <quasicomputational@gmail.com>
 build-type:     Simple
+tested-with:
+    GHC == 7.6.3
+  , GHC == 7.8.4
+  , GHC == 7.10.3
+  , GHC == 8.0.2
+  , GHC == 8.2.2
+  , GHC == 8.4.4
+  , GHC == 8.6.5
+  , GHC == 8.8.4
+  , GHC == 8.10.4
+  , GHC == 9.0.1
 extra-source-files:
     example/example.cabal
     example/src/Example.hs
@@ -135,8 +146,9 @@ library
     , code-page >=0.1
     , deepseq
     , directory
+    , exceptions
     , filepath
-    , ghc >=7.0 && <8.11
+    , ghc >=7.0 && <9.1
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -157,8 +169,9 @@ executable doctest
     , deepseq
     , directory
     , doctest
+    , exceptions
     , filepath
-    , ghc >=7.0 && <8.11
+    , ghc >=7.0 && <9.1
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -178,8 +191,9 @@ test-suite doctests
     , deepseq
     , directory
     , doctest
+    , exceptions
     , filepath
-    , ghc >=7.0 && <8.11
+    , ghc >=7.0 && <9.1
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -234,8 +248,9 @@ test-suite spec
     , code-page >=0.1
     , deepseq
     , directory
+    , exceptions
     , filepath
-    , ghc >=7.0 && <8.11
+    , ghc >=7.0 && <9.1
     , ghc-paths >=0.1.0.9
     , hspec >=2.3.0
     , hspec-core >=2.3.0
