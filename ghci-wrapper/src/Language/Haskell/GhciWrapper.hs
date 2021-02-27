@@ -55,6 +55,7 @@ new Config{..} args_ = do
   setMode stdout_
   let interpreter = Interpreter {hIn = stdin_, hOut = stdout_, process = processHandle}
   _ <- eval interpreter "import qualified System.IO"
+  _ <- eval interpreter "import qualified GHC.IO.Encoding"
   _ <- eval interpreter "import qualified GHC.IO.Handle"
   -- The buffering of stdout and stderr is NoBuffering
   _ <- eval interpreter "GHC.IO.Handle.hDuplicateTo System.IO.stdout System.IO.stderr"
@@ -66,8 +67,8 @@ new Config{..} args_ = do
 
   -- this is required on systems that don't use utf8 as default encoding (e.g.
   -- Windows)
-  _ <- eval interpreter "GHC.IO.Handle.hSetEncoding System.IO.stdout GHC.IO.Handle.utf8"
-  _ <- eval interpreter "GHC.IO.Handle.hSetEncoding System.IO.stderr GHC.IO.Handle.utf8"
+  _ <- eval interpreter "GHC.IO.Handle.hSetEncoding System.IO.stdout GHC.IO.Encoding.utf8"
+  _ <- eval interpreter "GHC.IO.Handle.hSetEncoding System.IO.stderr GHC.IO.Encoding.utf8"
 
   _ <- eval interpreter ":m - System.IO"
   _ <- eval interpreter ":m - GHC.IO.Handle"
