@@ -106,9 +106,18 @@ spec = do
       doctest "setup-skip-on-failure" ["Foo.hs"]
         (cases 3) {sTried = 1, sFailures = 1}
 
-    it "works with additional object files" $ do
-      doctest "with-cbits" ["Bar.hs", "../../../dist/build/spec/spec-tmp/test/integration/with-cbits/foo.o"]
-        (cases 1)
+    -- Andreas, 2021-02-27, see issue #294.
+    -- This test case contains a hard-wired path that does not work
+    -- with v2-cabal.
+    -- I tested it under v2-cabal with a very non-portable path.
+    -- Deactivating the test case until a systematic solution is found...
+    --
+    -- it "works with additional object files" $ do
+    --   -- -- Path for v1-cabal:
+    --   -- doctest "with-cbits" ["Bar.hs", "../../../dist/build/spec/spec-tmp/test/integration/with-cbits/foo.o"]
+    --   -- -- Path for v2-cabal with ghc-9.0.1
+    --   -- doctest "with-cbits" ["Bar.hs", "../../../dist-newstyle/build/x86_64-osx/ghc-9.0.1/doctest-0.19/t/spec/build/spec/spec-tmp/Test/integration/with-cbits/foo.o"]
+    --     (cases 1)
 
     it "ignores trailing whitespace when matching test output" $ do
       doctest "trailing-whitespace" ["Foo.hs"]
@@ -175,4 +184,3 @@ spec = do
     it "doesn't get confused by doctests using System.IO imports" $ do
       doctest "system-io-imported" ["A.hs"]
         (cases 1)
-
