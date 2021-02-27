@@ -90,7 +90,10 @@ spec = do
     context "when configVerbose is True" $ do
       it "prints prompt" $ do
         withInterpreterConfig defaultConfig{configVerbose = True} $ \ghci -> do
-          Interpreter.eval ghci "print 23" `shouldReturn` "Prelude> 23\nPrelude> "
+          Interpreter.eval ghci "print 23" >>= (`shouldSatisfy`
+            (`elem` [ "Prelude> 23\nPrelude> "
+                    ,  "ghci> 23\nghci> "
+                    ]))
 
     context "with -XOverloadedStrings, -Wall and -Werror" $ do
       it "does not fail on marker expression (bug fix)" $ withInterpreter $ \ghci -> do
@@ -106,4 +109,3 @@ spec = do
       it "works" $ withInterpreter $ \ghci -> do
         ghci "type String = Int" `shouldReturn` ""
         ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
-
