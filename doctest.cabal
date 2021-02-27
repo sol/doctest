@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 781a0fe09544b8cc10f51558efad9e88d8fe71482c263dcdad8b5b67badface5
+-- hash: a7c307d4c3548326994e6fb1f8f2e96fd825cb9ba3cf2ed3cc6ea352a2554436
 
 name:           doctest
 version:        0.18.1
@@ -111,7 +111,7 @@ extra-source-files:
     test/integration/trailing-whitespace/Foo.hs
     test/integration/with-cbits/Bar.hs
     test/integration/with-cbits/foo.c
-    CHANGES
+    CHANGES.markdown
     README.markdown
 
 source-repository head

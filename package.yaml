@@ -32,7 +32,7 @@ extra-source-files:
 - test/parse/**/*
 - test/extract/**/*
 - test/integration/**/*
-- CHANGES
+- CHANGES.markdown
 - README.markdown
 
 ghc-options: -Wall
