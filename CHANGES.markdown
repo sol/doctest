@@ -1,4 +1,4 @@
-Changes in 0.19
+Changes in 0.18.1
   - GHC 9.0 compatibility. (#275)
 
 Changes in 0.18
