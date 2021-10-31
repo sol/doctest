@@ -80,7 +80,12 @@ handleStaticFlags flags = return $ map noLoc $ flags
 
 handleDynamicFlags :: GhcMonad m => [Located String] -> m [String]
 handleDynamicFlags flags = do
-  (dynflags, locSrcs, _) <- (setHaddockMode `fmap` getSessionDynFlags) >>= flip parseDynamicFlags flags
+#if __GLASGOW_HASKELL__ >= 901
+  parseDynamicFlags' <- parseDynamicFlags =<< getLogger
+#else
+  let parseDynamicFlags' = parseDynamicFlags
+#endif
+  (dynflags, locSrcs, _) <- (setHaddockMode `fmap` getSessionDynFlags) >>= (`parseDynamicFlags'` flags)
   _ <- setSessionDynFlags dynflags
 
   -- We basically do the same thing as `ghc/Main.hs` to distinguish
@@ -97,7 +102,11 @@ setHaddockMode dynflags = (dopt_set dynflags Opt_Haddock) {
 #else
 setHaddockMode dynflags = (gopt_set dynflags Opt_Haddock) {
 #endif
+#if __GLASGOW_HASKELL__ >= 901
+      backend   = NoBackend
+#else
       hscTarget = HscNothing
+#endif
     , ghcMode   = CompManager
     , ghcLink   = NoLink
     }

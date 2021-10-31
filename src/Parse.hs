@@ -18,7 +18,7 @@ module Parse (
 ) where
 
 import           Data.Char (isSpace)
-import           Data.List
+import           Data.List (isPrefixOf, stripPrefix)
 import           Data.Maybe
 import           Data.String
 #if __GLASGOW_HASKELL__ < 710
