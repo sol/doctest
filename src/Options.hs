@@ -22,7 +22,7 @@ import           Control.Monad.Trans.RWS (RWS, execRWS)
 import qualified Control.Monad.Trans.RWS as RWS
 
 import           Control.Monad (when)
-import           Data.List.Compat
+import           Data.List.Compat (intercalate, stripPrefix)
 import           Data.Monoid (Endo (Endo))
 
 import qualified Paths_doctest

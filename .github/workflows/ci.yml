@@ -12,48 +12,73 @@ jobs:
     strategy:
       matrix:
         include:
+          - ghc: "9.2.1"
+            cabal: "3.6"
+            setup-method: ghcup
+            allow-failure: false
           - ghc: "9.0.1"
             cabal: "3.4"
+            setup-method: hvr-ppa
             allow-failure: false
-          - ghc: "8.10.4"
+          - ghc: "8.10.7"
             cabal: "3.2"
+            setup-method: ghcup
             allow-failure: false
           - ghc: "8.8.4"
             cabal: "3.0"
+            setup-method: hvr-ppa
             allow-failure: false
           - ghc: "8.6.5"
             cabal: "2.4"
+            setup-method: hvr-ppa
             allow-failure: false
           - ghc: "8.4.4"
             cabal: "2.4"
+            setup-method: hvr-ppa
             allow-failure: false
           - ghc: "8.2.2"
             cabal: "2.4"
+            setup-method: hvr-ppa
             allow-failure: false
           - ghc: "8.0.2"
             cabal: "2.4"
+            setup-method: hvr-ppa
             allow-failure: false
           - ghc: "7.10.3"
             cabal: "2.4"
+            setup-method: hvr-ppa
             allow-failure: false
           - ghc: "7.8.4"
             cabal: "2.4"
+            setup-method: hvr-ppa
             allow-failure: false
           - ghc: "7.6.3"
             cabal: "2.4"
+            setup-method: hvr-ppa
             allow-failure: false
       fail-fast: false
     steps:
       - name: checkout
         uses: actions/checkout@v2
 
-      - name: apt
+      - name: apt and ghcup
         run: |
           apt-get update
-          apt-get install -y software-properties-common
-          apt-add-repository -y 'ppa:hvr/ghc'
-          apt-get update
-          apt-get install -y "ghc-$GHC_VERSION" "cabal-install-$CABAL_VERSION"
+          apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr curl git software-properties-common libtinfo5
+          mkdir -p "$HOME/.ghcup/bin"
+          if [ "${{ matrix.setup-method }}" = ghcup ]; then
+            curl -sL https://downloads.haskell.org/ghcup/0.1.17.3/x86_64-linux-ghcup-0.1.17.3 > "$HOME/.ghcup/bin/ghcup"
+            chmod a+x "$HOME/.ghcup/bin/ghcup"
+            "$HOME/.ghcup/bin/ghcup" install ghc --set "$GHC_VERSION"
+            "$HOME/.ghcup/bin/ghcup" install cabal "$CABAL_VERSION"
+            ls -al "$HOME/.ghcup/bin/"
+          elif [ "${{ matrix.setup-method }}" = hvr-ppa ]; then
+            apt-add-repository -y 'ppa:hvr/ghc'
+            apt-get update
+            apt-get install -y "ghc-$GHC_VERSION" "cabal-install-$CABAL_VERSION"
+          else
+            echo "Invalid setup method: ${{ matrix.setup }}" && false
+          fi
         env:
           GHC_VERSION: ${{ matrix.ghc }}
           CABAL_VERSION: ${{ matrix.cabal }}
@@ -61,7 +86,7 @@ jobs:
       - name: env vars
         run: |
           echo "LC_ALL=C.UTF-8" >> $GITHUB_ENV
-          echo "/opt/ghc/$GHC_VERSION/bin:/opt/cabal/$CABAL_VERSION/bin:$PATH" >> $GITHUB_PATH
+          echo "$HOME/.ghcup/bin:/opt/ghc/$GHC_VERSION/bin:/opt/cabal/$CABAL_VERSION/bin:$PATH" >> $GITHUB_PATH
           CABAL_OPTS=""
           case "$GHC_VERSION" in
           head )
@@ -75,9 +100,10 @@ jobs:
 
       - name: haskell deps
         run: |
+          echo "$PATH"
           ghc --version
           cabal --version
-          cabal v1-update
+          cabal update
           sed -i 's/^jobs:/-- jobs:/' "${HOME}/.cabal/config"
           cd "$GITHUB_WORKSPACE"
           cabal v1-install --enable-tests --only-dep $CABAL_OPTS

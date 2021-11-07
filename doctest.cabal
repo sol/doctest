@@ -1,13 +1,13 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.3.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a7c307d4c3548326994e6fb1f8f2e96fd825cb9ba3cf2ed3cc6ea352a2554436
+-- hash: b9de129664477df8d95442dafaf0d5443d65b63949e3a96307ba0169e2d83936
 
 name:           doctest
-version:        0.18.1
+version:        0.18.2
 synopsis:       Test interactive Haskell examples
 description:    The doctest program checks examples in source code comments.  It is modeled
                 after doctest for Python (<https://docs.python.org/3/library/doctest.html>).
@@ -31,8 +31,9 @@ tested-with:
   , GHC == 8.4.4
   , GHC == 8.6.5
   , GHC == 8.8.4
-  , GHC == 8.10.4
+  , GHC == 8.10.7
   , GHC == 9.0.1
+  , GHC == 9.2.1
 extra-source-files:
     example/example.cabal
     example/src/Example.hs
@@ -148,7 +149,7 @@ library
     , directory
     , exceptions
     , filepath
-    , ghc >=7.0 && <9.1
+    , ghc >=7.0 && <9.3
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -171,7 +172,7 @@ executable doctest
     , doctest
     , exceptions
     , filepath
-    , ghc >=7.0 && <9.1
+    , ghc >=7.0 && <9.3
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -193,7 +194,7 @@ test-suite doctests
     , doctest
     , exceptions
     , filepath
-    , ghc >=7.0 && <9.1
+    , ghc >=7.0 && <9.3
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -250,7 +251,7 @@ test-suite spec
     , directory
     , exceptions
     , filepath
-    , ghc >=7.0 && <9.1
+    , ghc >=7.0 && <9.3
     , ghc-paths >=0.1.0.9
     , hspec >=2.3.0
     , hspec-core >=2.3.0

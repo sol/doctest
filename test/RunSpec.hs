@@ -9,7 +9,7 @@ import           System.Exit
 
 import qualified Control.Exception as E
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
-import           Data.List.Compat
+import           Data.List.Compat (isPrefixOf, sort)
 
 import           System.IO.Silently
 import           System.IO (stderr)

@@ -4,7 +4,7 @@ module Runner.Example (
 ) where
 
 import           Data.Char
-import           Data.List
+import           Data.List (isPrefixOf)
 import           Util
 
 import           Parse
