@@ -1,3 +1,6 @@
+Changes in 0.18.2
+  - GHC 9.2 compatibility. (#305, thanks to Ryan Scott and Matthew Pickering)
+
 Changes in 0.18.1
   - GHC 9.0 compatibility. (#275)
 
