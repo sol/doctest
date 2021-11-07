@@ -10,7 +10,7 @@ category:         Testing
 license:          MIT
 copyright:        (c) 2009-2018 Simon Hengel
 author:           Simon Hengel <sol@typeful.net>
-maintainer:       quasicomputational <quasicomputational@gmail.com>
+maintainer:       quasicomputational@gmail.com, Andreas Abel
 
 
 github: sol/doctest

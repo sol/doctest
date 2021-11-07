@@ -412,20 +412,42 @@ changes.
 ## Contributors
 
  * Adam Vogt
+ * Alan Zimmerman
+ * Alexander Bernauer
+ * Alexandre Esteves
  * Anders Persson
+ * Andreas Abel
  * Ankit Ahuja
+ * Artyom Kazak
  * Edward Kmett
+ * Gabor Greif
  * Hiroki Hattori
+ * Ignat Insarov
+ * Jens Petersen
  * Joachim Breitner
+ * John Chee
  * João Cristóvão
  * Julian Arni
  * Kazu Yamamoto
+ * Leon Schoorl
  * Levent Erkok
  * Luke Murphy
  * Matvey Aksenov
  * Michael Orlitzky
  * Michael Snoyman
+ * Mitchell Rosen
  * Nick Smallbone
+ * Nikos Baxevanis
+ * Oleg Grenrus
+ * quasicomputational
+ * Ryan Scott
  * Sakari Jokinen
  * Simon Hengel
  * Sönke Hahn
+ * Takano Akio
+ * Tamar Christina
+ * Veronika Romashkina
+
+For up-to-date list, query
+
+    git shortlog -s

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b9de129664477df8d95442dafaf0d5443d65b63949e3a96307ba0169e2d83936
+-- hash: 3c86bef70634c1ec5f684a059a0805713b8f747ef2dcaecf351c5f773410e4d2
 
 name:           doctest
 version:        0.18.2
@@ -20,7 +20,7 @@ license:        MIT
 license-file:   LICENSE
 copyright:      (c) 2009-2018 Simon Hengel
 author:         Simon Hengel <sol@typeful.net>
-maintainer:     quasicomputational <quasicomputational@gmail.com>
+maintainer:     quasicomputational@gmail.com, Andreas Abel
 build-type:     Simple
 tested-with:
     GHC == 7.6.3
