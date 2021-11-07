@@ -67,7 +67,6 @@ import           GHC.Runtime.Loader (initializePlugins)
 #endif
 
 #if __GLASGOW_HASKELL__ >= 901
-import           GHC.Driver.Env
 import           GHC.Unit.Module.Graph
 #endif
 
@@ -106,11 +105,11 @@ instance NFData a => NFData (Module a) where
 #if __GLASGOW_HASKELL__ < 803
 type GhcPs = RdrName
 
-needsTemplateHaskellOrQQ :: ModuleGraph -> Bool
-needsTemplateHaskellOrQQ = needsTemplateHaskell
+-- needsTemplateHaskellOrQQ :: ModuleGraph -> Bool
+-- needsTemplateHaskellOrQQ = needsTemplateHaskell
 
-mapMG :: (ModSummary -> ModSummary) -> ModuleGraph -> ModuleGraph
-mapMG = map
+-- mapMG :: (ModSummary -> ModSummary) -> ModuleGraph -> ModuleGraph
+-- mapMG = map
 #endif
 
 #if __GLASGOW_HASKELL__ < 805
@@ -207,13 +206,17 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
 #if __GLASGOW_HASKELL__ >= 806
     -- Since GHC 8.6, plugins are initialized on a per module basis
     loadModPlugins modsum = do
+      _ <- setSessionDynFlags (GHC.ms_hspp_opts modsum)
       hsc_env <- getSession
+
 # if __GLASGOW_HASKELL__ >= 903
       hsc_env' <- liftIO (initializePlugins hsc_env Nothing)
-      return $ modsum { ms_hspp_opts = hsc_dflags hsc_env' }
+      setSession hsc_env'
+      return $ modsum
 # elif __GLASGOW_HASKELL__ >= 901
       hsc_env' <- liftIO (initializePlugins hsc_env)
-      return $ modsum { ms_hspp_opts = hsc_dflags hsc_env' }
+      setSession hsc_env'
+      return $ modsum
 # else
       dynflags' <- liftIO (initializePlugins hsc_env (GHC.ms_hspp_opts modsum))
       return $ modsum { ms_hspp_opts = dynflags' }

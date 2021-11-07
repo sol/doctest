@@ -81,7 +81,8 @@ handleStaticFlags flags = return $ map noLoc $ flags
 handleDynamicFlags :: GhcMonad m => [Located String] -> m [String]
 handleDynamicFlags flags = do
 #if __GLASGOW_HASKELL__ >= 901
-  parseDynamicFlags' <- parseDynamicFlags =<< getLogger
+  logger <- getLogger
+  let parseDynamicFlags' = parseDynamicFlags logger
 #else
   let parseDynamicFlags' = parseDynamicFlags
 #endif
