@@ -104,12 +104,6 @@ instance NFData a => NFData (Module a) where
 
 #if __GLASGOW_HASKELL__ < 803
 type GhcPs = RdrName
-
--- needsTemplateHaskellOrQQ :: ModuleGraph -> Bool
--- needsTemplateHaskellOrQQ = needsTemplateHaskell
-
--- mapMG :: (ModSummary -> ModSummary) -> ModuleGraph -> ModuleGraph
--- mapMG = map
 #endif
 
 #if __GLASGOW_HASKELL__ < 805
@@ -131,8 +125,6 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
                 Nothing)
   mods <- depanal [] False
 
-  --mods' <- if needsTemplateHaskellOrQQ mods then enableCompilation mods else return mods
-
   let sortedMods = flattenSCCs
 #if __GLASGOW_HASKELL__ >= 901
                      $ filterToposortToModules
@@ -140,26 +132,6 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
                      $ topSortModuleGraph False mods Nothing
   reverse <$> mapM (loadModPlugins >=> parseModule) sortedMods
   where
-{-
-    -- copied from Haddock/Interface.hs
-    enableCompilation :: ModuleGraph -> Ghc ModuleGraph
-    enableCompilation modGraph = do
-#if __GLASGOW_HASKELL__ < 707
-      let enableComp d = d { hscTarget = defaultObjectTarget }
-#elif __GLASGOW_HASKELL__ < 809
-      let enableComp d = let platform = targetPlatform d
-                         in d { hscTarget = defaultObjectTarget platform }
-#elif __GLASGOW_HASKELL__ < 901
-      let enableComp d = d { hscTarget = defaultObjectTarget d }
-#else
-      let enableComp d = d { backend = platformDefaultBackend (targetPlatform d) }
-#endif
-      modifySessionDynFlags enableComp
-      -- We need to update the DynFlags of the ModSummaries as well.
-      let upd m = m { ms_hspp_opts = enableComp (ms_hspp_opts m) }
-      let modGraph' = mapMG upd modGraph
-      return modGraph'
--}
 
     -- copied from Haddock/GhcUtils.hs
     modifySessionDynFlags :: (DynFlags -> DynFlags) -> Ghc ()
