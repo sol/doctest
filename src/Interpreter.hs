@@ -11,6 +11,7 @@ module Interpreter (
 -- exported for testing
 , ghcInfo
 , haveInterpreterKey
+, filterExpression
 ) where
 
 import           System.Process
@@ -55,12 +56,16 @@ withInterpreter flags action = do
   let
     args = flags ++ [
         "--interactive"
+      , xTemplateHaskell
 #if __GLASGOW_HASKELL__ >= 802
       , "-fdiagnostics-color=never"
       , "-fno-diagnostics-show-caret"
 #endif
       ]
   bracket (new defaultConfig{configGhci = ghc} args) close action
+
+xTemplateHaskell :: String
+xTemplateHaskell = "-XTemplateHaskell"
 
 -- | Evaluate an expression; return a Left value on exceptions.
 --
@@ -75,11 +80,17 @@ filterExpression :: String -> Either String String
 filterExpression e =
   case lines e of
     [] -> Right e
-    l  -> if firstLine == ":{" && lastLine /= ":}" then fail_ else Right e
+    l  -> if firstLine == ":{" && lastLine /= ":}" then err else Right (filterXTemplateHaskell e)
       where
         firstLine = strip $ head l
         lastLine  = strip $ last l
-        fail_ = Left "unterminated multiline command"
+        err = Left "unterminated multi-line command"
   where
     strip :: String -> String
     strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
+
+filterXTemplateHaskell :: String -> String
+filterXTemplateHaskell input = case words input of
+  [":set", setting] | setting == xTemplateHaskell -> ""
+  ":set" : xs | xTemplateHaskell `elem` xs -> unwords $ ":set" : filter (/= xTemplateHaskell) xs
+  _ -> input

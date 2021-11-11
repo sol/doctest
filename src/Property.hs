@@ -30,7 +30,6 @@ runProperty repl expression = do
   _ <- Interpreter.safeEval repl "import Test.QuickCheck ((==>))"
   _ <- Interpreter.safeEval repl "import Test.QuickCheck.All (polyQuickCheck)"
   _ <- Interpreter.safeEval repl "import Language.Haskell.TH (mkName)"
-  _ <- Interpreter.safeEval repl ":set -XTemplateHaskell"
   r <- freeVariables repl expression >>=
        (Interpreter.safeEval repl . quickCheck expression)
   case r of
