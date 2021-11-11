@@ -352,6 +352,32 @@ Haddock](#hiding-examples-from-haddock), e.g.:
 
 [language-pragma]: http://www.haskell.org/ghc/docs/latest/html/users_guide/pragmas.html#language-pragma
 
+### Limitations
+
+Due to [a GHC bug](https://gitlab.haskell.org/ghc/ghc/-/issues/20670), running
+`:set -XTemplateHaskell` within `ghci` may unload any modules that were
+specified on the command line.
+
+To address this `doctest >= 0.19.0` does two things:
+
+1. Doctest always enables `-XTemplateHaskell`.  So it is safe to use Template
+   Haskell in examples without enabling the extension explicitly.
+1. Doctest filters out `-XTemplateHaskell` from single-line `:set`-statements.
+   So it is still safe to include `:set -XTemplateHaskell` in examples for
+   documentation purposes.  It may just not work as intended in `ghci` due to
+   that GHC bug.
+
+Doctest does not filter out `-XTemplateHaskell` from multi-line
+`:set`-statements.  So if you e.g. use
+
+```
+>>> :{
+:set -XTemplateHaskell
+:}
+```
+then you are on your own.
+
+
 ### Cabal integration
 
 Doctest provides both, an executable and a library.  The library exposes a

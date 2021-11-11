@@ -5,7 +5,7 @@ import           Prelude.Compat
 
 import           Test.Hspec
 
-import           Interpreter (interpreterSupported, haveInterpreterKey, ghcInfo, withInterpreter, safeEval)
+import           Interpreter (interpreterSupported, haveInterpreterKey, ghcInfo, withInterpreter, safeEval, filterExpression)
 
 main :: IO ()
 main = hspec spec
@@ -27,4 +27,14 @@ spec = do
       Interpreter.safeEval ghci "23 + 42" `shouldReturn` Right "65\n"
 
     it "returns Left on unterminated multiline command" $ withInterpreter [] $ \ghci -> do
-      Interpreter.safeEval ghci ":{\n23 + 42" `shouldReturn` Left "unterminated multiline command"
+      Interpreter.safeEval ghci ":{\n23 + 42" `shouldReturn` Left "unterminated multi-line command"
+
+  describe "filterExpression" $ do
+    it "removes :set -XTemplateHaskell" $ do
+      filterExpression ":set -XTemplateHaskell" `shouldBe` Right ""
+
+    it "filters -XTemplateHaskell" $ do
+      filterExpression ":set -XTemplateHaskell -XCPP" `shouldBe` Right ":set -XCPP"
+
+    it "leaves :set-statement that do not set -XTemplateHaskell alone " $ do
+      filterExpression ":set -XFoo   -XBar" `shouldBe` Right ":set -XFoo   -XBar"
