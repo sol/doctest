@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3c86bef70634c1ec5f684a059a0805713b8f747ef2dcaecf351c5f773410e4d2
+-- hash: d72341386fa5019d836d102ce53149841ad11aa7bd786c3ba9b8cc28ca3c9046
 
 name:           doctest
 version:        0.18.2
@@ -241,6 +241,8 @@ test-suite spec
       ghci-wrapper/src
   c-sources:
       test/integration/with-cbits/foo.c
+  build-tool-depends:
+      hspec-discover:hspec-discover
   build-depends:
       HUnit
     , QuickCheck >=2.13.1

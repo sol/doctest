@@ -67,6 +67,7 @@ executable:
 
 tests:
   spec:
+    build-tools: hspec-discover
     main: Spec.hs
     ghc-options: -threaded
     cpp-options: -DTEST
