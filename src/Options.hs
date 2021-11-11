@@ -25,9 +25,6 @@ import           Control.Monad (when)
 import           Data.List.Compat (intercalate, stripPrefix)
 import           Data.Monoid (Endo (Endo))
 
-import qualified Paths_doctest
-import           Data.Version (showVersion)
-
 #if __GLASGOW_HASKELL__ < 900
 import           Config as GHC
 #else
@@ -54,7 +51,11 @@ usage = unlines [
   ]
 
 version :: String
-version = showVersion Paths_doctest.version
+#ifdef CURRENT_PACKAGE_VERSION
+version = CURRENT_PACKAGE_VERSION
+#else
+version = "unknown"
+#endif
 
 ghcVersion :: String
 ghcVersion = GHC.cProjectVersion
