@@ -11,6 +11,7 @@ tests:
   spec:
     main: Spec.hs
     source-dirs: test
+    build-tools: hspec-discover
     dependencies:
       - ghci-wrapper
       - hspec == 2.*

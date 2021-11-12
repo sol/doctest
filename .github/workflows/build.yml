@@ -27,27 +27,27 @@ jobs:
             setup-method: hvr-ppa
             allow-failure: false
           - ghc: "8.10.7"
-            cabal: "3.2"
+            cabal: "3.6"
             setup-method: ghcup
             allow-failure: false
           - ghc: "8.8.4"
-            cabal: "3.0"
+            cabal: "3.4"
             setup-method: hvr-ppa
             allow-failure: false
           - ghc: "8.6.5"
-            cabal: "2.4"
+            cabal: "3.4"
             setup-method: hvr-ppa
             allow-failure: false
           - ghc: "8.4.4"
-            cabal: "2.4"
+            cabal: "3.4"
             setup-method: hvr-ppa
             allow-failure: false
           - ghc: "8.2.2"
-            cabal: "2.4"
+            cabal: "3.4"
             setup-method: hvr-ppa
             allow-failure: false
           - ghc: "8.0.2"
-            cabal: "2.4"
+            cabal: "3.4"
             setup-method: hvr-ppa
             allow-failure: false
       fail-fast: false
@@ -100,13 +100,14 @@ jobs:
           cabal update
           sed -i 's/^jobs:/-- jobs:/' "${HOME}/.cabal/config"
           cd "$GITHUB_WORKSPACE"
-          cabal v1-install --enable-tests --only-dep $CABAL_OPTS
 
       - name: script
         run: |
           cd "$GITHUB_WORKSPACE"
-          (cd ghci-wrapper && cabal v1-configure --enable-tests --ghc-options=-Werror $CABAL_OPTS && cabal v1-build && cabal v1-test)
-          cabal v1-configure --enable-tests --ghc-options=-Werror $CABAL_OPTS && cabal v1-build && cabal v1-test
+          (cd ghci-wrapper && cabal configure --enable-tests && cabal build && cabal test --test-show-details=direct)
+          cabal configure --enable-tests && cabal build && cabal exec -- cabal test --test-show-details=direct
+        env:
+          HSPEC_OPTIONS: --color
 
   success:
     needs: build
