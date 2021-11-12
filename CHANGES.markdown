@@ -1,3 +1,6 @@
+Changes in 0.19.0
+  - Better support for `cabal v2-*`
+
 Changes in 0.18.2
   - GHC 9.2 compatibility. (#305, thanks to Ryan Scott and Matthew Pickering)
 
