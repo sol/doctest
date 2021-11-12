@@ -61,9 +61,13 @@ library:
   - ghci-wrapper/src
   exposed-modules:
   - Test.DocTest
+  when:
+  - condition: false
+    other-modules: Paths_doctest
 
 executable:
   main: Main.hs
+  other-modules: []
   ghc-options: -threaded
   source-dirs: driver
   dependencies: doctest
@@ -88,6 +92,9 @@ tests:
     - silently      >= 1.2.4
     - setenv
     - mockery
+    when:
+    - condition: false
+      other-modules: Paths_doctest
 
   doctests:
     main: doctests.hs
