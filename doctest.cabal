@@ -127,6 +127,7 @@ library
   other-modules:
       Extract
       GhcUtil
+      Info
       Interpreter
       Location
       Options
@@ -200,6 +201,7 @@ test-suite spec
   main-is: Spec.hs
   other-modules:
       ExtractSpec
+      InfoSpec
       InterpreterSpec
       LocationSpec
       MainSpec
@@ -214,6 +216,7 @@ test-suite spec
       UtilSpec
       Extract
       GhcUtil
+      Info
       Interpreter
       Location
       Options

@@ -32,6 +32,7 @@ import           GHC.Settings.Config as GHC
 #endif
 
 import           Interpreter (ghc)
+import           Info
 
 usage :: String
 usage = unlines [
@@ -68,11 +69,11 @@ versionInfo = unlines [
   ]
 
 info :: String
-info = "[ " ++ (intercalate "\n, " . map show $ [
+info = formatInfo [
     ("version", version)
   , ("ghc_version", ghcVersion)
   , ("ghc", ghc)
-  ]) ++ "\n]\n"
+  ]
 
 data Result a = Output String | Result a
   deriving (Eq, Show, Functor)
