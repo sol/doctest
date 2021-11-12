@@ -29,6 +29,14 @@ withCurrentDirectory workingDir action = do
 main :: IO ()
 main = hspec spec
 
+
+removeLoadedPackageEnvironment :: String -> String
+#if __GLASGOW_HASKELL__ < 810
+removeLoadedPackageEnvironment = unlines . filter (not . isPrefixOf "Loaded package environment from ") . lines
+#else
+removeLoadedPackageEnvironment = id
+#endif
+
 spec :: Spec
 spec = do
   describe "doctest" $ do
@@ -59,14 +67,14 @@ spec = do
     it "prints error message on invalid option" $ do
       (r, e) <- hCapture [stderr] . E.try $ doctest ["--foo", "test/integration/test-options/Foo.hs"]
       e `shouldBe` Left (ExitFailure 1)
-      r `shouldBe` unlines [
+      removeLoadedPackageEnvironment r `shouldBe` unlines [
           "doctest: unrecognized option `--foo'"
         , "Try `doctest --help' for more information."
         ]
 
     it "prints verbose description of a specification" $ do
       (r, ()) <- hCapture [stderr] $ doctest ["--verbose", "test/integration/testSimple/Fib.hs"]
-      r `shouldBe` unlines [
+      removeLoadedPackageEnvironment r `shouldBe` unlines [
           "### Started execution at test/integration/testSimple/Fib.hs:5."
         , "### example:"
         , "fib 10"
@@ -78,7 +86,7 @@ spec = do
 
     it "prints verbose description of a property" $ do
       (r, ()) <- hCapture [stderr] $ doctest ["--verbose", "test/integration/property-bool/Foo.hs"]
-      r `shouldBe` unlines [
+      removeLoadedPackageEnvironment r `shouldBe` unlines [
           "### Started execution at test/integration/property-bool/Foo.hs:4."
         , "### property:"
         , "True"
@@ -91,7 +99,7 @@ spec = do
     it "prints verbose error" $ do
       (r, e) <- hCapture [stderr] . E.try $ doctest ["--verbose", "test/integration/failing/Foo.hs"]
       e `shouldBe` Left (ExitFailure 1)
-      r `shouldBe` unlines [
+      removeLoadedPackageEnvironment r `shouldBe` unlines [
               "### Started execution at test/integration/failing/Foo.hs:5."
             , "### example:"
             , "23"
@@ -125,7 +133,7 @@ spec = do
 #if __GLASGOW_HASKELL__ < 800
         r `shouldBe` "\nFoo.hs:6:1:\n    parse error (possibly incorrect indentation or mismatched brackets)\n"
 #else
-        r `shouldBe` "\nFoo.hs:6:1: error:\n    parse error (possibly incorrect indentation or mismatched brackets)\n"
+        removeLoadedPackageEnvironment r `shouldBe` "\nFoo.hs:6:1: error:\n    parse error (possibly incorrect indentation or mismatched brackets)\n"
 #endif
 
 #endif
