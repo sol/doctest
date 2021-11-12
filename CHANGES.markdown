@@ -1,3 +1,7 @@
+Changes in next
+  - Make `--info` output formatting consistent with GHC (whitespace changes
+    only)
+
 Changes in 0.19.0
   - Better support for `cabal v2-*`
 
