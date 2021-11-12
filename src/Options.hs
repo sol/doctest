@@ -22,16 +22,9 @@ import           Control.Monad.Trans.RWS (RWS, execRWS)
 import qualified Control.Monad.Trans.RWS as RWS
 
 import           Control.Monad (when)
-import           Data.List.Compat (intercalate, stripPrefix)
+import           Data.List.Compat (stripPrefix)
 import           Data.Monoid (Endo (Endo))
 
-#if __GLASGOW_HASKELL__ < 900
-import           Config as GHC
-#else
-import           GHC.Settings.Config as GHC
-#endif
-
-import           Interpreter (ghc)
 import           Info
 
 usage :: String
@@ -49,30 +42,6 @@ usage = unlines [
   , "  --help         display this help and exit"
   , "  --version      output version information and exit"
   , "  --info         output machine-readable version information and exit"
-  ]
-
-version :: String
-#ifdef CURRENT_PACKAGE_VERSION
-version = CURRENT_PACKAGE_VERSION
-#else
-version = "unknown"
-#endif
-
-ghcVersion :: String
-ghcVersion = GHC.cProjectVersion
-
-versionInfo :: String
-versionInfo = unlines [
-    "doctest version " ++ version
-  , "using version " ++ ghcVersion ++ " of the GHC API"
-  , "using " ++ ghc
-  ]
-
-info :: String
-info = formatInfo [
-    ("version", version)
-  , ("ghc_version", ghcVersion)
-  , ("ghc", ghc)
   ]
 
 data Result a = Output String | Result a

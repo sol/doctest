@@ -4,7 +4,7 @@ import           Test.Hspec
 
 import           System.Process
 
-import           Info
+import           Info (formatInfo)
 import           Interpreter (ghc)
 
 spec :: Spec
