@@ -47,6 +47,7 @@ interpreterSupported = do
 -- Example:
 --
 -- >>> withInterpreter [] $ \i -> eval i "23 + 42"
+-- ...
 -- "65\n"
 withInterpreter
   :: [String]               -- ^ List of flags, passed to GHC

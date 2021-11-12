@@ -39,6 +39,7 @@ import qualified Interpreter
 -- Example:
 --
 -- >>> doctest ["-iexample/src", "example/src/Example.hs"]
+-- ...
 -- Examples: 2  Tried: 2  Errors: 0  Failures: 0
 --
 -- This can be used to create a Cabal test suite that runs doctest for your
