@@ -54,24 +54,25 @@ new Config{..} args_ = do
   setMode stdin_
   setMode stdout_
   let interpreter = Interpreter {hIn = stdin_, hOut = stdout_, process = processHandle}
-  _ <- eval interpreter "import qualified System.IO"
-  _ <- eval interpreter "import qualified GHC.IO.Encoding"
-  _ <- eval interpreter "import qualified GHC.IO.Handle"
+  evalThrow interpreter "import qualified System.IO"
+  evalThrow interpreter "import qualified GHC.IO.Encoding"
+  evalThrow interpreter "import qualified GHC.IO.Handle"
   -- The buffering of stdout and stderr is NoBuffering
-  _ <- eval interpreter "GHC.IO.Handle.hDuplicateTo System.IO.stdout System.IO.stderr"
+  evalThrow interpreter "GHC.IO.Handle.hDuplicateTo System.IO.stdout System.IO.stderr"
   -- Now the buffering of stderr is BlockBuffering Nothing
   -- In this situation, GHC 7.7 does not flush the buffer even when
   -- error happens.
-  _ <- eval interpreter "GHC.IO.Handle.hSetBuffering System.IO.stdout GHC.IO.Handle.LineBuffering"
-  _ <- eval interpreter "GHC.IO.Handle.hSetBuffering System.IO.stderr GHC.IO.Handle.LineBuffering"
+  evalThrow interpreter "GHC.IO.Handle.hSetBuffering System.IO.stdout GHC.IO.Handle.LineBuffering"
+  evalThrow interpreter "GHC.IO.Handle.hSetBuffering System.IO.stderr GHC.IO.Handle.LineBuffering"
 
   -- this is required on systems that don't use utf8 as default encoding (e.g.
   -- Windows)
-  _ <- eval interpreter "GHC.IO.Handle.hSetEncoding System.IO.stdout GHC.IO.Encoding.utf8"
-  _ <- eval interpreter "GHC.IO.Handle.hSetEncoding System.IO.stderr GHC.IO.Encoding.utf8"
+  evalThrow interpreter "GHC.IO.Handle.hSetEncoding System.IO.stdout GHC.IO.Encoding.utf8"
+  evalThrow interpreter "GHC.IO.Handle.hSetEncoding System.IO.stderr GHC.IO.Encoding.utf8"
 
-  _ <- eval interpreter ":m - System.IO"
-  _ <- eval interpreter ":m - GHC.IO.Handle"
+  evalThrow interpreter ":m - System.IO"
+  evalThrow interpreter ":m - GHC.IO.Encoding"
+  evalThrow interpreter ":m - GHC.IO.Handle"
 
   return interpreter
   where
@@ -83,6 +84,13 @@ new Config{..} args_ = do
       hSetBinaryMode h False
       hSetBuffering h LineBuffering
       hSetEncoding h utf8
+
+    evalThrow :: Interpreter -> String -> IO ()
+    evalThrow interpreter expr = do
+      output <- eval interpreter expr
+      unless (null output || configVerbose) $ do
+        close interpreter
+        throwIO (ErrorCall output)
 
 close :: Interpreter -> IO ()
 close repl = do
