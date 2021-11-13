@@ -20,18 +20,6 @@ copyright:      (c) 2009-2018 Simon Hengel
 author:         Simon Hengel <sol@typeful.net>
 maintainer:     quasicomputational@gmail.com, Andreas Abel
 build-type:     Simple
-tested-with:
-    GHC == 7.6.3
-  , GHC == 7.8.4
-  , GHC == 7.10.3
-  , GHC == 8.0.2
-  , GHC == 8.2.2
-  , GHC == 8.4.4
-  , GHC == 8.6.5
-  , GHC == 8.8.4
-  , GHC == 8.10.7
-  , GHC == 9.0.1
-  , GHC == 9.2.1
 extra-source-files:
     example/example.cabal
     example/src/Example.hs
