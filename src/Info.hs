@@ -17,14 +17,13 @@ import           Config as GHC
 import           GHC.Settings.Config as GHC
 #endif
 
+import           Data.Version (showVersion)
+import qualified Paths_doctest
+
 import           Interpreter (ghc)
 
 version :: String
-#ifdef CURRENT_PACKAGE_VERSION
-version = CURRENT_PACKAGE_VERSION
-#else
-version = "unknown"
-#endif
+version = showVersion Paths_doctest.version
 
 ghcVersion :: String
 ghcVersion = GHC.cProjectVersion
