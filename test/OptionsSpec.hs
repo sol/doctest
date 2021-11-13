@@ -20,12 +20,10 @@ spec = do
   describe "parseOptions" $ do
     let warning = ["WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."]
     it "strips --optghc" $
-      property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc", "foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
+      parseOptions ["--optghc", "foobar"] `shouldBe` Result (Run warning ["foobar"] defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
 
     it "strips --optghc=" $
-      property $ \xs ys ->
-        parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
+      parseOptions ["--optghc=foobar"] `shouldBe` Result (Run warning ["foobar"] defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
 
     context "with ghc options that are not valid with --interactive" $ do
       it "returns RunGhc" $ do
