@@ -82,10 +82,3 @@ tests:
     when:
     - condition: false
       other-modules: Paths_doctest
-
-  doctests:
-    main: doctests.hs
-    other-modules: []
-    ghc-options: -threaded
-    source-dirs: test
-    dependencies: doctest

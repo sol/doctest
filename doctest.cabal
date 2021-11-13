@@ -163,28 +163,6 @@ executable doctest
     , transformers
   default-language: Haskell2010
 
-test-suite doctests
-  main-is: doctests.hs
-  type: exitcode-stdio-1.0
-  ghc-options: -Wall -threaded
-  hs-source-dirs:
-      test
-  build-depends:
-      base >=4.5 && <5
-    , base-compat >=0.7.0
-    , code-page >=0.1
-    , deepseq
-    , directory
-    , doctest
-    , exceptions
-    , filepath
-    , ghc >=7.0 && <9.3
-    , ghc-paths >=0.1.0.9
-    , process
-    , syb >=0.3
-    , transformers
-  default-language: Haskell2010
-
 test-suite spec
   main-is: Spec.hs
   other-modules:
