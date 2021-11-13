@@ -2,11 +2,18 @@ module OptionsSpec (spec) where
 
 import           Prelude ()
 import           Prelude.Compat
+import           Data.List.Compat
 
 import           Test.Hspec
 import           Test.QuickCheck
 
 import           Options
+
+newtype NonInteractive = NonInteractive String
+  deriving (Eq, Show)
+
+instance Arbitrary NonInteractive where
+  arbitrary = NonInteractive <$> elements (nonInteractiveGhcOptions \\ ["--info"])
 
 spec :: Spec
 spec = do
@@ -19,6 +26,21 @@ spec = do
     it "strips --optghc=" $
       property $ \xs ys ->
         parseOptions (xs ++ ["--optghc=foobar"] ++ ys) `shouldBe` Result (Run warning (xs ++ ["foobar"] ++ ys) defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
+
+    context "with ghc options that are not valid with --interactive" $ do
+      it "returns RunGhc" $ do
+        property $ \ (NonInteractive x) xs -> do
+          let options = x : xs
+          parseOptions options `shouldBe` RunGhc options
+
+    context "with --interactive" $ do
+      let options = ["--interactive", "--foo", "--bar"]
+
+      it "disables magic mode" $ do
+        runMagicMode <$> parseOptions options `shouldBe` Result False
+
+      it "filters out --interactive" $ do
+        runOptions <$> parseOptions options `shouldBe` Result ["--foo", "--bar"]
 
     describe "--no-magic" $ do
       context "without --no-magic" $ do

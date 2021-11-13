@@ -18,6 +18,7 @@ import           System.Exit (exitFailure, exitSuccess)
 import           System.FilePath ((</>), takeExtension)
 import           System.IO
 import           System.IO.CodePage (withCP65001)
+import           System.Process (rawSystem)
 
 import qualified Control.Exception as E
 
@@ -47,6 +48,7 @@ import qualified Interpreter
 -- inside of it, ignoring hidden entries.
 doctest :: [String] -> IO ()
 doctest args0 = case parseOptions args0 of
+  RunGhc args -> rawSystem Interpreter.ghc args >>= E.throwIO
   Output s -> putStr s
   Result (Run warnings args_ magicMode fastMode preserveIt verbose) -> do
     mapM_ (hPutStrLn stderr) warnings
