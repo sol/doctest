@@ -106,6 +106,7 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           (cd ghci-wrapper && cabal configure --enable-tests && cabal build && cabal test --test-show-details=direct)
           cabal configure --enable-tests && cabal build && cabal exec -- cabal test --test-show-details=direct
+          cabal exec -- cabal repl --with-ghc=doctest
         env:
           HSPEC_OPTIONS: --color
 
