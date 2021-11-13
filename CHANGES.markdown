@@ -1,6 +1,7 @@
-Changes in next
+Changes in 0.20.0
+  - Allow doctest to be invoked via `cabal repl --with-ghc=doctest`
   - Include `ghc --info` output in `--info`
-  - Make formatting `--info` with `ghc --info` (whitespace changes only)
+  - Make `--info` output formatting consistent with GHC
 
 Changes in 0.19.0
   - Better support for `cabal v2-*`

@@ -12,6 +12,7 @@ module Options (
 , usage
 , info
 , versionInfo
+, nonInteractiveGhcOptions
 #endif
 ) where
 
@@ -44,7 +45,7 @@ usage = unlines [
   , "  --info         output machine-readable version information and exit"
   ]
 
-data Result a = Output String | Result a
+data Result a = RunGhc [String] | Output String | Result a
   deriving (Eq, Show, Functor)
 
 type Warning = String
@@ -57,6 +58,19 @@ data Run = Run {
 , runPreserveIt :: Bool
 , runVerbose :: Bool
 } deriving (Eq, Show)
+
+nonInteractiveGhcOptions :: [String]
+nonInteractiveGhcOptions = [
+    "--numeric-version"
+  , "--supported-languages"
+  , "--info"
+  , "--print-global-package-db"
+  , "--print-libdir"
+  , "-c"
+  , "-o"
+  , "--make"
+  , "--abi-hash"
+  ]
 
 defaultMagic :: Bool
 defaultMagic = True
@@ -100,8 +114,17 @@ setVerbose verbose run = run { runVerbose = verbose }
 
 parseOptions :: [String] -> Result Run
 parseOptions args
-  | "--help" `elem` args = Output usage
   | "--info" `elem` args = Output info
+  | "--interactive" `elem` args = Result Run {
+        runWarnings = []
+      , runOptions = filter (/= "--interactive") args
+      , runMagicMode = False
+      , runFastMode = False
+      , runPreserveIt = False
+      , runVerbose = False
+      }
+  | any (`elem` nonInteractiveGhcOptions) args = RunGhc args
+  | "--help" `elem` args = Output usage
   | "--version" `elem` args = Output versionInfo
   | otherwise = case execRWS parse () args of
       (xs, Endo setter) ->
