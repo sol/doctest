@@ -2,8 +2,8 @@ name:             doctest
 version:          0.20.0
 synopsis:         Test interactive Haskell examples
 description: |
-  The doctest program checks examples in source code comments.  It is modeled
-  after doctest for Python (<https://docs.python.org/3/library/doctest.html>).
+  `doctest` is a small program that checks [examples in Haddock comments](http://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744).
+  It is similar to the [popular Python module with the same name](https://docs.python.org/3/library/doctest.html).
 
   Documentation is at <https://github.com/sol/doctest#readme>.
 category:         Testing

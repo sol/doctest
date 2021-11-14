@@ -7,25 +7,7 @@ and
 in Haddock comments.
 It is similar in spirit to the [popular Python module with the same name](https://docs.python.org/3/library/doctest.html).
 
-* [Getting started](#getting-started)
-   * [Installation](#installation)
-   * [A basic example](#a-basic-example)
-   * [Running doctest for a Cabal package](#running-doctest-for-a-cabal-package)
-* [Writing examples and properties](#writing-examples-and-properties)
-   * [Example groups](#example-groups)
-      * [A note on performance](#a-note-on-performance)
-   * [Setup code](#setup-code)
-   * [Multi-line input](#multi-line-input)
-   * [Multi-line output](#multi-line-output)
-   * [Matching arbitrary output](#matching-arbitrary-output)
-   * [QuickCheck properties](#quickcheck-properties)
-   * [Hiding examples from Haddock](#hiding-examples-from-haddock)
-   * [Using GHC extensions](#using-ghc-extensions)
-* [Limitations](#limitations)
-* [Doctest in the wild](#doctest-in-the-wild)
-* [Development](#development)
-* [Contributors](#contributors)
-
+{{ bash gh-md-toc - < README.template.md | tail -n +2 }}
 
 # Getting started
 
@@ -59,22 +41,7 @@ The examples demonstrate how the module is supposed to be used.
 
 ```haskell
 -- src/Fib.hs
-module Fib where
-
--- | Compute Fibonacci numbers
---
--- Examples:
---
--- >>> fib 10
--- 55
---
--- >>> fib 5
--- 5
-fib :: Int -> Int
-fib 0 = 0
-fib 1 = 1
-fib n = fib (n - 1) + fib (n - 2)
-
+{{ cat example/src/Fib.hs }}
 ```
 
 (A comment line starting with `>>>` denotes an _expression_.
@@ -103,18 +70,7 @@ A simple `.cabal` file for `Fib` looks like this:
 
 ```cabal
 -- fib.cabal
-cabal-version: 1.12
-
-name:           fib
-version:        0.0.0
-build-type:     Simple
-
-library
-  build-depends: base == 4.*
-  hs-source-dirs: src
-  exposed-modules: Fib
-  default-language: Haskell2010
-
+{{ cat example/fib.cabal }}
 ```
 
 With a `.cabal` file in place, it is possible to run `doctest` via `cabal repl`:
