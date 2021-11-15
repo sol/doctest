@@ -120,10 +120,16 @@ library
 With a `.cabal` file in place, it is possible to run `doctest` via `cabal repl`:
 
 ```
-cabal install doctest --overwrite-policy=always && cabal build && cabal repl --build-depends=QuickCheck --with-ghc=doctest
+$ cabal repl --with-ghc=doctest
+...
+Examples: 2  Tried: 2  Errors: 0  Failures: 0
 ```
 
+
 Notes:
+
+- If you use properties you need to pass `--build-depends=QuickCheck` and
+  `--build-depends=template-haskell` to `cabal repl`.
 
 - `doctest` always uses the version of GHC it was compiled with.  Reinstalling
   `doctest` with `cabal install doctest --overwrite-policy=always` before each
@@ -132,6 +138,15 @@ Notes:
   will build any dependencies as needed.  However, it's more robust to run
   `cabal build` first (specifically it is not a good idea to build
   `ghc-paths` with `--with-ghc=doctest`).
+
+So a more robust way call `doctest` is as follows:
+
+```
+cabal install doctest --overwrite-policy=always && cabal build && cabal repl --build-depends=QuickCheck --build-depends=template-haskell --with-ghc=doctest
+```
+
+(This is what you want to use on CI.)
+
 
 # Writing examples and properties
 
