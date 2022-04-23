@@ -139,7 +139,7 @@ Notes:
   `cabal build` first (specifically it is not a good idea to build
   `ghc-paths` with `--with-ghc=doctest`).
 
-So a more robust way call `doctest` is as follows:
+So a more robust way to call `doctest` is as follows:
 
 ```
 cabal install doctest --overwrite-policy=always && cabal build && cabal repl --build-depends=QuickCheck --build-depends=template-haskell --with-ghc=doctest
