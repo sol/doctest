@@ -1,3 +1,5 @@
+{-# language StandaloneDeriving, ScopedTypeVariables, DerivingStrategies, FlexibleInstances #-}
+
 {-# LANGUAGE CPP, DeriveDataTypeable, DeriveFunctor #-}
 module Extract (Module(..), extract) where
 
@@ -69,6 +71,8 @@ import           GHC.Runtime.Loader (initializePlugins)
 #if __GLASGOW_HASKELL__ >= 901
 import           GHC.Unit.Module.Graph
 #endif
+
+import qualified Debug.Trace as Debug
 
 -- | A wrapper around `SomeException`, to allow for a custom `Show` instance.
 newtype ExtractError = ExtractError SomeException
@@ -271,7 +275,7 @@ docStringsFromModule mod =
     decls :: DocResult
     decls =
 #if __GLASGOW_HASKELL__ >= 904
-        map (fmap (fmap (\hsDocString -> WithHsDocIdentifiers hsDocString []))) $ extractDocStrings (hsmodDecls source)
+        map (fmap (fmap (\hsDocStr -> WithHsDocIdentifiers hsDocStr []))) $ extractDocStrings (hsmodDecls source)
 #else
         extractDocStrings (hsmodDecls source)
 #endif
@@ -327,8 +331,14 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
 #endif
   )
   where
+    fromSigDecl :: Selector (Sig GhcPs)
+    fromSigDecl sig = Debug.trace "in fromSigDecl" $ case sig of
+        TypeSig _ lhs (HsWC  _ (L _ (HsSig _ _ (L _ (HsDocTy _ _ (L _ ldoc)))))) ->
+            ([(Nothing, L noSrcSpan ldoc)], False)
+        _ ->
+            _g
     fromLHsDecl :: Selector (LHsDecl GhcPs)
-    fromLHsDecl (L loc decl) = case decl of
+    fromLHsDecl (L loc decl) = Debug.trace "in fromLHsDecl" $ case decl of
 
       -- Top-level documentation has to be treated separately, because it has
       -- no location information attached.  The location information is
@@ -338,9 +348,9 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
 #else
       DocD _ x
 #endif
-               -> select (fromDocDecl (locA loc) x)
+               -> Debug.trace "in DocD, doing select"  $ select (fromDocDecl (locA loc) x)
 
-      _ -> (extractDocStrings decl, True)
+      _ -> Debug.trace "not docD, doing extractDocStrings True" $ (extractDocStrings decl, True)
 
     fromLDocDecl :: Selector
 #if __GLASGOW_HASKELL__ >= 901
@@ -348,10 +358,10 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
 #else
                              LDocDecl
 #endif
-    fromLDocDecl (L loc x) = select (fromDocDecl (locA loc) x)
+    fromLDocDecl (L loc x) = Debug.trace "in fromLDocDecl" $ select (fromDocDecl (locA loc) x)
 
     fromLHsDocString :: Selector LHsDocString
-    fromLHsDocString x = select (Nothing, x)
+    fromLHsDocString x = Debug.trace "in fromLHsDocString" $ select (Nothing, x)
 
     fromDocDecl
         :: SrcSpan
@@ -361,7 +371,7 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
         -> DocDecl
 #endif
         -> (Maybe String, LHsDocString)
-    fromDocDecl loc x = case x of
+    fromDocDecl loc x = Debug.trace "in fromDocDecl" $ case x of
       DocCommentNamed name doc -> (Just name, L loc (convDoc doc))
       _                        -> (Nothing, L loc $ convDoc (docDeclDoc x))
 
@@ -372,7 +382,6 @@ convDoc (L _ a) = hsDocString a
 convDoc :: HsDocString -> HsDocString
 convDoc a = a
 #endif
-
 
 #if __GLASGOW_HASKELL__ < 805
 -- | Convert a docstring to a plain string.

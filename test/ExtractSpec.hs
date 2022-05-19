@@ -36,7 +36,7 @@ spec = do
     it "extracts documentation for a top-level declaration" $ do
       ("declaration", "Foo.hs") `shouldGive` [Module "Foo" Nothing [" Some documentation"]]
 
-    it "extracts documentation from argument list" $ do
+    focus $ it "extracts documentation from argument list" $ do
       ("argument-list", "Foo.hs") `shouldGive` [Module "Foo" Nothing [" doc for arg1", " doc for arg2"]]
 
     it "extracts documentation for a type class function" $ do
