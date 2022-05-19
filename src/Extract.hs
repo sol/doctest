@@ -181,7 +181,12 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
       _ <- setSessionDynFlags (GHC.ms_hspp_opts modsum)
       hsc_env <- getSession
 
-# if __GLASGOW_HASKELL__ >= 903
+# if __GLASGOW_HASKELL__ >= 904
+      hsc_env' <- liftIO (initializePlugins hsc_env)
+      setSession hsc_env'
+      return $ modsum
+
+# elif __GLASGOW_HASKELL__ >= 903
       hsc_env' <- liftIO (initializePlugins hsc_env Nothing)
       setSession hsc_env'
       return $ modsum
@@ -227,27 +232,56 @@ extractFromModule m = Module name (listToMaybe $ map snd setup) (map snd docs)
 
 -- | Extract all docstrings from given module.
 docStringsFromModule :: ParsedModule -> [(Maybe String, Located String)]
-docStringsFromModule mod = map (fmap (toLocated . fmap unpackHDS)) docs
+docStringsFromModule mod =
+#if __GLASGOW_HASKELL__ >= 904
+    map (fmap (toLocated . fmap (renderHsDocString . hsDocString))) docs
+
+#else
+    map (fmap (toLocated . fmap unpackHDS)) docs
+#endif
   where
     source   = (unLoc . pm_parsed_source) mod
 
     -- we use dlist-style concatenation here
+    docs :: DocResult
     docs     = header ++ exports ++ decls
 
     -- We process header, exports and declarations separately instead of
     -- traversing the whole source in a generic way, to ensure that we get
     -- everything in source order.
+    header :: DocResult
     header  = [(Nothing, x) | Just x <- [hsmodHaddockModHeader source]]
-    exports = [ (Nothing, L (locA loc) doc)
+    exports :: DocResult
+    exports =
+#if __GLASGOW_HASKELL__ >= 904
+            [ (Nothing, L (locA loc) (unLoc doc))
+#else
+            [ (Nothing, L (locA loc) doc)
+#endif
 #if __GLASGOW_HASKELL__ < 710
               | L loc (IEDoc doc) <- concat (hsmodExports source)
 #elif __GLASGOW_HASKELL__ < 805
               | L loc (IEDoc doc) <- maybe [] unLoc (hsmodExports source)
+#elif __GLASGOW_HASKELL__ < 904
+              | L loc (IEDoc _ doc) <- maybe [] unLoc (hsmodExports source)
 #else
               | L loc (IEDoc _ doc) <- maybe [] unLoc (hsmodExports source)
 #endif
               ]
-    decls   = extractDocStrings (hsmodDecls source)
+    decls :: DocResult
+    decls =
+#if __GLASGOW_HASKELL__ >= 904
+        map (fmap (fmap (\hsDocString -> WithHsDocIdentifiers hsDocString []))) $ extractDocStrings (hsmodDecls source)
+#else
+        extractDocStrings (hsmodDecls source)
+#endif
+
+type DocResult =
+#if __GLASGOW_HASKELL__ >= 904
+    [(Maybe String, LHsDoc GhcPs)]
+#else
+    [(Maybe String, LHsDocString)]
+#endif
 
 type Selector a = a -> ([(Maybe String, LHsDocString)], Bool)
 
@@ -319,10 +353,26 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
     fromLHsDocString :: Selector LHsDocString
     fromLHsDocString x = select (Nothing, x)
 
-    fromDocDecl :: SrcSpan -> DocDecl -> (Maybe String, LHsDocString)
+    fromDocDecl
+        :: SrcSpan
+#if __GLASGOW_HASKELL__ >= 904
+        -> DocDecl GhcPs
+#else
+        -> DocDecl
+#endif
+        -> (Maybe String, LHsDocString)
     fromDocDecl loc x = case x of
-      DocCommentNamed name doc -> (Just name, L loc doc)
-      _                        -> (Nothing, L loc $ docDeclDoc x)
+      DocCommentNamed name doc -> (Just name, L loc (convDoc doc))
+      _                        -> (Nothing, L loc $ convDoc (docDeclDoc x))
+
+#if __GLASGOW_HASKELL__ >= 904
+convDoc :: GenLocated SrcSpan (HsDoc GhcPs) -> HsDocString
+convDoc (L _ a) = hsDocString a
+#else
+convDoc :: HsDocString -> HsDocString
+convDoc a = a
+#endif
+
 
 #if __GLASGOW_HASKELL__ < 805
 -- | Convert a docstring to a plain string.
