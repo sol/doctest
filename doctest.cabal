@@ -138,7 +138,7 @@ library
     , directory
     , exceptions
     , filepath
-    , ghc >=8.0 && <9.3
+    , ghc >=8.0 && <9.5
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -161,7 +161,7 @@ executable doctest
     , doctest
     , exceptions
     , filepath
-    , ghc >=8.0 && <9.3
+    , ghc >=8.0 && <9.5
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -222,7 +222,7 @@ test-suite spec
     , directory
     , exceptions
     , filepath
-    , ghc >=8.0 && <9.3
+    , ghc >=8.0 && <9.5
     , ghc-paths >=0.1.0.9
     , hspec >=2.3.0
     , hspec-core >=2.3.0
