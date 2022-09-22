@@ -8,8 +8,10 @@ import           Test.Hspec
 import           System.Exit
 
 import qualified Control.Exception as E
+import           System.FilePath
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           Data.List.Compat (isPrefixOf, sort)
+import           Data.Char
 
 import           System.IO.Silently
 import           System.IO (stderr)
@@ -133,7 +135,7 @@ spec = do
 #if __GLASGOW_HASKELL__ < 800
         r `shouldBe` "\nFoo.hs:6:1:\n    parse error (possibly incorrect indentation or mismatched brackets)\n"
 #else
-        removeLoadedPackageEnvironment r `shouldBe` "\nFoo.hs:6:1: error:\n    parse error (possibly incorrect indentation or mismatched brackets)\n"
+        stripAnsiColors (removeLoadedPackageEnvironment r) `shouldBe` "\nFoo.hs:6:1: error:\n    parse error (possibly incorrect indentation or mismatched brackets)\n"
 #endif
 
 #endif
@@ -142,8 +144,8 @@ spec = do
     it "expands a directory" $ do
       res <- expandDirs "example"
       sort res `shouldBe`
-        [ "example/src/Example.hs"
-        , "example/test/doctests.hs"
+        [ "example" </> "src" </> "Example.hs"
+        , "example" </> "test" </> "doctests.hs"
         ]
     it "ignores files" $ do
       res <- expandDirs "doctest.cabal"
@@ -152,3 +154,10 @@ spec = do
       let x = "foo bar baz bin"
       res <- expandDirs x
       res `shouldBe` [x]
+
+stripAnsiColors :: String -> String
+stripAnsiColors xs = case xs of
+  '\ESC' : '[' : ';' : ys | 'm' : zs <- dropWhile isNumber ys -> stripAnsiColors zs
+  '\ESC' : '[' : ys | 'm' : zs <- dropWhile isNumber ys -> stripAnsiColors zs
+  y : ys -> y : stripAnsiColors ys
+  [] -> []

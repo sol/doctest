@@ -13,22 +13,25 @@ import qualified Language.Haskell.GhciWrapper as Interpreter
 main :: IO ()
 main = hspec spec
 
-withInterpreterConfig :: Config -> (Interpreter -> IO a) -> IO a
-withInterpreterConfig config = bracket (Interpreter.new config []) Interpreter.close
+withInterpreterConfig :: Config -> [String] -> (Interpreter -> IO a) -> IO a
+withInterpreterConfig config args = bracket (Interpreter.new config args) Interpreter.close
+
+withInterpreterArgs :: [String] -> ((String -> IO String) -> IO a) -> IO a
+withInterpreterArgs args action = withInterpreterConfig defaultConfig args $ action . Interpreter.eval
 
 withInterpreter :: ((String -> IO String) -> IO a) -> IO a
-withInterpreter action = withInterpreterConfig defaultConfig $ action . Interpreter.eval
+withInterpreter = withInterpreterArgs []
 
 spec :: Spec
 spec = do
   describe "evalEcho" $ do
     it "prints result to stdout" $ do
-      withInterpreterConfig defaultConfig $ \ghci -> do
+      withInterpreterConfig defaultConfig [] $ \ghci -> do
         (capture $ Interpreter.evalEcho ghci ("putStr" ++ show "foo\nbar")) `shouldReturn` ("foo\nbar", "foo\nbar")
 
   describe "evalIt" $ do
     it "preserves it" $ do
-      withInterpreterConfig defaultConfig $ \ghci -> do
+      withInterpreterConfig defaultConfig [] $ \ghci -> do
         Interpreter.evalIt ghci "23" `shouldReturn` "23\n"
         Interpreter.eval ghci "it" `shouldReturn` "23\n"
 
@@ -89,7 +92,7 @@ spec = do
 #endif
     context "when configVerbose is True" $ do
       it "prints prompt" $ do
-        withInterpreterConfig defaultConfig{configVerbose = True} $ \ghci -> do
+        withInterpreterConfig defaultConfig{configVerbose = True} [] $ \ghci -> do
           Interpreter.eval ghci "print 23" >>= (`shouldSatisfy`
             (`elem` [ "Prelude> 23\nPrelude> "
                     ,  "ghci> 23\nghci> "
@@ -101,9 +104,9 @@ spec = do
         ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
 
     context "with NoImplicitPrelude" $ do
-      it "works" $ withInterpreter $ \ghci -> do
-        ghci ":set -XNoImplicitPrelude" `shouldReturn` ""
-        ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
+      it "works" $ withInterpreterArgs ["-XNoImplicitPrelude"] $ \ghci -> do
+        ghci "putStrLn \"foo\"" >>= (`shouldContain` "Variable not in scope: putStrLn")
+        ghci "23" `shouldReturn` "23\n"
 
     context "with a strange String type" $ do
       it "works" $ withInterpreter $ \ghci -> do
