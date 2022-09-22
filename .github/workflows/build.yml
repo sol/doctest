@@ -1,5 +1,9 @@
 name: build
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
@@ -10,105 +14,60 @@ on:
 
 jobs:
   build:
-    name: doctest-CI Linux - GHC ${{ matrix.ghc }}
-    runs-on: ubuntu-18.04
-    container:
-      image: buildpack-deps:bionic
-    continue-on-error: ${{ matrix.allow-failure }}
+    name: ${{ matrix.os }} / GHC ${{ matrix.ghc }}
+    runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
+        os:
+          - ubuntu-18.04
+        ghc:
+          - 8.0.2
+          - 8.2.2
+          - 8.4.1
+          - 8.4.2
+          - 8.4.3
+          - 8.4.4
+          - 8.6.1
+          - 8.6.2
+          - 8.6.3
+          - 8.6.4
+          - 8.6.5
+          - 8.8.1
+          - 8.8.2
+          - 8.8.3
+          - 8.8.4
+          - 8.10.1
+          - 8.10.2
+          - 8.10.3
+          - 8.10.4
+          - 8.10.5
+          - 8.10.6
+          - 8.10.7
+          - 9.0.1
+          - 9.0.2
+          - 9.2.1
+          - 9.2.2
+          - 9.2.3
+          - 9.2.4
         include:
-          - ghc: "9.2.1"
-            cabal: "3.6"
-            setup-method: ghcup
-            allow-failure: false
-          - ghc: "9.0.1"
-            cabal: "3.4"
-            setup-method: hvr-ppa
-            allow-failure: false
-          - ghc: "8.10.7"
-            cabal: "3.6"
-            setup-method: ghcup
-            allow-failure: false
-          - ghc: "8.8.4"
-            cabal: "3.4"
-            setup-method: hvr-ppa
-            allow-failure: false
-          - ghc: "8.6.5"
-            cabal: "3.4"
-            setup-method: hvr-ppa
-            allow-failure: false
-          - ghc: "8.4.4"
-            cabal: "3.4"
-            setup-method: hvr-ppa
-            allow-failure: false
-          - ghc: "8.2.2"
-            cabal: "3.4"
-            setup-method: hvr-ppa
-            allow-failure: false
-          - ghc: "8.0.2"
-            cabal: "3.4"
-            setup-method: hvr-ppa
-            allow-failure: false
-      fail-fast: false
+          - os: macos-latest
+            ghc: 9.2.4
+          - os: windows-latest
+            ghc: 9.2.4
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: hspec/setup-haskell@v1
+        with:
+          ghc-version: ${{ matrix.ghc }}
 
-      - name: apt and ghcup
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr curl git software-properties-common libtinfo5
-          mkdir -p "$HOME/.ghcup/bin"
-          if [ "${{ matrix.setup-method }}" = ghcup ]; then
-            curl -sL https://downloads.haskell.org/ghcup/0.1.17.3/x86_64-linux-ghcup-0.1.17.3 > "$HOME/.ghcup/bin/ghcup"
-            chmod a+x "$HOME/.ghcup/bin/ghcup"
-            "$HOME/.ghcup/bin/ghcup" install ghc --set "$GHC_VERSION"
-            "$HOME/.ghcup/bin/ghcup" install cabal "$CABAL_VERSION"
-            ls -al "$HOME/.ghcup/bin/"
-          elif [ "${{ matrix.setup-method }}" = hvr-ppa ]; then
-            apt-add-repository -y 'ppa:hvr/ghc'
-            apt-get update
-            apt-get install -y "ghc-$GHC_VERSION" "cabal-install-$CABAL_VERSION"
-          else
-            echo "Invalid setup method: ${{ matrix.setup }}" && false
-          fi
-        env:
-          GHC_VERSION: ${{ matrix.ghc }}
-          CABAL_VERSION: ${{ matrix.cabal }}
-
-      - name: env vars
-        run: |
-          echo "LC_ALL=C.UTF-8" >> $GITHUB_ENV
-          echo "$HOME/.ghcup/bin:/opt/ghc/$GHC_VERSION/bin:/opt/cabal/$CABAL_VERSION/bin:$PATH" >> $GITHUB_PATH
-          CABAL_OPTS=""
-          case "$GHC_VERSION" in
-          head )
-            CABAL_OPTS="$CABAL_OPTS --allow-newer"
-            ;;
-          esac
-          printf 'CABAL_OPTS=%s' "$CABAL_OPTS" >> $GITHUB_ENV
-        env:
-          GHC_VERSION: ${{ matrix.ghc }}
-          CABAL_VERSION: ${{ matrix.cabal }}
-
-      - name: haskell deps
-        run: |
-          echo "$PATH"
-          ghc --version
-          cabal --version
-          cabal update
-          sed -i 's/^jobs:/-- jobs:/' "${HOME}/.cabal/config"
-          cd "$GITHUB_WORKSPACE"
-
-      - name: script
-        run: |
-          cd "$GITHUB_WORKSPACE"
-          (cd ghci-wrapper && cabal configure --enable-tests && cabal build && cabal test --test-show-details=direct)
-          cabal configure --enable-tests && cabal build && cabal exec -- cabal test --test-show-details=direct
-          cabal exec -- cabal repl --with-ghc=doctest
+      - run: cabal update
+      - run: cabal configure --enable-tests --enable-benchmarks
+      - run: cabal build all
+      - run: cabal exec -- cabal test all --test-show-details=direct
         env:
           HSPEC_OPTIONS: --color
+      - run: cabal exec -- cabal repl --with-ghc=doctest
 
   success:
     needs: build
