@@ -50,11 +50,13 @@ jobs:
           - 9.2.2
           - 9.2.3
           - 9.2.4
+          - 9.4.1
+          - 9.4.2
         include:
           - os: macos-latest
-            ghc: 9.2.4
+            ghc: system
           - os: windows-latest
-            ghc: 9.2.4
+            ghc: system
     steps:
       - uses: actions/checkout@v3
       - uses: hspec/setup-haskell@v1
