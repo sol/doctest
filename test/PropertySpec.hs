@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 module PropertySpec (main, spec) where
 
 import           Test.Hspec
@@ -30,17 +30,10 @@ spec = do
       runProperty repl "(reverse . reverse) xs == (xs :: [Int])" `shouldReturn` Success
 
     it "runs an implicitly quantified property even with GHC 7.4" $
-#if __GLASGOW_HASKELL__ == 702
-      pendingWith "This triggers a bug in GHC 7.2.*."
-      -- try e.g.
-      -- >>> 23
-      -- >>> :t is
-#else
       -- ghc will include a suggestion (did you mean `id` instead of `is`) in
       -- the error message
       withInterpreter [] $ \repl -> do
         runProperty repl "foldr (+) 0 is == sum (is :: [Int])" `shouldReturn` Success
-#endif
 
     it "runs an explicitly quantified property" $ withInterpreter [] $ \repl -> do
       runProperty repl "\\xs -> (reverse . reverse) xs == (xs :: [Int])" `shouldReturn` Success
