@@ -13,11 +13,6 @@ module Runner (
 
 import           Prelude hiding (putStr, putStrLn, error)
 
-#if __GLASGOW_HASKELL__ < 710
-import           Data.Monoid hiding ((<>))
-import           Control.Applicative
-#endif
-
 import           Control.Monad hiding (forM_)
 import           Text.Printf (printf)
 import           System.IO (hPutStrLn, hPutStr, stderr, hIsTerminalDevice)
@@ -50,11 +45,11 @@ instance Show Summary where
 -- | Sum up summaries.
 instance Monoid Summary where
   mempty = Summary 0 0 0 0
-#if MIN_VERSION_base(4,11,0)
+#if __GLASGOW_HASKELL__ < 804
+  mappend
+#else
 instance Semigroup Summary where
   (<>)
-#else
-  mappend
 #endif
     (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 

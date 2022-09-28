@@ -67,7 +67,5 @@ parseNotInScope = nub . mapMaybe extractVariable . lines
 
     -- | Remove quotes from given name, if any.
     unquote ('`':xs)     = init xs
-#if __GLASGOW_HASKELL__ >= 707
     unquote ('\8216':xs) = init xs
-#endif
     unquote xs           = xs

@@ -13,10 +13,6 @@ import qualified GHC.Types.SrcLoc as GHC
 import           GHC.Data.FastString (unpackFS)
 #endif
 
-#if __GLASGOW_HASKELL__ < 702
-import           Outputable (showPpr)
-#endif
-
 -- | A thing with a location attached.
 data Located a = Located Location a
   deriving (Eq, Show, Functor)
@@ -61,13 +57,7 @@ enumerate loc = case loc of
 
 -- | Convert a GHC source span to a location.
 toLocation :: SrcSpan -> Location
-#if __GLASGOW_HASKELL__ < 702
-toLocation loc
-  | isGoodSrcLoc start = Location (unpackFS $ srcLocFile start) (srcLocLine start)
-  | otherwise          = (UnhelpfulLocation . showPpr) start
-  where
-    start = srcSpanStart loc
-#elif __GLASGOW_HASKELL__ < 900
+#if __GLASGOW_HASKELL__ < 900
 toLocation loc = case loc of
   UnhelpfulSpan str -> UnhelpfulLocation (unpackFS str)
   RealSrcSpan sp    -> Location (unpackFS . srcSpanFile $ sp) (srcSpanStartLine sp)

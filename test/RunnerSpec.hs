@@ -3,10 +3,6 @@ module RunnerSpec (main, spec) where
 
 import           Test.Hspec
 
-#if __GLASGOW_HASKELL__ < 710
-import           Data.Monoid
-#endif
-
 import           System.IO
 import           System.IO.Silently (hCapture)
 import           Control.Monad.Trans.State

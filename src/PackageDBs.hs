@@ -1,14 +1,12 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE PatternGuards #-}
 -- | Manage GHC package databases
-module PackageDBs
-    ( PackageDBs (..)
-    , ArgStyle (..)
-    , dbArgs
-    , buildArgStyle
-    , getPackageDBsFromEnv
-    , getPackageDBArgs
-    ) where
+module PackageDBs (
+  getPackageDBArgs
+#ifdef TEST
+, PackageDBs (..)
+, getPackageDBsFromEnv
+#endif
+) where
 
 import System.Environment (getEnvironment)
 import System.FilePath (splitSearchPath, searchPathSeparator)
@@ -16,41 +14,23 @@ import System.FilePath (splitSearchPath, searchPathSeparator)
 -- | Full stack of GHC package databases
 data PackageDBs = PackageDBs
     { includeUser :: Bool
-    -- | Unsupported on GHC < 7.6
     , includeGlobal :: Bool
     , extraDBs :: [FilePath]
     }
     deriving (Show, Eq)
 
--- | Package database handling switched between GHC 7.4 and 7.6
-data ArgStyle = Pre76 | Post76
-    deriving (Show, Eq)
-
 -- | Determine command line arguments to be passed to GHC to set databases correctly
 --
--- >>> dbArgs Post76 (PackageDBs False True [])
+-- >>> dbArgs (PackageDBs False True [])
 -- ["-no-user-package-db"]
 --
--- >>> dbArgs Pre76 (PackageDBs True True ["somedb"])
--- ["-package-conf","somedb"]
-dbArgs :: ArgStyle -> PackageDBs -> [String]
-dbArgs Post76 (PackageDBs user global extras) =
+-- >>> dbArgs (PackageDBs True True ["somedb"])
+-- ["-package-db","somedb"]
+dbArgs :: PackageDBs -> [String]
+dbArgs (PackageDBs user global extras) =
     (if user then id else ("-no-user-package-db":)) $
     (if global then id else ("-no-global-package-db":)) $
     concatMap (\extra -> ["-package-db", extra]) extras
-dbArgs Pre76 (PackageDBs _ False _) =
-    error "Global package database must be included with GHC < 7.6"
-dbArgs Pre76 (PackageDBs user True extras) =
-    (if user then id else ("-no-user-package-conf":)) $
-    concatMap (\extra -> ["-package-conf", extra]) extras
-
--- | The argument style to be used with the current GHC version
-buildArgStyle :: ArgStyle
-#if __GLASGOW_HASKELL__ >= 706
-buildArgStyle = Post76
-#else
-buildArgStyle = Pre76
-#endif
 
 -- | Determine the PackageDBs based on the environment.
 getPackageDBsFromEnv :: IO PackageDBs
@@ -79,4 +59,4 @@ getPackageDBsFromEnv = do
 getPackageDBArgs :: IO [String]
 getPackageDBArgs = do
       dbs <- getPackageDBsFromEnv
-      return $ dbArgs buildArgStyle dbs
+      return $ dbArgs dbs
