@@ -241,18 +241,32 @@ docStringsFromModule mod = map (fmap (toLocated . fmap unpackHDS)) docs
     decls :: [(Maybe String, LHsDocString)]
     decls   = extractDocStrings (hsmodDecls source)
 
-type Selector a = a -> ([(Maybe String, LHsDocString)], Bool)
-
--- | Collect given value and descend into subtree.
-select :: a -> ([a], Bool)
-select x = ([x], False)
-
 -- | Extract all docstrings from given value.
 extractDocStrings :: Data a => a -> [(Maybe String, LHsDocString)]
-extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
+extractDocStrings d =
+#if __GLASGOW_HASKELL__ >= 904
+  let
+    docStrs = extractAll extractDocDocString d
+    docStrNames = catMaybes $ extractAll extractDocName d
+  in
+    flip fmap docStrs $ \docStr -> (lookup (getLoc docStr) docStrNames, docStr)
+  where
+    extractAll z = everything (++) ((mkQ [] ((:[]) . z)))
+
+    extractDocDocString :: LHsDoc GhcPs -> LHsDocString
+    extractDocDocString = fmap hsDocString
+
+    extractDocName :: DocDecl GhcPs -> Maybe (SrcSpan, String)
+    extractDocName docDecl = case docDecl of
+      DocCommentNamed name y ->
+        Just (getLoc y, name)
+      _ ->
+        Nothing
+#else
+  everythingBut (++) (([], False) `mkQ` fromLHsDecl
   `extQ` fromLDocDecl
   `extQ` fromLHsDocString
-  )
+  ) d
   where
     fromLHsDecl :: Selector (LHsDecl GhcPs)
     fromLHsDecl (L loc decl) = case decl of
@@ -280,16 +294,16 @@ extractDocStrings = everythingBut (++) (([], False) `mkQ` fromLHsDecl
     fromLHsDocString :: Selector LHsDocString
     fromLHsDocString x = select (Nothing, x)
 
-#if __GLASGOW_HASKELL__ >= 904
-    fromDocDecl :: SrcSpan -> DocDecl GhcPs -> (Maybe String, LHsDocString)
-    fromDocDecl loc x = case x of
-      DocCommentNamed name doc -> (Just name, L loc (hsDocString (unLoc doc)))
-      _                        -> (Nothing, L loc (hsDocString (unLoc (docDeclDoc x))))
-#else
     fromDocDecl :: SrcSpan -> DocDecl -> (Maybe String, LHsDocString)
     fromDocDecl loc x = case x of
       DocCommentNamed name doc -> (Just name, L loc doc)
       _                        -> (Nothing, L loc $ docDeclDoc x)
+
+type Selector a = a -> ([(Maybe String, LHsDocString)], Bool)
+
+-- | Collect given value and descend into subtree.
+select :: a -> ([a], Bool)
+select x = ([x], False)
 #endif
 
 #if __GLASGOW_HASKELL__ < 805
