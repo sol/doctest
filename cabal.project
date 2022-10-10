@@ -1,5 +1,9 @@
 packages:
   .
+  ghci-wrapper
 
 package doctest
+  ghc-options: -Werror
+
+package ghci-wrapper
   ghc-options: -Werror
