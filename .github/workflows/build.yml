@@ -67,7 +67,8 @@ jobs:
       - run: cabal exec -- cabal test all --test-show-details=direct
         env:
           HSPEC_OPTIONS: --color
-      - run: cabal exec -- cabal repl --with-ghc=doctest
+      - run: cabal install
+      - run: cabal repl --with-ghc=doctest
 
   success:
     needs: build
