@@ -1,3 +1,6 @@
+Changes in 0.20.1
+  - GHC 9.4 compatibility. (#382)
+
 Changes in 0.20.0
   - Allow doctest to be invoked via `cabal repl --with-ghc=doctest`
   - Include `ghc --info` output in `--info`
