@@ -129,7 +129,7 @@ runModule fastMode preserveIt repl (Module module_ setup examples) = do
     reload = do
       unless fastMode $
         -- NOTE: It is important to do the :reload first! See
-        -- https://ghc.haskell.org/trac/ghc/ticket/5904, which results in a
+        -- https://gitlab.haskell.org/ghc/ghc/-/issues/5904, which results in a
         -- panic on GHC 7.4.1 if you do the :reload second.
         void $ Interpreter.safeEval repl ":reload"
       void $ Interpreter.safeEval repl $ ":m *" ++ module_
