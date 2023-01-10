@@ -134,7 +134,7 @@ getResult echoMode Interpreter{hOut = stdout} = go
     echo :: String -> IO ()
     echo
       | echoMode = putStr
-      | otherwise = (const $ return ())
+      | otherwise = \ _ -> return ()
 
 -- | Evaluate an expression
 eval :: Interpreter -> String -> IO String
