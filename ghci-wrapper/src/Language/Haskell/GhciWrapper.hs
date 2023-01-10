@@ -43,14 +43,18 @@ itMarker :: String
 itMarker = "d42472243a0e6fc481e7514cbc9eb08812ed48daa29ca815844d86010b1d113a"
 
 data Interpreter = Interpreter {
-    hIn  :: Handle
-  , hOut :: Handle
-  , process :: ProcessHandle
-  }
+  hIn  :: Handle
+, hOut :: Handle
+, process :: ProcessHandle
+}
 
 new :: Config -> [String] -> IO Interpreter
 new Config{..} args_ = do
-  (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess $ (proc configGhci args) {std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit}
+  (Just stdin_, Just stdout_, Nothing, processHandle ) <- createProcess (proc configGhci args) {
+    std_in  = CreatePipe
+  , std_out = CreatePipe
+  , std_err = Inherit
+  }
   setMode stdin_
   setMode stdout_
   let interpreter = Interpreter {hIn = stdin_, hOut = stdout_, process = processHandle}
