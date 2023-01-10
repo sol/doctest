@@ -141,7 +141,7 @@ If `doctest`s are running too slowly, you might consider using `--fast`.
 (With the caveat that the order in which groups appear now matters!)
 
 However, note that due to a
-[bug on GHC 8.2.1 or later](https://ghc.haskell.org/trac/ghc/ticket/14052),
+[bug on GHC 8.2.1 or later](https://gitlab.haskell.org/ghc/ghc/-/issues/14052),
 the performance of `--fast` suffers significantly when combined with the
 `--preserve-it` flag (which keeps the value of GHCi's `it` value between
 examples).
