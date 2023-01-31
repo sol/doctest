@@ -8,7 +8,6 @@ import           Test.HUnit (assertEqual, Assertion)
 import           Control.Exception
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           System.FilePath
-import           Options
 import           Runner (Summary(..))
 import           Run hiding (doctest)
 import           System.IO.Silently
@@ -22,11 +21,11 @@ withCurrentDirectory workingDir action = do
 
 -- | Construct a doctest specific 'Assertion'.
 doctest :: HasCallStack => FilePath -> [String] -> Summary -> Assertion
-doctest = doctestWithPreserveIt defaultPreserveIt
+doctest = doctestWithPreserveIt False
 
 doctestWithPreserveIt :: HasCallStack => Bool -> FilePath -> [String] -> Summary -> Assertion
 doctestWithPreserveIt preserveIt workingDir args expected = do
-  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithOptions defaultFastMode preserveIt defaultVerbose args)
+  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithOptions False preserveIt False args)
   assertEqual label expected actual
   where
     label = workingDir ++ " " ++ show args
