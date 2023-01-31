@@ -43,7 +43,6 @@ dependencies:
 library:
   source-dirs:
   - src
-  - ghci-wrapper/src
   exposed-modules:
   - Test.DocTest
 
@@ -62,7 +61,6 @@ tests:
     source-dirs:
       - test
       - src
-      - ghci-wrapper/src
     c-sources: test/integration/with-cbits/foo.c
     dependencies:
     - HUnit

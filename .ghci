@@ -1,2 +1,1 @@
 :set -DTEST -isrc -itest -packageghc
-:set -ighci-wrapper/src
