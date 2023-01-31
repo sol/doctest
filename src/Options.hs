@@ -3,12 +3,9 @@
 module Options (
   Result(..)
 , Run(..)
-, defaultMagic
-, defaultFastMode
-, defaultPreserveIt
-, defaultVerbose
 , parseOptions
 #ifdef TEST
+, defaultRun
 , usage
 , info
 , versionInfo
@@ -72,26 +69,14 @@ nonInteractiveGhcOptions = [
   , "--abi-hash"
   ]
 
-defaultMagic :: Bool
-defaultMagic = True
-
-defaultFastMode :: Bool
-defaultFastMode = False
-
-defaultPreserveIt :: Bool
-defaultPreserveIt = False
-
-defaultVerbose :: Bool
-defaultVerbose = False
-
 defaultRun :: Run
 defaultRun = Run {
   runWarnings = []
 , runOptions = []
-, runMagicMode = defaultMagic
-, runFastMode = defaultFastMode
-, runPreserveIt = defaultPreserveIt
-, runVerbose = defaultVerbose
+, runMagicMode = False
+, runFastMode = False
+, runPreserveIt = False
+, runVerbose = False
 }
 
 modifyWarnings :: ([String] -> [String]) -> Run -> Run
@@ -114,51 +99,41 @@ setVerbose verbose run = run { runVerbose = verbose }
 
 parseOptions :: [String] -> Result Run
 parseOptions args
-  | "--info" `elem` args = Output info
-  | "--interactive" `elem` args = Result Run {
-        runWarnings = []
-      , runOptions = filter (/= "--interactive") args
-      , runMagicMode = False
-      , runFastMode = False
-      , runPreserveIt = False
-      , runVerbose = False
-      }
-  | any (`elem` nonInteractiveGhcOptions) args = RunGhc args
-  | "--help" `elem` args = Output usage
-  | "--version" `elem` args = Output versionInfo
-  | otherwise = case execRWS parse () args of
-      (xs, Endo setter) ->
-        Result (setOptions xs $ setter defaultRun)
-    where
-      parse :: RWS () (Endo Run) [String] ()
-      parse = do
-        stripNoMagic
-        stripFast
-        stripPreserveIt
-        stripVerbose
-        stripOptGhc
+  | on "--info" = Output info
+  | on "--interactive" = runRunOptionsParser (discard "--interactive" args) defaultRun $ do
+      commonRunOptions
+  | on `any` nonInteractiveGhcOptions = RunGhc args
+  | on "--help" = Output usage
+  | on "--version" = Output versionInfo
+  | otherwise = runRunOptionsParser args defaultRun {runMagicMode = True} $ do
+      commonRunOptions
+      parseFlag "--no-magic" (setMagicMode False)
+      parseOptGhc
+  where
+    on option = option `elem` args
 
-stripNoMagic :: RWS () (Endo Run) [String] ()
-stripNoMagic = stripFlag (setMagicMode False) "--no-magic"
+type RunOptionsParser = RWS () (Endo Run) [String] ()
 
-stripFast :: RWS () (Endo Run) [String] ()
-stripFast = stripFlag (setFastMode True) "--fast"
+runRunOptionsParser :: [String] -> Run -> RunOptionsParser -> Result Run
+runRunOptionsParser args def parse = case execRWS parse () args of
+  (xs, Endo setter) ->
+    Result (setOptions xs $ setter def)
 
-stripPreserveIt :: RWS () (Endo Run) [String] ()
-stripPreserveIt = stripFlag (setPreserveIt True) "--preserve-it"
+commonRunOptions :: RunOptionsParser
+commonRunOptions = do
+  parseFlag "--fast" (setFastMode True)
+  parseFlag "--preserve-it" (setPreserveIt True)
+  parseFlag "--verbose" (setVerbose True)
 
-stripVerbose :: RWS () (Endo Run) [String] ()
-stripVerbose = stripFlag (setVerbose True) "--verbose"
-
-stripFlag :: (Run -> Run) -> String -> RWS () (Endo Run) [String] ()
-stripFlag setter flag = do
+parseFlag :: String -> (Run -> Run) -> RunOptionsParser
+parseFlag flag setter = do
   args <- RWS.get
   when (flag `elem` args) $
     RWS.tell (Endo setter)
-  RWS.put (filter (/= flag) args)
+  RWS.put (discard flag args)
 
-stripOptGhc :: RWS () (Endo Run) [String] ()
-stripOptGhc = do
+parseOptGhc :: RunOptionsParser
+parseOptGhc = do
   issueWarning <- RWS.state go
   when issueWarning $
     RWS.tell $ Endo $ modifyWarnings (++ [warning])
@@ -169,3 +144,6 @@ stripOptGhc = do
       opt : rest -> maybe (fmap (opt :)) (\x (_, xs) -> (True, x : xs)) (stripPrefix "--optghc=" opt) (go rest)
 
     warning = "WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."
+
+discard :: String -> [String] -> [String]
+discard flag = filter (/= flag)

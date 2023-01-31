@@ -58,7 +58,7 @@ doctest src/Fib.hs
 ```
 
 
-## Running `doctest` for a Cabal package
+# Running `doctest` for a Cabal package
 
 The easiest way to run `doctest` for a Cabal package is via `cabal repl --with-ghc=doctest`.
 
@@ -90,6 +90,7 @@ Notes:
 - `doctest` always uses the version of GHC it was compiled with.  Reinstalling
   `doctest` with `cabal install doctest --overwrite-policy=always` before each
   invocation ensures that it uses the same version of GHC as is on the `PATH`.
+
 - Technically, `cabal build` is not necessary. `cabal repl --with-ghc=doctest`
   will build any dependencies as needed.  However, it's more robust to run
   `cabal build` first (specifically it is not a good idea to build
@@ -103,6 +104,28 @@ cabal install doctest --overwrite-policy=always && cabal build && cabal repl --b
 
 (This is what you want to use on CI.)
 
+## Passing `doctest` options to `cabal repl`
+
+You can pass `doctest` options like `--fast`, `--preserve-it` and `--verbose` to
+`cabal repl` via `--repl-options`.
+
+Example:
+
+```
+$ cabal repl --with-ghc=doctest --repl-options=--verbose
+### Started execution at src/Fib.hs:7.
+### example:
+fib 10
+### Successful!
+
+### Started execution at src/Fib.hs:10.
+### example:
+fib 5
+### Successful!
+
+# Final summary:
+Examples: 2  Tried: 2  Errors: 0  Failures: 0
+```
 
 # Writing examples and properties
 

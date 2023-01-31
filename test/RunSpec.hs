@@ -20,7 +20,7 @@ import qualified Options
 import           Run
 
 doctestWithDefaultOptions :: [String] -> IO Summary
-doctestWithDefaultOptions = doctestWithOptions Options.defaultFastMode Options.defaultPreserveIt Options.defaultVerbose
+doctestWithDefaultOptions = doctestWithOptions False False False
 
 withCurrentDirectory :: FilePath -> IO a -> IO a
 withCurrentDirectory workingDir action = do

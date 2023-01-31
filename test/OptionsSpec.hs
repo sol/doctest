@@ -18,12 +18,19 @@ instance Arbitrary NonInteractive where
 spec :: Spec
 spec = do
   describe "parseOptions" $ do
-    let warning = ["WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."]
+    let
+      run :: [String] -> Run
+      run options = defaultRun {
+        runWarnings = ["WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."]
+      , runOptions = options
+      , runMagicMode = True
+      }
+
     it "strips --optghc" $
-      parseOptions ["--optghc", "foobar"] `shouldBe` Result (Run warning ["foobar"] defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
+      parseOptions ["--optghc", "foobar"] `shouldBe` Result (run ["foobar"])
 
     it "strips --optghc=" $
-      parseOptions ["--optghc=foobar"] `shouldBe` Result (Run warning ["foobar"] defaultMagic defaultFastMode defaultPreserveIt defaultVerbose)
+      parseOptions ["--optghc=foobar"] `shouldBe` Result (run ["foobar"])
 
     context "with ghc options that are not valid with --interactive" $ do
       it "returns RunGhc" $ do
@@ -39,6 +46,9 @@ spec = do
 
       it "filters out --interactive" $ do
         runOptions <$> parseOptions options `shouldBe` Result ["--foo", "--bar"]
+
+      it "accepts --fast" $ do
+        runFastMode <$> parseOptions ("--fast" : options) `shouldBe` Result True
 
     describe "--no-magic" $ do
       context "without --no-magic" $ do
