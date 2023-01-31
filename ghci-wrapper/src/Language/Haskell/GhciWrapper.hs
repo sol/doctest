@@ -105,6 +105,7 @@ close repl = do
   -- around consuming 100% CPU.  This happens when ghci tries to print
   -- something to stdout in its signal handler (e.g. when it is blocked in
   -- threadDelay it writes "Interrupted." on SIGINT).
+  terminateProcess $ process repl
   e <- waitForProcess $ process repl
   hClose $ hOut repl
 
