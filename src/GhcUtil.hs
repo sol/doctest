@@ -69,7 +69,9 @@ handleDynamicFlags flags = do
 
 setHaddockMode :: DynFlags -> DynFlags
 setHaddockMode dynflags = (gopt_set dynflags Opt_Haddock) {
-#if __GLASGOW_HASKELL__ >= 901
+#if __GLASGOW_HASKELL__ >= 906
+      backend   = noBackend
+#elif __GLASGOW_HASKELL__ >= 901
       backend   = NoBackend
 #else
       hscTarget = HscNothing

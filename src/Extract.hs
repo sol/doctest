@@ -221,8 +221,10 @@ docStringsFromModule mod = map (fmap (toLocated . fmap unpackHDS)) docs
     -- We process header, exports and declarations separately instead of
     -- traversing the whole source in a generic way, to ensure that we get
     -- everything in source order.
-#if __GLASGOW_HASKELL__ >= 904
-    header  = [(Nothing, hsDocString <$> x) | Just x <- [hsmodHaddockModHeader source]]
+#if __GLASGOW_HASKELL__ >= 906
+    header  = [(Nothing, hsDocString <$> x) | Just x <- [hsmodHaddockModHeader (hsmodExt source)]]
+#elif __GLASGOW_HASKELL__ >= 904
+    header  = [(Nothing, hsDocString <$> x) | Just x <- [hsmodHaddockModHeader (source)]]
 #else
     header  = [(Nothing, x) | Just x <- [hsmodHaddockModHeader source]]
 #endif
