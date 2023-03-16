@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           doctest
-version:        0.21.0
+version:        0.21.1
 synopsis:       Test interactive Haskell examples
 description:    `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
                 and [properties](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810771856)
@@ -137,7 +137,7 @@ library
     , directory
     , exceptions
     , filepath
-    , ghc >=8.0 && <9.5
+    , ghc >=8.0 && <9.7
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -160,7 +160,7 @@ executable doctest
     , doctest
     , exceptions
     , filepath
-    , ghc >=8.0 && <9.5
+    , ghc >=8.0 && <9.7
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -221,7 +221,7 @@ test-suite spec
     , directory
     , exceptions
     , filepath
-    , ghc >=8.0 && <9.5
+    , ghc >=8.0 && <9.7
     , ghc-paths >=0.1.0.9
     , hspec >=2.3.0
     , hspec-core >=2.3.0
