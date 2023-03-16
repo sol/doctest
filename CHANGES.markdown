@@ -1,3 +1,6 @@
+Changes in 0.21.1
+  - GHC 9.6 compatibility.
+
 Changes in 0.21.0
   - Accept `--fast`, `--preserve-it` and `--verbose` via `--repl-options`
 

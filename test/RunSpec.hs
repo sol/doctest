@@ -128,7 +128,15 @@ spec = do
 
       it "prints a useful error message" $ do
         (r, _) <- hCapture [stderr] (E.try action :: IO (Either ExitCode Summary))
-        stripAnsiColors (removeLoadedPackageEnvironment r) `shouldBe` "\nFoo.hs:6:1: error:\n    parse error (possibly incorrect indentation or mismatched brackets)\n"
+        stripAnsiColors (removeLoadedPackageEnvironment r) `shouldBe` unlines [
+            ""
+#if __GLASGOW_HASKELL__ >= 906
+          , "Foo.hs:6:1: error: [GHC-58481]"
+#else
+          , "Foo.hs:6:1: error:"
+#endif
+          , "    parse error (possibly incorrect indentation or mismatched brackets)"
+          ]
 
   describe "expandDirs" $ do
     it "expands a directory" $ do
