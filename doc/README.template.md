@@ -385,7 +385,7 @@ There's two sets of GHC extensions involved when running Doctest:
 
 ```haskell
 -- |
--- >>> :set -XTupleSections
+-- >>> :seti -XTupleSections
 -- >>> fst' $ (1,) 2
 -- 1
 fst' :: (a, b) -> a
@@ -405,7 +405,7 @@ Haddock](#hiding-examples-from-haddock), e.g.:
 
 ```haskell
 -- $
--- >>> :set -XTupleSections
+-- >>> :seti -XTupleSections
 ```
 
 [language-pragma]: https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/pragmas.html#language-pragma

@@ -102,7 +102,7 @@ spec = do
 
     context "with -XOverloadedStrings, -Wall and -Werror" $ do
       it "does not fail on marker expression (bug fix)" $ withInterpreter $ \ghci -> do
-        ghci ":set -XOverloadedStrings -Wall -Werror" `shouldReturn` ""
+        ghci ":seti -XOverloadedStrings -Wall -Werror" `shouldReturn` ""
         ghci "putStrLn \"foo\"" `shouldReturn` "foo\n"
 
     context "with NoImplicitPrelude" $ do
