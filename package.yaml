@@ -9,9 +9,9 @@ description: |
 
   Documentation is at <https://github.com/sol/doctest#readme>.
 category:         Testing
-copyright:        (c) 2009-2022 Simon Hengel
+copyright:        (c) 2009-2023 Simon Hengel
 author:           Simon Hengel <sol@typeful.net>
-maintainer:       quasicomputational@gmail.com, Andreas Abel
+maintainer:       Simon Hengel <sol@typeful.net>
 
 
 github: sol/doctest
