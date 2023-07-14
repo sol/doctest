@@ -18,9 +18,9 @@ bug-reports:    https://github.com/sol/doctest/issues
 homepage:       https://github.com/sol/doctest#readme
 license:        MIT
 license-file:   LICENSE
-copyright:      (c) 2009-2022 Simon Hengel
+copyright:      (c) 2009-2023 Simon Hengel
 author:         Simon Hengel <sol@typeful.net>
-maintainer:     quasicomputational@gmail.com, Andreas Abel
+maintainer:     Simon Hengel <sol@typeful.net>
 build-type:     Simple
 extra-source-files:
     example/example.cabal
@@ -177,7 +177,6 @@ test-suite spec
       LocationSpec
       MainSpec
       OptionsSpec
-      Orphans
       PackageDBsSpec
       ParseSpec
       PropertySpec

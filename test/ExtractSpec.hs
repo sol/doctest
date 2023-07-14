@@ -18,8 +18,6 @@ import           Extract
 import           Location
 import           System.FilePath
 
-import           Orphans ()
-
 shouldGive :: HasCallStack => (String, String) -> [Module String] -> Assertion
 (d, m) `shouldGive` expected = do
   r <- map (fmap unLoc) `fmap` extract ["-i" ++ dir, dir </> m]

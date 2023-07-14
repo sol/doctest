@@ -1,1 +1,1 @@
-:set -DTEST -isrc -itest -packageghc
+:set -DTEST -isrc -itest -packageghc -XHaskell2010
