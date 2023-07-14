@@ -67,7 +67,8 @@ jobs:
           - os: macos-latest
             ghc: system
           - os: windows-latest
-            ghc: system
+            # ghc: system
+            ghc: 9.6.2
     steps:
       - uses: actions/checkout@v3
       - uses: hspec/setup-haskell@v1
