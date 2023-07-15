@@ -3,6 +3,8 @@
 module Options (
   Result(..)
 , Run(..)
+, Config(..)
+, defaultConfig
 , parseOptions
 #ifdef TEST
 , defaultRun
@@ -49,12 +51,24 @@ type Warning = String
 
 data Run = Run {
   runWarnings :: [Warning]
-, runOptions :: [String]
 , runMagicMode :: Bool
-, runFastMode :: Bool
-, runPreserveIt :: Bool
-, runVerbose :: Bool
+, runConfig :: Config
 } deriving (Eq, Show)
+
+data Config = Config {
+  ghcOptions :: [String]
+, fastMode :: Bool
+, preserveIt :: Bool
+, verbose :: Bool
+} deriving (Eq, Show)
+
+defaultConfig :: Config
+defaultConfig = Config {
+  ghcOptions = []
+, fastMode = False
+, preserveIt = False
+, verbose = False
+}
 
 nonInteractiveGhcOptions :: [String]
 nonInteractiveGhcOptions = [
@@ -72,30 +86,27 @@ nonInteractiveGhcOptions = [
 defaultRun :: Run
 defaultRun = Run {
   runWarnings = []
-, runOptions = []
 , runMagicMode = False
-, runFastMode = False
-, runPreserveIt = False
-, runVerbose = False
+, runConfig = defaultConfig
 }
 
 modifyWarnings :: ([String] -> [String]) -> Run -> Run
 modifyWarnings f run = run { runWarnings = f (runWarnings run) }
 
 setOptions :: [String] -> Run -> Run
-setOptions opts run = run { runOptions = opts }
+setOptions ghcOptions run@Run{..} = run { runConfig = runConfig { ghcOptions } }
 
 setMagicMode :: Bool -> Run -> Run
 setMagicMode magic run = run { runMagicMode = magic }
 
 setFastMode :: Bool -> Run -> Run
-setFastMode fast run = run { runFastMode = fast }
+setFastMode fastMode run@Run{..} = run { runConfig = runConfig { fastMode } }
 
 setPreserveIt :: Bool -> Run -> Run
-setPreserveIt preserveIt run = run { runPreserveIt = preserveIt }
+setPreserveIt preserveIt run@Run{..} = run { runConfig = runConfig { preserveIt } }
 
 setVerbose :: Bool -> Run -> Run
-setVerbose verbose run = run { runVerbose = verbose }
+setVerbose verbose run@Run{..} = run { runConfig = runConfig { verbose } }
 
 parseOptions :: [String] -> Result Run
 parseOptions args

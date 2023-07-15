@@ -1,9 +1,17 @@
 {-# LANGUAGE CPP #-}
 module Run (
   doctest
+
+, Config(..)
+, defaultConfig
+, doctestWith
+
+, Summary(..)
+, isSuccess
+, evaluateSummary
+, doctestWithResult
+
 #ifdef TEST
-, doctestWithOptions
-, Summary
 , expandDirs
 #endif
 ) where
@@ -11,7 +19,7 @@ module Run (
 import           Prelude ()
 import           Prelude.Compat
 
-import           Control.Monad (when, unless)
+import           Control.Monad
 import           System.Directory (doesFileExist, doesDirectoryExist, getDirectoryContents)
 import           System.Environment (getEnvironment)
 import           System.Exit (exitFailure, exitSuccess)
@@ -32,6 +40,7 @@ import           PackageDBs
 import           Parse
 import           Options
 import           Runner
+import           Location
 import qualified Interpreter
 
 -- | Run doctest with given list of arguments.
@@ -51,7 +60,7 @@ doctest :: [String] -> IO ()
 doctest args0 = case parseOptions args0 of
   ProxyToGhc args -> rawSystem Interpreter.ghc args >>= E.throwIO
   Output s -> putStr s
-  Result (Run warnings args_ magicMode fastMode preserveIt verbose) -> do
+  Result (Run warnings magicMode config) -> do
     mapM_ (hPutStrLn stderr) warnings
     hFlush stderr
 
@@ -60,22 +69,14 @@ doctest args0 = case parseOptions args0 of
       hPutStrLn stderr "WARNING: GHC does not support --interactive, skipping tests"
       exitSuccess
 
-    args <- case magicMode of
-      False -> return args_
+    opts <- case magicMode of
+      False -> return (ghcOptions config)
       True -> do
-        expandedArgs <- concat <$> mapM expandDirs args_
+        expandedArgs <- concat <$> mapM expandDirs (ghcOptions config)
         packageDBArgs <- getPackageDBArgs
         addDistArgs <- getAddDistArgs
         return (addDistArgs $ packageDBArgs ++ expandedArgs)
-
-    r <- doctestWithOptions fastMode preserveIt verbose args `E.catch` \e -> do
-      case fromException e of
-        Just (UsageError err) -> do
-          hPutStrLn stderr ("doctest: " ++ err)
-          hPutStrLn stderr "Try `doctest --help' for more information."
-          exitFailure
-        _ -> E.throwIO e
-    when (not $ isSuccess r) exitFailure
+    doctestWith config{ghcOptions = opts}
 
 -- | Expand a reference to a directory to all .hs and .lhs files within it.
 expandDirs :: String -> IO [String]
@@ -128,14 +129,26 @@ getAddDistArgs = do
                     else id) rest
         else return id
 
+doctestWith :: Config -> IO ()
+doctestWith = doctestWithResult >=> evaluateSummary
+
 isSuccess :: Summary -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
 
-doctestWithOptions :: Bool -> Bool -> Bool -> [String] -> IO Summary
-doctestWithOptions fastMode preserveIt verbose args = do
+evaluateSummary :: Summary -> IO ()
+evaluateSummary r = when (not $ isSuccess r) exitFailure
 
-  -- get examples from Haddock comments
-  modules <- getDocTests args
+doctestWithResult :: Config -> IO Summary
+doctestWithResult config = do
+  (getDocTests (ghcOptions config) >>= runDocTests config) `E.catch` \e -> do
+    case fromException e of
+      Just (UsageError err) -> do
+        hPutStrLn stderr ("doctest: " ++ err)
+        hPutStrLn stderr "Try `doctest --help' for more information."
+        exitFailure
+      _ -> E.throwIO e
 
-  Interpreter.withInterpreter args $ \repl -> withCP65001 $ do
+runDocTests :: Config -> [Module [Located DocTest]] -> IO Summary
+runDocTests Config{..} modules = do
+  Interpreter.withInterpreter ghcOptions $ \repl -> withCP65001 $ do
     runModules fastMode preserveIt verbose repl modules
