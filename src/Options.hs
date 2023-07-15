@@ -42,7 +42,7 @@ usage = unlines [
   , "  --info         output machine-readable version information and exit"
   ]
 
-data Result a = RunGhc [String] | Output String | Result a
+data Result a = ProxyToGhc [String] | Output String | Result a
   deriving (Eq, Show, Functor)
 
 type Warning = String
@@ -102,7 +102,7 @@ parseOptions args
   | on "--info" = Output info
   | on "--interactive" = runRunOptionsParser (discard "--interactive" args) defaultRun $ do
       commonRunOptions
-  | on `any` nonInteractiveGhcOptions = RunGhc args
+  | on `any` nonInteractiveGhcOptions = ProxyToGhc args
   | on "--help" = Output usage
   | on "--version" = Output versionInfo
   | otherwise = runRunOptionsParser args defaultRun {runMagicMode = True} $ do

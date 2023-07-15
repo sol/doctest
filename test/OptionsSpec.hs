@@ -33,10 +33,10 @@ spec = do
       parseOptions ["--optghc=foobar"] `shouldBe` Result (run ["foobar"])
 
     context "with ghc options that are not valid with --interactive" $ do
-      it "returns RunGhc" $ do
+      it "returns ProxyToGhc" $ do
         property $ \ (NonInteractive x) xs -> do
           let options = x : xs
-          parseOptions options `shouldBe` RunGhc options
+          parseOptions options `shouldBe` ProxyToGhc options
 
     context "with --interactive" $ do
       let options = ["--interactive", "--foo", "--bar"]
