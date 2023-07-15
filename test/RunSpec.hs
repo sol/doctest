@@ -19,9 +19,6 @@ import qualified Options
 
 import           Run
 
-doctestWithDefaultOptions :: [String] -> IO Summary
-doctestWithDefaultOptions = doctestWithOptions False False False
-
 withCurrentDirectory :: FilePath -> IO a -> IO a
 withCurrentDirectory workingDir action = do
   E.bracket getCurrentDirectory setCurrentDirectory $ \_ -> do
@@ -119,9 +116,11 @@ spec = do
       hSilence [stderr] $ doctest ["-fdiagnostics-color=always", "test/integration/color/Foo.hs"]
 #endif
 
-  describe "doctestWithOptions" $ do
+  describe "doctestWithResult" $ do
     context "on parse error" $ do
-      let action = withCurrentDirectory "test/integration/parse-error" (doctestWithDefaultOptions ["Foo.hs"])
+      let
+        action = withCurrentDirectory "test/integration/parse-error" $ do
+          doctestWithResult defaultConfig { ghcOptions = ["Foo.hs"] }
 
       it "aborts with (ExitFailure 1)" $ do
         hSilence [stderr] action `shouldThrow` (== ExitFailure 1)

@@ -16,6 +16,10 @@ maintainer:       Simon Hengel <sol@typeful.net>
 
 github: sol/doctest
 
+default-extensions:
+  - NamedFieldPuns
+  - RecordWildCards
+
 extra-source-files:
 - example/**/*
 - test/parse/**/*

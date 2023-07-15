@@ -1,4 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
 module Language.Haskell.GhciWrapper (
   Interpreter
 , Config(..)

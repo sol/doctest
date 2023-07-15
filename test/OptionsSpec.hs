@@ -5,7 +5,7 @@ import           Prelude.Compat
 import           Data.List.Compat
 
 import           Test.Hspec
-import           Test.QuickCheck
+import           Test.QuickCheck hiding (verbose)
 
 import           Options
 
@@ -20,10 +20,10 @@ spec = do
   describe "parseOptions" $ do
     let
       run :: [String] -> Run
-      run options = defaultRun {
+      run ghcOptions = defaultRun {
         runWarnings = ["WARNING: --optghc is deprecated, doctest now accepts arbitrary GHC options\ndirectly."]
-      , runOptions = options
       , runMagicMode = True
+      , runConfig = defaultConfig { ghcOptions }
       }
 
     it "strips --optghc" $
@@ -45,10 +45,10 @@ spec = do
         runMagicMode <$> parseOptions options `shouldBe` Result False
 
       it "filters out --interactive" $ do
-        runOptions <$> parseOptions options `shouldBe` Result ["--foo", "--bar"]
+        ghcOptions . runConfig <$> parseOptions options `shouldBe` Result ["--foo", "--bar"]
 
       it "accepts --fast" $ do
-        runFastMode <$> parseOptions ("--fast" : options) `shouldBe` Result True
+        fastMode . runConfig <$> parseOptions ("--fast" : options) `shouldBe` Result True
 
     describe "--no-magic" $ do
       context "without --no-magic" $ do
@@ -62,20 +62,20 @@ spec = do
     describe "--fast" $ do
       context "without --fast" $ do
         it "disables fast mode" $ do
-          runFastMode <$> parseOptions [] `shouldBe` Result False
+          fastMode . runConfig <$> parseOptions [] `shouldBe` Result False
 
       context "with --fast" $ do
         it "enabled fast mode" $ do
-          runFastMode <$> parseOptions ["--fast"] `shouldBe` Result True
+          fastMode . runConfig <$> parseOptions ["--fast"] `shouldBe` Result True
 
     describe "--preserve-it" $ do
       context "without --preserve-it" $ do
         it "does not preserve the `it` variable" $ do
-          runPreserveIt <$> parseOptions [] `shouldBe` Result False
+          preserveIt . runConfig <$> parseOptions [] `shouldBe` Result False
 
       context "with --preserve-it" $ do
         it "preserves the `it` variable" $ do
-          runPreserveIt <$> parseOptions ["--preserve-it"] `shouldBe` Result True
+          preserveIt . runConfig <$> parseOptions ["--preserve-it"] `shouldBe` Result True
 
     context "with --help" $ do
       it "outputs usage information" $ do
@@ -92,8 +92,8 @@ spec = do
     describe "--verbose" $ do
       context "without --verbose" $ do
         it "is not verbose by default" $ do
-          runVerbose <$> parseOptions [] `shouldBe` Result False
+          verbose . runConfig <$> parseOptions [] `shouldBe` Result False
 
       context "with --verbose" $ do
         it "parses verbose option" $ do
-          runVerbose <$> parseOptions ["--verbose"] `shouldBe` Result True
+          verbose . runConfig <$> parseOptions ["--verbose"] `shouldBe` Result True

@@ -1,1 +1,3 @@
 :set -DTEST -isrc -itest -packageghc -XHaskell2010
+:set -XNamedFieldPuns
+:set -XRecordWildCards
