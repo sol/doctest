@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
-
 module Interpreter (
   Interpreter
 , safeEval

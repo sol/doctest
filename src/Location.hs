@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, DeriveFunctor #-}
+{-# LANGUAGE CPP #-}
 module Location where
 
 import           Control.DeepSeq (deepseq, NFData(rnf))

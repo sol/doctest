@@ -1,0 +1,23 @@
+type DocTest :: *
+data DocTest
+  | Example Expression ExpectedResult
+  | Property Expression
+type ExpectedLine :: *
+data ExpectedLine
+  | ExpectedLine [LineChunk]
+  | WildCardLine
+type ExpectedResult :: *
+type ExpectedResult = [ExpectedLine]
+type Expression :: *
+type Expression = String
+type LineChunk :: *
+data LineChunk
+  | LineChunk String
+  | WildCardChunk
+type Module :: * -> *
+data Module a = Module
+  moduleName :: String
+  moduleSetup :: Maybe a
+  moduleContent :: [a]
+extractDocTests :: [String] -> IO [Module [doctest:Location.Located DocTest]]
+parseModules :: [Module (doctest:Location.Located String)] -> [Module [doctest:Location.Located DocTest]]

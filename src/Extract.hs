@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, DeriveDataTypeable, DeriveFunctor #-}
+{-# LANGUAGE CPP #-}
 module Extract (Module(..), extract) where
 
 import           Prelude hiding (mod, concat)
