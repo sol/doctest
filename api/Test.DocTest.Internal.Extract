@@ -1,0 +1,6 @@
+type Module :: * -> *
+data Module a = Module
+  moduleName :: String
+  moduleSetup :: Maybe a
+  moduleContent :: [a]
+extract :: [String] -> IO [Module (doctest:Location.Located String)]

@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           doctest
-version:        0.21.1
+version:        0.22.0
 synopsis:       Test interactive Haskell examples
 description:    `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
                 and [properties](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810771856)
@@ -114,8 +114,13 @@ library
   default-extensions:
       NamedFieldPuns
       RecordWildCards
+      DeriveFunctor
   exposed-modules:
       Test.DocTest
+      Test.DocTest.Internal.Extract
+      Test.DocTest.Internal.Location
+      Test.DocTest.Internal.Parse
+      Test.DocTest.Internal.Run
   other-modules:
       Extract
       GhcUtil
@@ -157,6 +162,7 @@ executable doctest
   default-extensions:
       NamedFieldPuns
       RecordWildCards
+      DeriveFunctor
   build-depends:
       base >=4.5 && <5
     , base-compat >=0.7.0
@@ -204,6 +210,10 @@ test-suite spec
       Runner
       Runner.Example
       Test.DocTest
+      Test.DocTest.Internal.Extract
+      Test.DocTest.Internal.Location
+      Test.DocTest.Internal.Parse
+      Test.DocTest.Internal.Run
       Util
       Paths_doctest
   type: exitcode-stdio-1.0
@@ -215,6 +225,7 @@ test-suite spec
   default-extensions:
       NamedFieldPuns
       RecordWildCards
+      DeriveFunctor
   c-sources:
       test/integration/with-cbits/foo.c
   build-tool-depends:

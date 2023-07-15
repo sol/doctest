@@ -1,0 +1,13 @@
+type Line :: *
+type Line = Int
+type Located :: * -> *
+data Located a = Located Location a
+type Location :: *
+data Location
+  | UnhelpfulLocation String
+  | Location FilePath Line
+enumerate :: Location -> [Location]
+noLocation :: a -> Located a
+toLocated :: GHC.Types.SrcLoc.Located a -> Located a
+toLocation :: GHC.Types.SrcLoc.SrcSpan -> Location
+unLoc :: Located a -> a

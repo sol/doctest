@@ -215,6 +215,8 @@ runTestGroup preserveIt repl setup tests = do
     examples :: [Located Interaction]
     examples = [Located loc (e, r) | Located loc (Example e r) <- tests]
 
+type Interaction = (Expression, ExpectedResult)
+
 -- |
 -- Execute all expressions from given example in given 'Interpreter' and verify
 -- the output.

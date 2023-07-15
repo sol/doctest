@@ -1,0 +1,21 @@
+type Config :: *
+data Config = Config
+  ghcOptions :: [String]
+  fastMode :: Bool
+  preserveIt :: Bool
+  verbose :: Bool
+type Result :: *
+type Result = Summary
+type Summary :: *
+data Summary = Summary
+  sExamples :: Int
+  sTried :: Int
+  sErrors :: Int
+  sFailures :: Int
+defaultConfig :: Config
+doctest :: [String] -> IO ()
+doctestWith :: Config -> IO ()
+doctestWithResult :: Config -> IO Result
+evaluateResult :: Result -> IO ()
+isSuccess :: Result -> Bool
+runDocTests :: Config -> [doctest:Extract.Module [doctest:Location.Located doctest:Parse.DocTest]] -> IO Result

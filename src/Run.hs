@@ -6,11 +6,13 @@ module Run (
 , defaultConfig
 , doctestWith
 
+, Result
 , Summary(..)
 , isSuccess
-, evaluateSummary
+, evaluateResult
 , doctestWithResult
 
+, runDocTests
 #ifdef TEST
 , expandDirs
 #endif
@@ -38,7 +40,8 @@ import           GHC.Utils.Panic
 
 import           PackageDBs
 import           Parse
-import           Options
+import           Options hiding (Result(..))
+import qualified Options
 import           Runner
 import           Location
 import qualified Interpreter
@@ -58,9 +61,9 @@ import qualified Interpreter
 -- inside of it, ignoring hidden entries.
 doctest :: [String] -> IO ()
 doctest args0 = case parseOptions args0 of
-  ProxyToGhc args -> rawSystem Interpreter.ghc args >>= E.throwIO
-  Output s -> putStr s
-  Result (Run warnings magicMode config) -> do
+  Options.ProxyToGhc args -> rawSystem Interpreter.ghc args >>= E.throwIO
+  Options.Output s -> putStr s
+  Options.Result (Run warnings magicMode config) -> do
     mapM_ (hPutStrLn stderr) warnings
     hFlush stderr
 
@@ -130,17 +133,19 @@ getAddDistArgs = do
         else return id
 
 doctestWith :: Config -> IO ()
-doctestWith = doctestWithResult >=> evaluateSummary
+doctestWith = doctestWithResult >=> evaluateResult
 
-isSuccess :: Summary -> Bool
+type Result = Summary
+
+isSuccess :: Result -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
 
-evaluateSummary :: Summary -> IO ()
-evaluateSummary r = when (not $ isSuccess r) exitFailure
+evaluateResult :: Result -> IO ()
+evaluateResult r = when (not $ isSuccess r) exitFailure
 
-doctestWithResult :: Config -> IO Summary
+doctestWithResult :: Config -> IO Result
 doctestWithResult config = do
-  (getDocTests (ghcOptions config) >>= runDocTests config) `E.catch` \e -> do
+  (extractDocTests (ghcOptions config) >>= runDocTests config) `E.catch` \e -> do
     case fromException e of
       Just (UsageError err) -> do
         hPutStrLn stderr ("doctest: " ++ err)
@@ -148,7 +153,7 @@ doctestWithResult config = do
         exitFailure
       _ -> E.throwIO e
 
-runDocTests :: Config -> [Module [Located DocTest]] -> IO Summary
+runDocTests :: Config -> [Module [Located DocTest]] -> IO Result
 runDocTests Config{..} modules = do
   Interpreter.withInterpreter ghcOptions $ \repl -> withCP65001 $ do
     runModules fastMode preserveIt verbose repl modules

@@ -29,9 +29,9 @@ shouldGive action expected = map (fmap $ map unLoc) `fmap` action `shouldReturn`
 
 spec :: Spec
 spec = do
-  describe "getDocTests" $ do
+  describe "extractDocTests" $ do
     it "extracts properties from a module" $ do
-      getDocTests ["test/parse/property/Fib.hs"] `shouldGive` do
+      extractDocTests ["test/parse/property/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
           group $ do
             prop_ "foo"
@@ -39,7 +39,7 @@ spec = do
             prop_ "baz"
 
     it "extracts examples from a module" $ do
-      getDocTests ["test/parse/simple/Fib.hs"] `shouldGive` do
+      extractDocTests ["test/parse/simple/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
           group $ do
             ghci "putStrLn \"foo\""
@@ -50,7 +50,7 @@ spec = do
               "baz"
 
     it "extracts examples from documentation for non-exported names" $ do
-      getDocTests ["test/parse/non-exported/Fib.hs"] `shouldGive` do
+      extractDocTests ["test/parse/non-exported/Fib.hs"] `shouldGive` do
         module_ "Fib" $ do
           group $ do
             ghci "putStrLn \"foo\""
@@ -61,7 +61,7 @@ spec = do
               "baz"
 
     it "extracts multiple examples from a module" $ do
-      getDocTests ["test/parse/multiple-examples/Foo.hs"] `shouldGive` do
+      extractDocTests ["test/parse/multiple-examples/Foo.hs"] `shouldGive` do
         module_ "Foo" $ do
           group $ do
             ghci "foo"
@@ -71,17 +71,17 @@ spec = do
               "42"
 
     it "returns an empty list, if documentation contains no examples" $ do
-      getDocTests ["test/parse/no-examples/Fib.hs"] >>= (`shouldBe` [])
+      extractDocTests ["test/parse/no-examples/Fib.hs"] >>= (`shouldBe` [])
 
     it "sets setup code to Nothing, if it does not contain any tests" $ do
-      getDocTests ["test/parse/setup-empty/Foo.hs"] `shouldGive` do
+      extractDocTests ["test/parse/setup-empty/Foo.hs"] `shouldGive` do
         module_ "Foo" $ do
           group $ do
             ghci "foo"
               "23"
 
     it "keeps modules that only contain setup code" $ do
-      getDocTests ["test/parse/setup-only/Foo.hs"] `shouldGive` do
+      extractDocTests ["test/parse/setup-only/Foo.hs"] `shouldGive` do
         tell [Module "Foo" (Just [Example "foo" ["23"]]) []]
 
   describe "parseInteractions (an internal function)" $ do

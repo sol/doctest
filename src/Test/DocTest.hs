@@ -1,5 +1,4 @@
 module Test.DocTest (
   doctest
 ) where
-
-import           Run
+import Test.DocTest.Internal.Run

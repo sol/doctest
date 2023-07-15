@@ -1,19 +1,20 @@
-{-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Parse (
   Module (..)
 , DocTest (..)
-, Interaction
 , Expression
 , ExpectedResult
 , ExpectedLine (..)
 , LineChunk (..)
-, getDocTests
+, extractDocTests
+, parseModules
 
--- * exported for testing
+#ifdef TEST
 , parseInteractions
 , parseProperties
 , mkLineChunks
+#endif
 ) where
 
 import           Data.Char (isSpace)
@@ -44,12 +45,15 @@ type ExpectedResult = [ExpectedLine]
 
 type Interaction = (Expression, ExpectedResult)
 
-
 -- |
 -- Extract 'DocTest's from all given modules and all modules included by the
 -- given modules.
-getDocTests :: [String] -> IO [Module [Located DocTest]]  -- ^ Extracted 'DocTest's
-getDocTests args = parseModules <$> extract args
+--
+-- @
+-- extractDocTests = fmap `parseModules` . `extract`
+-- @
+extractDocTests  :: [String] -> IO [Module [Located DocTest]]  -- ^ Extracted 'DocTest's
+extractDocTests = fmap parseModules . extract
 
 parseModules :: [Module (Located String)] -> [Module [Located DocTest]]
 parseModules = filter (not . isEmpty) . map parseModule

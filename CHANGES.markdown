@@ -1,3 +1,6 @@
+Changes in 0.22.0
+  - Export more internals
+
 Changes in 0.21.1
   - GHC 9.6 compatibility.
 
