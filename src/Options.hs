@@ -14,14 +14,11 @@ module Options (
 #endif
 ) where
 
-import           Prelude ()
-import           Prelude.Compat
-
 import           Control.Monad.Trans.RWS (RWS, execRWS)
 import qualified Control.Monad.Trans.RWS as RWS
 
 import           Control.Monad (when)
-import           Data.List.Compat (stripPrefix)
+import           Data.List (stripPrefix)
 import           Data.Monoid (Endo (Endo))
 
 import           Info

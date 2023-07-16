@@ -33,7 +33,6 @@ ghc-options: -Wall
 
 dependencies:
 - base >= 4.5 && < 5
-- base-compat >= 0.7.0
 - ghc >= 8.0 && < 9.7
 - syb >= 0.3
 - code-page >= 0.1

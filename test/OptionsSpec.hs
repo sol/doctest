@@ -1,8 +1,6 @@
 module OptionsSpec (spec) where
 
-import           Prelude ()
-import           Prelude.Compat
-import           Data.List.Compat
+import           Data.List
 
 import           Test.Hspec
 import           Test.QuickCheck hiding (verbose)

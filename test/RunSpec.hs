@@ -1,16 +1,13 @@
 {-# LANGUAGE CPP #-}
 module RunSpec (main, spec) where
 
-import           Prelude ()
-import           Prelude.Compat
-
 import           Test.Hspec
 import           System.Exit
 
 import qualified Control.Exception as E
 import           System.FilePath
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
-import           Data.List.Compat (isPrefixOf, sort)
+import           Data.List (isPrefixOf, sort)
 import           Data.Char
 
 import           System.IO.Silently

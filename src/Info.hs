@@ -7,7 +7,7 @@ module Info (
 #endif
 ) where
 
-import           Data.List.Compat
+import           Data.List
 import           System.Process
 import           System.IO.Unsafe
 
