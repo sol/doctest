@@ -18,9 +18,6 @@ module Run (
 #endif
 ) where
 
-import           Prelude ()
-import           Prelude.Compat
-
 import           Control.Monad
 import           System.Directory (doesFileExist, doesDirectoryExist, getDirectoryContents)
 import           System.Environment (getEnvironment)

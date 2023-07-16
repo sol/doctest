@@ -139,7 +139,6 @@ library
       Paths_doctest
   build-depends:
       base >=4.5 && <5
-    , base-compat >=0.7.0
     , code-page >=0.1
     , deepseq
     , directory
@@ -165,7 +164,6 @@ executable doctest
       DeriveFunctor
   build-depends:
       base >=4.5 && <5
-    , base-compat >=0.7.0
     , code-page >=0.1
     , deepseq
     , directory
@@ -234,7 +232,6 @@ test-suite spec
       HUnit
     , QuickCheck >=2.13.1
     , base >=4.5 && <5
-    , base-compat >=0.7.0
     , code-page >=0.1
     , deepseq
     , directory
