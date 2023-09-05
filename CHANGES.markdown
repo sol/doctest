@@ -1,3 +1,6 @@
+Changes in 0.22.1
+  - Add `Test.DocTest.Internal.Run.doctestWithRepl`
+
 Changes in 0.22.0
   - Export more internals
 
