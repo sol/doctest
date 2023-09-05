@@ -1,5 +1,7 @@
 module UtilSpec (main, spec) where
 
+import           Imports
+
 import           Test.Hspec
 
 import           Util

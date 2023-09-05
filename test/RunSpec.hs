@@ -1,6 +1,8 @@
 {-# LANGUAGE CPP #-}
 module RunSpec (main, spec) where
 
+import           Imports
+
 import           Test.Hspec
 import           System.Exit
 

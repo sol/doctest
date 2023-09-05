@@ -20,6 +20,7 @@ default-extensions:
   - NamedFieldPuns
   - RecordWildCards
   - DeriveFunctor
+  - NoImplicitPrelude
 
 extra-source-files:
 - example/**/*

@@ -7,6 +7,8 @@ module Info (
 #endif
 ) where
 
+import           Imports
+
 import           Data.List
 import           System.Process
 import           System.IO.Unsafe

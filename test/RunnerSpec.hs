@@ -1,6 +1,8 @@
 {-# LANGUAGE CPP, OverloadedStrings #-}
 module RunnerSpec (main, spec) where
 
+import           Imports
+
 import           Test.Hspec
 
 import           System.IO

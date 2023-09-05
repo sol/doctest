@@ -2,3 +2,4 @@
 :set -XNamedFieldPuns
 :set -XRecordWildCards
 :set -XDeriveFunctor
+:set -XNoImplicitPrelude

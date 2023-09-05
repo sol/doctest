@@ -4,6 +4,8 @@
 
 module ExtractSpec (main, spec) where
 
+import           Imports
+
 import           Test.Hspec
 import           Test.HUnit
 

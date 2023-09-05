@@ -1,5 +1,7 @@
 module OptionsSpec (spec) where
 
+import           Imports
+
 import           Data.List
 
 import           Test.Hspec

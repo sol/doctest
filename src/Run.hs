@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 module Run (
   doctest
+, doctestWithRepl
 
 , Config(..)
 , defaultConfig
@@ -18,7 +19,8 @@ module Run (
 #endif
 ) where
 
-import           Control.Monad
+import           Imports
+
 import           System.Directory (doesFileExist, doesDirectoryExist, getDirectoryContents)
 import           System.Environment (getEnvironment)
 import           System.Exit (exitFailure, exitSuccess)
@@ -57,7 +59,10 @@ import qualified Interpreter
 -- If a directory is given, it is traversed to find all .hs and .lhs files
 -- inside of it, ignoring hidden entries.
 doctest :: [String] -> IO ()
-doctest args0 = case parseOptions args0 of
+doctest = doctestWithRepl (repl defaultConfig)
+
+doctestWithRepl :: (String, [String]) -> [String] -> IO ()
+doctestWithRepl repl args0 = case parseOptions args0 of
   Options.ProxyToGhc args -> rawSystem Interpreter.ghc args >>= E.throwIO
   Options.Output s -> putStr s
   Options.Result (Run warnings magicMode config) -> do
@@ -76,7 +81,7 @@ doctest args0 = case parseOptions args0 of
         packageDBArgs <- getPackageDBArgs
         addDistArgs <- getAddDistArgs
         return (addDistArgs $ packageDBArgs ++ expandedArgs)
-    doctestWith config{ghcOptions = opts}
+    doctestWith config{repl, ghcOptions = opts}
 
 -- | Expand a reference to a directory to all .hs and .lhs files within it.
 expandDirs :: String -> IO [String]
@@ -152,5 +157,5 @@ doctestWithResult config = do
 
 runDocTests :: Config -> [Module [Located DocTest]] -> IO Result
 runDocTests Config{..} modules = do
-  Interpreter.withInterpreter ghcOptions $ \repl -> withCP65001 $ do
-    runModules fastMode preserveIt verbose repl modules
+  Interpreter.withInterpreter ((<> ghcOptions) <$> repl) $ \ interpreter -> withCP65001 $ do
+    runModules fastMode preserveIt verbose interpreter modules

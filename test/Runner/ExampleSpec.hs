@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Runner.ExampleSpec (main, spec) where
 
+import           Imports
+
 import           Data.String
 import           Test.Hspec
 import           Test.Hspec.Core.QuickCheck (modifyMaxSize)

@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.35.4.
 --
 -- see: https://github.com/sol/hpack
 
@@ -115,6 +115,7 @@ library
       NamedFieldPuns
       RecordWildCards
       DeriveFunctor
+      NoImplicitPrelude
   exposed-modules:
       Test.DocTest
       Test.DocTest.Internal.Extract
@@ -124,6 +125,7 @@ library
   other-modules:
       Extract
       GhcUtil
+      Imports
       Info
       Interpreter
       Language.Haskell.GhciWrapper
@@ -162,6 +164,7 @@ executable doctest
       NamedFieldPuns
       RecordWildCards
       DeriveFunctor
+      NoImplicitPrelude
   build-depends:
       base >=4.5 && <5
     , code-page >=0.1
@@ -196,6 +199,7 @@ test-suite spec
       UtilSpec
       Extract
       GhcUtil
+      Imports
       Info
       Interpreter
       Language.Haskell.GhciWrapper
@@ -224,6 +228,7 @@ test-suite spec
       NamedFieldPuns
       RecordWildCards
       DeriveFunctor
+      NoImplicitPrelude
   c-sources:
       test/integration/with-cbits/foo.c
   build-tool-depends:

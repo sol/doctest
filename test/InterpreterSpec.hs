@@ -1,11 +1,14 @@
-module InterpreterSpec (main, spec) where
+module InterpreterSpec (spec) where
+
+import           Imports
 
 import           Test.Hspec
 
-import           Interpreter (interpreterSupported, haveInterpreterKey, ghcInfo, withInterpreter, safeEval, filterExpression)
+import           Interpreter (Interpreter, interpreterSupported, haveInterpreterKey, ghcInfo, ghc, safeEval, filterExpression)
+import qualified Interpreter
 
-main :: IO ()
-main = hspec spec
+withInterpreter :: (Interpreter -> IO a) -> IO a
+withInterpreter = Interpreter.withInterpreter (Interpreter.ghc, ["--interactive"])
 
 spec :: Spec
 spec = do
@@ -20,10 +23,10 @@ spec = do
         (||) <$> (== Just "YES") <*> (== Just "NO")
 
   describe "safeEval" $ do
-    it "evaluates an expression" $ withInterpreter [] $ \ghci -> do
+    it "evaluates an expression" $ withInterpreter $ \ ghci -> do
       Interpreter.safeEval ghci "23 + 42" `shouldReturn` Right "65\n"
 
-    it "returns Left on unterminated multiline command" $ withInterpreter [] $ \ghci -> do
+    it "returns Left on unterminated multiline command" $ withInterpreter $ \ ghci -> do
       Interpreter.safeEval ghci ":{\n23 + 42" `shouldReturn` Left "unterminated multi-line command"
 
   describe "filterExpression" $ do

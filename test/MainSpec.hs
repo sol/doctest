@@ -2,6 +2,8 @@
 {-# LANGUAGE ConstraintKinds #-}
 module MainSpec (main, spec) where
 
+import           Imports
+
 import           Test.Hspec
 import           Test.HUnit (assertEqual, Assertion)
 

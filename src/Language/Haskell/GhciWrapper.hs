@@ -9,10 +9,11 @@ module Language.Haskell.GhciWrapper (
 , evalEcho
 ) where
 
+import           Imports
+
 import           System.IO hiding (stdin, stdout, stderr)
 import           System.Process
 import           System.Exit
-import           Control.Monad
 import           Control.Exception
 import           Data.List (isSuffixOf)
 import           Data.Maybe

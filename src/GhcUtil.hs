@@ -1,6 +1,8 @@
 {-# LANGUAGE CPP #-}
 module GhcUtil (withGhc) where
 
+import           Imports
+
 import           GHC.Paths (libdir)
 import           GHC
 #if __GLASGOW_HASKELL__ < 900

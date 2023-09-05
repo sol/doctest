@@ -1,5 +1,7 @@
 module PackageDBsSpec (main, spec) where
 
+import           Imports
+
 import qualified Control.Exception         as E
 import           Data.List                 (intercalate)
 import           PackageDBs

@@ -8,6 +8,8 @@ module Property (
 #endif
 ) where
 
+import           Imports
+
 import           Data.List
 import           Data.Maybe
 import           Data.Foldable
