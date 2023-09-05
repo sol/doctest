@@ -3,6 +3,8 @@ module Runner.Example (
 , mkResult
 ) where
 
+import           Imports
+
 import           Data.Char
 import           Data.List (isPrefixOf)
 import           Util

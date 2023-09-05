@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module ParseSpec (main, spec) where
 
+import           Imports
+
 import           Test.Hspec
 import           Data.String
 import           Data.String.Builder (Builder, build)

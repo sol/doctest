@@ -14,12 +14,14 @@ module Options (
 #endif
 ) where
 
+import           Imports
+
 import           Control.Monad.Trans.RWS (RWS, execRWS)
 import qualified Control.Monad.Trans.RWS as RWS
 
-import           Control.Monad (when)
 import           Data.List (stripPrefix)
-import           Data.Monoid (Endo (Endo))
+
+import           GHC.Paths (ghc)
 
 import           Info
 
@@ -56,6 +58,7 @@ data Config = Config {
 , fastMode :: Bool
 , preserveIt :: Bool
 , verbose :: Bool
+, repl :: (String, [String])
 } deriving (Eq, Show)
 
 defaultConfig :: Config
@@ -64,6 +67,7 @@ defaultConfig = Config {
 , fastMode = False
 , preserveIt = False
 , verbose = False
+, repl = (ghc, ["--interactive"])
 }
 
 nonInteractiveGhcOptions :: [String]

@@ -2,6 +2,8 @@
 
 module LocationSpec (main, spec) where
 
+import           Imports
+
 import           Test.Hspec
 
 import           Location

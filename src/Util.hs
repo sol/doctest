@@ -1,4 +1,7 @@
 module Util where
+
+import           Imports
+
 import           Data.Char
 
 convertDosLineEndings :: String -> String

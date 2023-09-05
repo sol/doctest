@@ -8,6 +8,8 @@ module PackageDBs (
 #endif
 ) where
 
+import           Imports
+
 import System.Environment (getEnvironment)
 import System.FilePath (splitSearchPath, searchPathSeparator)
 

@@ -1,6 +1,8 @@
 {-# LANGUAGE CPP #-}
 module Location where
 
+import           Imports
+
 import           Control.DeepSeq (deepseq, NFData(rnf))
 
 #if __GLASGOW_HASKELL__ < 900

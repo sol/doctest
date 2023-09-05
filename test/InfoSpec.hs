@@ -1,5 +1,7 @@
 module InfoSpec (spec) where
 
+import           Imports
+
 import           Test.Hspec
 
 import           System.Process

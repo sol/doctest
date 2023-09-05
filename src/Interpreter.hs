@@ -13,9 +13,10 @@ module Interpreter (
 , filterExpression
 ) where
 
+import           Imports
+
 import           System.Process
 import           System.Directory (getPermissions, executable)
-import           Control.Monad
 import           Control.Exception hiding (handle)
 import           Data.Char
 import           GHC.Paths (ghc)
@@ -38,28 +39,20 @@ interpreterSupported = do
 
   maybe False (== "YES") . lookup haveInterpreterKey <$> ghcInfo
 
--- | Run an interpreter session.
---
--- Example:
---
--- >>> withInterpreter [] $ \i -> eval i "23 + 42"
--- ...
--- "65\n"
 withInterpreter
-  :: [String]               -- ^ List of flags, passed to GHC
+  :: (String, [String])
   -> (Interpreter -> IO a)  -- ^ Action to run
   -> IO a                   -- ^ Result of action
-withInterpreter flags action = do
+withInterpreter (command, flags) action = do
   let
     args = flags ++ [
-        "--interactive"
-      , xTemplateHaskell
+        xTemplateHaskell
 #if __GLASGOW_HASKELL__ >= 802
       , "-fdiagnostics-color=never"
       , "-fno-diagnostics-show-caret"
 #endif
       ]
-  bracket (new defaultConfig{configGhci = ghc} args) close action
+  bracket (new defaultConfig{configGhci = command} args) close action
 
 xTemplateHaskell :: String
 xTemplateHaskell = "-XTemplateHaskell"

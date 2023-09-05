@@ -1,6 +1,8 @@
 {-# LANGUAGE CPP #-}
 module Language.Haskell.GhciWrapperSpec (main, spec) where
 
+import           Imports
+
 import           Test.Hspec
 import           System.IO.Silently
 

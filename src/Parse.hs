@@ -17,6 +17,8 @@ module Parse (
 #endif
 ) where
 
+import           Imports
+
 import           Data.Char (isSpace)
 import           Data.List (isPrefixOf, stripPrefix)
 import           Data.Maybe
