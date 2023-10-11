@@ -1,5 +1,5 @@
 name:             doctest
-version:          0.22.1
+version:          0.22.2
 synopsis:         Test interactive Haskell examples
 description: |
   `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
@@ -32,9 +32,13 @@ extra-source-files:
 
 ghc-options: -Wall
 
+when:
+  - condition: impl(ghc >= 9.8)
+    ghc-options: -fno-warn-x-partial
+
 dependencies:
 - base >= 4.5 && < 5
-- ghc >= 8.0 && < 9.7
+- ghc >= 8.0 && < 9.10
 - syb >= 0.3
 - code-page >= 0.1
 - deepseq

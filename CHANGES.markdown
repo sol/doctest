@@ -1,3 +1,6 @@
+Changes in 0.22.2
+  - GHC 9.8 compatibility
+
 Changes in 0.22.1
   - Add `Test.DocTest.Internal.Run.doctestWithRepl`
 
