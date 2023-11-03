@@ -132,6 +132,9 @@ Notes:
 - If you use properties you need to pass `--build-depends=QuickCheck` and
   `--build-depends=template-haskell` to `cabal repl`.
 
+- You likely want to reset the warning strategy for `cabal repl` with
+  `--repl-options='-w -Wdefault'`.
+
 - `doctest` always uses the version of GHC it was compiled with.  Reinstalling
   `doctest` with `cabal install doctest --overwrite-policy=always` before each
   invocation ensures that it uses the same version of GHC as is on the `PATH`.
@@ -144,7 +147,7 @@ Notes:
 So a more robust way to call `doctest` is as follows:
 
 ```
-cabal install doctest --overwrite-policy=always && cabal build && cabal repl --build-depends=QuickCheck --build-depends=template-haskell --with-ghc=doctest
+cabal install doctest --overwrite-policy=always && cabal build && cabal repl --build-depends=QuickCheck --build-depends=template-haskell --with-ghc=doctest --repl-options='-w -Wdefault'
 ```
 
 (This is what you want to use on CI.)
