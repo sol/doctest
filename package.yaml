@@ -38,7 +38,7 @@ when:
 
 dependencies:
 - base >= 4.5 && < 5
-- ghc >= 8.0 && < 9.10
+- ghc >= 8.0 && < 9.12
 - syb >= 0.3
 - code-page >= 0.1
 - deepseq
