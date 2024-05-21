@@ -66,7 +66,7 @@ jobs:
           - 9.8.1
           - 9.10.1
         include:
-          - os: macos-latest
+          - os: macos-12
             ghc: system
           - os: windows-latest
             # ghc: system
@@ -78,7 +78,7 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
 
       - run: ghcup install cabal 3.10.1.0 --set
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-12'
 
       - run: cabal update
       - run: cabal configure --enable-tests --enable-benchmarks
