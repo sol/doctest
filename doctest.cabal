@@ -184,6 +184,20 @@ executable doctest
   if impl(ghc >= 9.8)
     ghc-options: -fno-warn-x-partial
 
+executable cabal-doctest
+  main-is: CabalWrapper.hs
+  ghc-options: -Wall -threaded
+  hs-source-dirs:
+      driver
+  build-depends:
+      base >=4.5 && <5
+    , doctest
+    , ghc-paths >=0.1.0.9
+    , process
+  default-language: Haskell2010
+  if impl(ghc >= 9.8)
+    ghc-options: -fno-warn-x-partial
+
 test-suite spec
   main-is: Spec.hs
   other-modules:
