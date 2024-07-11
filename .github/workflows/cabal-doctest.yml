@@ -1,0 +1,50 @@
+name: cabal-doctest
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: 0 0 * * *
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-12
+          - windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: ghcup install cabal latest --set
+        if: matrix.os == 'macos-12'
+
+      - run: echo "$HOME/.cabal/bin" >> $GITHUB_PATH
+        if: matrix.os == 'macos-12'
+
+      - run: cabal --version
+      - run: cabal update
+      - run: cabal install
+      - run: cabal doctest
+
+  cabal-doctest-success:
+    needs: build
+    runs-on: ubuntu-latest
+    if: always() # this is required as GitHub considers "skipped" jobs as "passed" when checking branch protection rules
+
+    steps:
+      - run: false
+        if: needs.build.result != 'success'

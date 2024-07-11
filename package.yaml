@@ -64,11 +64,20 @@ library:
     ghc-paths: ">= 0.1.0.9"
     transformers:
 
-executable:
-  main: driver/doctest.hs
-  ghc-options: -threaded
-  dependencies:
-    - doctest
+executables:
+  doctest:
+    main: driver/doctest.hs
+    ghc-options: -threaded
+    dependencies:
+      - doctest
+
+  cabal-doctest:
+    main: driver/cabal-doctest.hs
+    ghc-options: -threaded
+    dependencies:
+      - process
+      - filepath
+      - temporary
 
 tests:
   spec:

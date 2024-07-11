@@ -157,6 +157,27 @@ library
   if impl(ghc >= 9.8)
     ghc-options: -fno-warn-x-partial
 
+executable cabal-doctest
+  main-is: driver/cabal-doctest.hs
+  other-modules:
+      Paths_doctest
+  default-extensions:
+      NamedFieldPuns
+      RecordWildCards
+      DeriveFunctor
+      NoImplicitPrelude
+  ghc-options: -Wall -threaded
+  build-depends:
+      base >=4.7 && <5
+    , filepath
+    , process
+    , temporary
+  default-language: Haskell2010
+  if impl(ghc >= 9.0)
+    ghc-options: -fwarn-unused-packages
+  if impl(ghc >= 9.8)
+    ghc-options: -fno-warn-x-partial
+
 executable doctest
   main-is: driver/doctest.hs
   other-modules:
