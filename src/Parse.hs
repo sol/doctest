@@ -21,7 +21,6 @@ import           Imports
 
 import           Data.Char (isSpace)
 import           Data.List (isPrefixOf, stripPrefix)
-import           Data.Maybe
 import           Data.String
 import           Extract
 import           Location

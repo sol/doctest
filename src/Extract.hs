@@ -1,11 +1,9 @@
 {-# LANGUAGE CPP #-}
 module Extract (Module(..), extract) where
 
-import           Prelude hiding (mod, concat)
-import           Control.Monad
+import           Imports hiding (mod, concat)
 import           Control.Exception
 import           Data.List (partition, isSuffixOf)
-import           Data.Maybe
 
 import           Control.DeepSeq (deepseq, NFData(rnf))
 import           Data.Generics
@@ -166,7 +164,7 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
 # if __GLASGOW_HASKELL__ >= 902
       hsc_env' <- liftIO (initializePlugins hsc_env)
       setSession hsc_env'
-      return $ modsum
+      return modsum
 # else
       dynflags' <- liftIO (initializePlugins hsc_env (GHC.ms_hspp_opts modsum))
       return $ modsum { ms_hspp_opts = dynflags' }
@@ -182,7 +180,15 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
 extract :: [String] -> IO [Module (Located String)]
 extract args = do
   packageDBArgs <- getPackageDBArgs
-  let args'  = args ++ packageDBArgs
+  let
+    args' = args ++
+#if __GLASGOW_HASKELL__ >= 810
+      -- `ghci` ignores unused packages in certain situation.  This ensures
+      -- that we don't fail in situations where `ghci` would not.
+      "-Wno-unused-packages" :
+#endif
+      packageDBArgs
+
   mods <- parse args'
   let docs = map (fmap (fmap convertDosLineEndings) . extractFromModule) mods
 
@@ -253,7 +259,7 @@ extractDocStrings d =
   in
     flip fmap docStrs $ \docStr -> (lookup (getLoc docStr) docStrNames, docStr)
   where
-    extractAll z = everything (++) ((mkQ [] ((:[]) . z)))
+    extractAll z = everything (++) (mkQ [] ((:[]) . z))
 
     extractDocDocString :: LHsDoc GhcPs -> LHsDocString
     extractDocDocString = fmap hsDocString

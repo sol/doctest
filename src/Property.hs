@@ -11,7 +11,6 @@ module Property (
 import           Imports
 
 import           Data.List
-import           Data.Maybe
 import           Data.Foldable
 
 import           Util
