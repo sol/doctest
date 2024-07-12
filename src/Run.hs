@@ -115,10 +115,7 @@ expandDirs fp0 = do
 getAddDistArgs :: IO ([String] -> [String])
 getAddDistArgs = do
     env <- getEnvironment
-    let dist =
-            case lookup "HASKELL_DIST_DIR" env of
-                Nothing -> "dist"
-                Just x -> x
+    let dist = fromMaybe "dist" $ lookup "HASKELL_DIST_DIR" env
         autogen = dist ++ "/build/autogen/"
         cabalMacros = autogen ++ "cabal_macros.h"
 
@@ -143,7 +140,7 @@ isSuccess :: Result -> Bool
 isSuccess s = sErrors s == 0 && sFailures s == 0
 
 evaluateResult :: Result -> IO ()
-evaluateResult r = when (not $ isSuccess r) exitFailure
+evaluateResult r = unless (isSuccess r) exitFailure
 
 doctestWithResult :: Config -> IO Result
 doctestWithResult config = do

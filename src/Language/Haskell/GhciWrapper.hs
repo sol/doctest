@@ -16,7 +16,6 @@ import           System.Process
 import           System.Exit
 import           Control.Exception
 import           Data.List (isSuffixOf)
-import           Data.Maybe
 
 data Config = Config {
   configGhci :: String
