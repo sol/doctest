@@ -37,7 +37,7 @@ interpreterSupported = do
   unless (executable x) $ do
     fail $ ghc ++ " is not executable!"
 
-  maybe False (== "YES") . lookup haveInterpreterKey <$> ghcInfo
+  (== Just "YES") . lookup haveInterpreterKey <$> ghcInfo
 
 withInterpreter
   :: (String, [String])
@@ -50,6 +50,9 @@ withInterpreter (command, flags) action = do
 #if __GLASGOW_HASKELL__ >= 802
       , "-fdiagnostics-color=never"
       , "-fno-diagnostics-show-caret"
+#endif
+#if __GLASGOW_HASKELL__ >= 810 && __GLASGOW_HASKELL__ < 904
+      , "-Wno-unused-packages"
 #endif
       ]
   bracket (new defaultConfig{configGhci = command} args) close action

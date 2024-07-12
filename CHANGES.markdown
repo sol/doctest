@@ -1,3 +1,6 @@
+Changes in 0.22.4
+  - Use `-Wno-unused-packages` for GHC `8.10` / `9.0` / `9.2`
+
 Changes in 0.22.3
   - Use `-Wno-unused-packages` when extracting comments
 
@@ -20,7 +23,7 @@ Changes in 0.20.1
   - GHC 9.4 compatibility. (#382)
 
 Changes in 0.20.0
-  - Allow doctest to be invoked via `cabal repl --with-ghc=doctest`
+  - Allow doctest to be invoked via `cabal repl --with-compiler=doctest`
   - Include `ghc --info` output in `--info`
   - Make `--info` output formatting consistent with GHC
 

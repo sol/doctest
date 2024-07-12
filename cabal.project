@@ -3,3 +3,5 @@ packages:
 
 package doctest
   ghc-options: -Werror
+
+tests: True

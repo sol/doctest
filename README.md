@@ -94,7 +94,7 @@ doctest src/Fib.hs
 
 # Running `doctest` for a Cabal package
 
-The easiest way to run `doctest` for a Cabal package is via `cabal repl --with-ghc=doctest`.
+The easiest way to run `doctest` for a Cabal package is via `cabal repl --with-compiler=doctest`.
 
 This doesn't make a big difference for a simple package, but in more involved
 situations `cabal` will make sure that all dependencies are available and it
@@ -121,7 +121,7 @@ library
 With a `.cabal` file in place, it is possible to run `doctest` via `cabal repl`:
 
 ```
-$ cabal repl --with-ghc=doctest
+$ cabal repl --with-compiler=doctest
 ...
 Examples: 2  Tried: 2  Errors: 0  Failures: 0
 ```
@@ -139,15 +139,15 @@ Notes:
   `doctest` with `cabal install doctest --overwrite-policy=always` before each
   invocation ensures that it uses the same version of GHC as is on the `PATH`.
 
-- Technically, `cabal build` is not necessary. `cabal repl --with-ghc=doctest`
+- Technically, `cabal build` is not necessary. `cabal repl --with-compiler=doctest`
   will build any dependencies as needed.  However, it's more robust to run
   `cabal build` first (specifically it is not a good idea to build
-  `ghc-paths` with `--with-ghc=doctest`).
+  `ghc-paths` with `--with-compiler=doctest`).
 
 So a more robust way to call `doctest` is as follows:
 
 ```
-cabal install doctest --overwrite-policy=always && cabal build && cabal repl --build-depends=QuickCheck --build-depends=template-haskell --with-ghc=doctest --repl-options='-w -Wdefault'
+cabal install doctest --ignore-project --overwrite-policy=always && cabal build && cabal repl --build-depends=QuickCheck --build-depends=template-haskell --with-compiler=doctest --repl-options='-w -Wdefault'
 ```
 
 (This is what you want to use on CI.)
@@ -160,7 +160,7 @@ You can pass `doctest` options like `--fast`, `--preserve-it` and `--verbose` to
 Example:
 
 ```
-$ cabal repl --with-ghc=doctest --repl-options=--verbose
+$ cabal repl --with-compiler=doctest --repl-options=--verbose
 ### Started execution at src/Fib.hs:7.
 ### example:
 fib 10
@@ -513,7 +513,7 @@ Discuss your ideas first, ideally by opening an issue on GitHub.
 Add tests for new features, and make sure that the test suite passes with your
 changes.
 
-    cabal build --enable-tests && cabal exec -- cabal test --test-show-details=direct
+    cabal build && cabal exec $(cabal list-bin spec)
 
 
 # Contributors

@@ -1,5 +1,5 @@
 name:             doctest
-version:          0.22.3
+version:          0.22.4
 synopsis:         Test interactive Haskell examples
 description: |
   `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
@@ -33,37 +33,42 @@ extra-source-files:
 ghc-options: -Wall
 
 when:
+  - condition: impl(ghc >= 9.0)
+    ghc-options: -fwarn-unused-packages
+
   - condition: impl(ghc >= 9.8)
     ghc-options: -fno-warn-x-partial
 
 dependencies:
-- base >= 4.5 && < 5
-- ghc >= 8.0 && < 9.12
-- syb >= 0.3
-- code-page >= 0.1
-- deepseq
-- directory
-- exceptions
-- filepath
-- process
-- ghc-paths >= 0.1.0.9
-- transformers
+  - base >= 4.7 && < 5
 
 library:
   source-dirs:
-  - src
+    - src
   exposed-modules:
-  - Test.DocTest
-  - Test.DocTest.Internal.Extract
-  - Test.DocTest.Internal.Location
-  - Test.DocTest.Internal.Parse
-  - Test.DocTest.Internal.Run
+    - Test.DocTest
+    - Test.DocTest.Internal.Extract
+    - Test.DocTest.Internal.Location
+    - Test.DocTest.Internal.Parse
+    - Test.DocTest.Internal.Run
+
+  dependencies: &dependencies
+    ghc: ">= 8.0 && < 9.12"
+    syb: ">= 0.3"
+    code-page: ">= 0.1"
+    deepseq:
+    directory:
+    exceptions:
+    filepath:
+    process:
+    ghc-paths: ">= 0.1.0.9"
+    transformers:
 
 executable:
-  main: Main.hs
+  main: driver/doctest.hs
   ghc-options: -threaded
-  source-dirs: driver
-  dependencies: doctest
+  dependencies:
+    - doctest
 
 tests:
   spec:
@@ -76,11 +81,11 @@ tests:
       - src
     c-sources: test/integration/with-cbits/foo.c
     dependencies:
-    - HUnit
-    - hspec         >= 2.3.0
-    - hspec-core    >= 2.3.0
-    - QuickCheck    >= 2.13.1
-    - stringbuilder >= 0.4
-    - silently      >= 1.2.4
-    - setenv
-    - mockery
+      <<: *dependencies
+      HUnit:
+      hspec: ">= 2.3.0"
+      hspec-core: ">= 2.3.0"
+      QuickCheck: ">= 2.13.1"
+      stringbuilder: ">= 0.4"
+      silently: ">= 1.2.4"
+      mockery:
