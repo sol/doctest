@@ -88,13 +88,10 @@ jobs:
         if: matrix.os == 'macos-12'
 
       - run: cabal update
-      - run: cabal configure --enable-tests --enable-benchmarks
-      - run: cabal build all
-      - run: cabal exec -- cabal test all --test-show-details=direct
-        env:
-          HSPEC_OPTIONS: --color
+      - run: cabal build
+      - run: cabal exec $(cabal list-bin spec)
       - run: cabal install
-      - run: cabal repl --with-ghc=doctest
+      - run: cabal repl --with-compiler=doctest
 
   success:
     needs: build
