@@ -1,9 +1,9 @@
 # Doctest: Test interactive Haskell examples
 
 `doctest` is a tool that checks
-[examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
+[examples](https://haskell-haddock.readthedocs.io/latest/markup.html#examples)
 and
-[properties](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810771856)
+[properties](https://haskell-haddock.readthedocs.io/latest/markup.html#properties)
 in Haddock comments.
 It is similar in spirit to the [popular Python module with the same name](https://docs.python.org/3/library/doctest.html).
 
@@ -33,7 +33,7 @@ It is similar in spirit to the [popular Python module with the same name](https:
 ## Installation
 
 `doctest` is available from
-[Hackage](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/doctest).
+[Hackage](https://hackage.haskell.org/package/doctest).
 Install it with:
 
     cabal update && cabal install doctest
@@ -81,7 +81,7 @@ fib n = fib (n - 1) + fib (n - 2)
 (A comment line starting with `>>>` denotes an _expression_.
 All comment lines following an expression denote the _result_ of that expression.
 Result is defined by what a
-[REPL](http://en.wikipedia.org/wiki/Read-eval-print_loop) (e.g. ghci)
+[REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) (e.g. ghci)
 prints to `stdout` and `stderr` when evaluating that expression.)
 
 With `doctest` you can check whether the implementation satisfies the given
@@ -387,7 +387,7 @@ fib n = fib (n - 1) + fib (n - 2)
 ```
 
 If you see an error like the following, ensure that
-[QuickCheck](http://hackage.haskell.org/package/QuickCheck) is visible to
+[QuickCheck](https://hackage.haskell.org/package/QuickCheck) is visible to
 `doctest` (e.g. by passing `--build-depends=QuickCheck` to `cabal repl`).
 
 ```haskell
@@ -415,7 +415,7 @@ documentation, but Doctest will still find them.
 -- 2
 ```
 
-[named-chunks]: http://www.haskell.org/haddock/doc/html/ch03s05.html
+[named-chunks]: https://haskell-haddock.readthedocs.io/latest/markup.html#named-chunks
 
 ## Using GHC extensions
 
@@ -456,7 +456,7 @@ Haddock](#hiding-examples-from-haddock), e.g.:
 -- >>> :seti -XTupleSections
 ```
 
-[language-pragma]: https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/pragmas.html#language-pragma
+[language-pragma]: https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/pragmas.html#language-pragma
 
 # Limitations
 
@@ -518,40 +518,43 @@ changes.
 
 # Contributors
 
+ * Simon Hengel
+ * quasicomputational
+ * Kazu Yamamoto
+ * Andreas Abel
+ * Michael Snoyman
+ * Michael Orlitzky
+ * Sakari Jokinen
  * Adam Vogt
+ * Ryan Scott
+ * Oleg Grenrus
+ * Sönke Hahn
+ * Edward Kmett
+ * Elliot Marsden
+ * Greg Pfeil
+ * Ignat Insarov
+ * Julian K. Arni
+ * Takano Akio
+ * Joachim Breitner
  * Alan Zimmerman
  * Alexander Bernauer
  * Alexandre Esteves
  * Anders Persson
- * Andreas Abel
  * Ankit Ahuja
  * Artyom Kazak
- * Edward Kmett
  * Gabor Greif
+ * Guillaume Bouchard
  * Hiroki Hattori
- * Ignat Insarov
  * Jens Petersen
- * Joachim Breitner
  * John Chee
  * João Cristóvão
- * Julian Arni
- * Kazu Yamamoto
  * Leon Schoorl
  * Levent Erkok
  * Luke Murphy
  * Matvey Aksenov
- * Michael Orlitzky
- * Michael Snoyman
  * Mitchell Rosen
  * Nick Smallbone
  * Nikos Baxevanis
- * Oleg Grenrus
- * quasicomputational
- * Ryan Scott
- * Sakari Jokinen
- * Simon Hengel
- * Sönke Hahn
- * Takano Akio
  * Tamar Christina
  * Veronika Romashkina
 
