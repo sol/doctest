@@ -51,6 +51,7 @@ library:
     - Test.DocTest.Internal.Location
     - Test.DocTest.Internal.Parse
     - Test.DocTest.Internal.Run
+    - Test.DocTest.Internal.Cabal
 
   dependencies: &dependencies
     ghc: ">= 8.0 && < 9.12"
@@ -63,6 +64,7 @@ library:
     process:
     ghc-paths: ">= 0.1.0.9"
     transformers:
+    temporary:
 
 flags:
   cabal-doctest:
@@ -71,19 +73,15 @@ flags:
     default: false
 
 executables:
-  doctest:
+  doctest: &doctest
     main: driver/doctest.hs
     ghc-options: -threaded
     dependencies:
       - doctest
 
   cabal-doctest:
-    main: driver/cabal-doctest.hs
-    ghc-options: -threaded
-    dependencies:
-      - process
-      - filepath
-      - temporary
+    <<: *doctest
+    main: driver/cabal.hs
     when:
       condition: flag(cabal-doctest)
       then:
