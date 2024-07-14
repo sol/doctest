@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
-module Main (main) where
+module Cabal (externalCommand) where
 
-import           Prelude
+import           Imports
 
 import           Data.Version
 import           System.Environment
@@ -11,9 +11,6 @@ import           System.IO.Temp (withSystemTempDirectory)
 import           System.Process
 
 import           Paths_doctest (version)
-
-main :: IO ()
-main = getArgs >>= externalCommand
 
 externalCommand :: [String] -> IO ()
 externalCommand args = do

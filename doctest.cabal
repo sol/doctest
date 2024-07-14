@@ -127,7 +127,9 @@ library
       Test.DocTest.Internal.Location
       Test.DocTest.Internal.Parse
       Test.DocTest.Internal.Run
+      Test.DocTest.Internal.Cabal
   other-modules:
+      Cabal
       Extract
       GhcUtil
       Imports
@@ -155,6 +157,7 @@ library
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
+    , temporary
     , transformers
   default-language: Haskell2010
   if impl(ghc >= 9.0)
@@ -163,7 +166,7 @@ library
     ghc-options: -fno-warn-x-partial
 
 executable cabal-doctest
-  main-is: driver/cabal-doctest.hs
+  main-is: driver/cabal.hs
   other-modules:
       Paths_doctest
   default-extensions:
@@ -174,9 +177,7 @@ executable cabal-doctest
   ghc-options: -Wall -threaded
   build-depends:
       base >=4.7 && <5
-    , filepath
-    , process
-    , temporary
+    , doctest
   default-language: Haskell2010
   if impl(ghc >= 9.0)
     ghc-options: -fwarn-unused-packages
@@ -223,6 +224,7 @@ test-suite spec
       RunnerSpec
       RunSpec
       UtilSpec
+      Cabal
       Extract
       GhcUtil
       Imports
@@ -238,6 +240,7 @@ test-suite spec
       Runner
       Runner.Example
       Test.DocTest
+      Test.DocTest.Internal.Cabal
       Test.DocTest.Internal.Extract
       Test.DocTest.Internal.Location
       Test.DocTest.Internal.Parse
@@ -277,6 +280,7 @@ test-suite spec
     , silently >=1.2.4
     , stringbuilder >=0.4
     , syb >=0.3
+    , temporary
     , transformers
   default-language: Haskell2010
   if impl(ghc >= 9.0)
