@@ -17,7 +17,7 @@ It is similar in spirit to the [popular Python module with the same name](https:
 [Hackage](https://hackage.haskell.org/package/doctest).
 Install it with:
 
-    cabal update && cabal install doctest
+    cabal update && cabal install --ignore-project doctest
 
 Make sure that Cabal's `bindir` is on your `PATH`.
 
@@ -75,7 +75,7 @@ A simple `.cabal` file for `Fib` looks like this:
 
 With a `.cabal` file in place, it is possible to run `doctest` via `cabal repl`:
 
-```
+```bash
 $ cabal repl --with-compiler=doctest
 ...
 Examples: 2  Tried: 2  Errors: 0  Failures: 0
@@ -114,7 +114,7 @@ You can pass `doctest` options like `--fast`, `--preserve-it` and `--verbose` to
 
 Example:
 
-```
+```bash
 $ cabal repl --with-compiler=doctest --repl-options=--verbose
 ### Started execution at src/Fib.hs:7.
 ### example:
@@ -127,6 +127,22 @@ fib 5
 ### Successful!
 
 # Final summary:
+Examples: 2  Tried: 2  Errors: 0  Failures: 0
+```
+
+## Cabal integration
+
+***NOTE:*** This feature is experimental.
+
+***NOTE:*** This feature requires `cabal-install` version 3.12 or later.
+
+
+```bash
+$ cabal install --ignore-project doctest --flag cabal-doctest
+```
+
+```bash
+$ cabal doctest
 Examples: 2  Tried: 2  Errors: 0  Failures: 0
 ```
 

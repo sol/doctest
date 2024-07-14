@@ -12,6 +12,7 @@ It is similar in spirit to the [popular Python module with the same name](https:
    * [A basic example](#a-basic-example)
 * [Running doctest for a Cabal package](#running-doctest-for-a-cabal-package)
    * [Passing doctest options to cabal repl](#passing-doctest-options-to-cabal-repl)
+   * [Cabal integration](#cabal-integration)
 * [Writing examples and properties](#writing-examples-and-properties)
    * [Example groups](#example-groups)
       * [A note on performance](#a-note-on-performance)
@@ -36,7 +37,7 @@ It is similar in spirit to the [popular Python module with the same name](https:
 [Hackage](https://hackage.haskell.org/package/doctest).
 Install it with:
 
-    cabal update && cabal install doctest
+    cabal update && cabal install --ignore-project doctest
 
 Make sure that Cabal's `bindir` is on your `PATH`.
 
@@ -120,7 +121,7 @@ library
 
 With a `.cabal` file in place, it is possible to run `doctest` via `cabal repl`:
 
-```
+```bash
 $ cabal repl --with-compiler=doctest
 ...
 Examples: 2  Tried: 2  Errors: 0  Failures: 0
@@ -159,7 +160,7 @@ You can pass `doctest` options like `--fast`, `--preserve-it` and `--verbose` to
 
 Example:
 
-```
+```bash
 $ cabal repl --with-compiler=doctest --repl-options=--verbose
 ### Started execution at src/Fib.hs:7.
 ### example:
@@ -172,6 +173,22 @@ fib 5
 ### Successful!
 
 # Final summary:
+Examples: 2  Tried: 2  Errors: 0  Failures: 0
+```
+
+## Cabal integration
+
+***NOTE:*** This feature is experimental.
+
+***NOTE:*** This feature requires `cabal-install` version 3.12 or later.
+
+
+```bash
+$ cabal install --ignore-project doctest --flag cabal-doctest
+```
+
+```bash
+$ cabal doctest
 Examples: 2  Tried: 2  Errors: 0  Failures: 0
 ```
 
