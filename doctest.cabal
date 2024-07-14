@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           doctest
-version:        0.22.4
+version:        0.22.5
 synopsis:       Test interactive Haskell examples
 description:    `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
                 and [properties](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810771856)
@@ -107,6 +107,11 @@ source-repository head
   type: git
   location: https://github.com/sol/doctest
 
+flag cabal-doctest
+  description: Install (experimental) cabal-doctest executable
+  manual: True
+  default: False
+
 library
   ghc-options: -Wall
   hs-source-dirs:
@@ -177,6 +182,10 @@ executable cabal-doctest
     ghc-options: -fwarn-unused-packages
   if impl(ghc >= 9.8)
     ghc-options: -fno-warn-x-partial
+  if flag(cabal-doctest)
+    buildable: True
+  else
+    buildable: False
 
 executable doctest
   main-is: driver/doctest.hs
