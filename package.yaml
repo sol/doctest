@@ -1,5 +1,5 @@
 name:             doctest
-version:          0.22.4
+version:          0.22.5
 synopsis:         Test interactive Haskell examples
 description: |
   `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
@@ -64,6 +64,12 @@ library:
     ghc-paths: ">= 0.1.0.9"
     transformers:
 
+flags:
+  cabal-doctest:
+    description: Install (experimental) cabal-doctest executable
+    manual: true
+    default: false
+
 executables:
   doctest:
     main: driver/doctest.hs
@@ -78,6 +84,12 @@ executables:
       - process
       - filepath
       - temporary
+    when:
+      condition: flag(cabal-doctest)
+      then:
+        buildable: true
+      else:
+        buildable: false
 
 tests:
   spec:
