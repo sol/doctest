@@ -24,7 +24,15 @@ run cabal args = withSystemTempDirectory "doctest" $ \ dir -> do
   let
     doctest = dir </> "doctest"
     script = dir </> "init-ghci"
-  callProcess cabal ["install", "--ignore-project", "--installdir", dir, "--install-method=symlink", "doctest-" ++ showVersion version]
+
+  callProcess cabal [
+      "install" , "doctest-" ++ showVersion version
+    , "--flag", "-cabal-doctest"
+    , "--ignore-project"
+    , "--installdir", dir
+    , "--install-method=symlink"
+    ]
+
   callProcess (dir </> "doctest") ["--version"]
   callProcess cabal ("build" : "--only-dependencies" : args)
   writeFile script ":seti -w -Wdefault"

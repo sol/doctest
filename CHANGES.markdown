@@ -1,6 +1,6 @@
 Changes in 0.22.5
   - Add (experimental) `cabal-doctest` executable.  This is guarded behind a
-    flag for now, use `cabal install doctest -f -cabal-doctest` to install it.
+    flag for now, use `cabal install doctest -f cabal-doctest` to install it.
 
 Changes in 0.22.4
   - Use `-Wno-unused-packages` for GHC `8.10` / `9.0` / `9.2`
