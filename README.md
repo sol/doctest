@@ -42,11 +42,11 @@ Make sure that Cabal's `bindir` is on your `PATH`.
 
 On Linux:
 
-    export PATH="$HOME/.cabal/bin:$PATH"
+    export PATH="$(cabal -v0 path --installdir):$PATH"
 
 On Mac OS X:
 
-    export PATH="$HOME/Library/Haskell/bin:$PATH"
+    export PATH="$(cabal -v0 path --installdir):$PATH"
 
 On Windows:
 
