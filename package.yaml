@@ -63,6 +63,7 @@ library:
     filepath:
     process:
     ghc-paths: ">= 0.1.0.9"
+    Cabal:
     transformers:
     temporary:
 
@@ -81,7 +82,7 @@ executables:
 
   cabal-doctest:
     <<: *doctest
-    main: driver/cabal.hs
+    main: driver/cabal-doctest.hs
     when:
       condition: flag(cabal-doctest)
       then:

@@ -130,6 +130,7 @@ library
       Test.DocTest.Internal.Cabal
   other-modules:
       Cabal
+      Cabal.Paths
       Extract
       GhcUtil
       Imports
@@ -147,7 +148,8 @@ library
       Util
       Paths_doctest
   build-depends:
-      base >=4.7 && <5
+      Cabal
+    , base >=4.7 && <5
     , code-page >=0.1
     , deepseq
     , directory
@@ -166,7 +168,7 @@ library
     ghc-options: -fno-warn-x-partial
 
 executable cabal-doctest
-  main-is: driver/cabal.hs
+  main-is: driver/cabal-doctest.hs
   other-modules:
       Paths_doctest
   default-extensions:
@@ -210,6 +212,7 @@ executable doctest
 test-suite spec
   main-is: Spec.hs
   other-modules:
+      Cabal.PathsSpec
       ExtractSpec
       InfoSpec
       InterpreterSpec
@@ -225,6 +228,7 @@ test-suite spec
       RunSpec
       UtilSpec
       Cabal
+      Cabal.Paths
       Extract
       GhcUtil
       Imports
@@ -263,7 +267,8 @@ test-suite spec
   build-tool-depends:
       hspec-discover:hspec-discover
   build-depends:
-      HUnit
+      Cabal
+    , HUnit
     , QuickCheck >=2.13.1
     , base >=4.7 && <5
     , code-page >=0.1

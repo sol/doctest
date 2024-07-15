@@ -3,14 +3,14 @@ module Cabal (externalCommand) where
 
 import           Imports
 
-import           Data.Version
 import           System.Environment
-import           System.Exit
+import           System.Exit (exitWith)
 import           System.FilePath
 import           System.IO.Temp (withSystemTempDirectory)
 import           System.Process
 
-import           Paths_doctest (version)
+import qualified Info
+import           Cabal.Paths
 
 externalCommand :: [String] -> IO ()
 externalCommand args = do
@@ -24,12 +24,16 @@ run cabal args = withSystemTempDirectory "doctest" $ \ dir -> do
     doctest = dir </> "doctest"
     script = dir </> "init-ghci"
 
+  Paths{..} <- paths cabal
+
   callProcess cabal [
-      "install" , "doctest-" ++ showVersion version
+      "install" , "doctest-" <> Info.version
     , "--flag", "-cabal-doctest"
     , "--ignore-project"
     , "--installdir", dir
     , "--install-method=symlink"
+    , "--with-compiler", ghc
+    , "--with-hc-pkg", ghcPkg
     ]
 
   callProcess (dir </> "doctest") ["--version"]
@@ -38,6 +42,7 @@ run cabal args = withSystemTempDirectory "doctest" $ \ dir -> do
   spawnProcess cabal ("repl"
     : "--build-depends=QuickCheck"
     : "--build-depends=template-haskell"
-    : ("--repl-options=-ghci-script=" ++ script)
+    : ("--repl-options=-ghci-script=" <> script)
     : "--with-compiler" : doctest
+    : "--with-hc-pkg" : ghcPkg
     : args) >>= waitForProcess >>= exitWith

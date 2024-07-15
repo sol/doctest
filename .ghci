@@ -3,3 +3,4 @@
 :set -XRecordWildCards
 :set -XDeriveFunctor
 :set -XNoImplicitPrelude
+:set -fno-warn-x-partial
