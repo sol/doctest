@@ -2,6 +2,7 @@
 module Info (
   versionInfo
 , info
+, version
 #ifdef TEST
 , formatInfo
 #endif
@@ -19,13 +20,22 @@ import           Config as GHC
 import           GHC.Settings.Config as GHC
 #endif
 
+import           Interpreter (ghc)
+
+#ifdef TEST
+
+version :: String
+version = "0.0.0"
+
+#else
+
 import           Data.Version (showVersion)
 import qualified Paths_doctest
 
-import           Interpreter (ghc)
-
 version :: String
 version = showVersion Paths_doctest.version
+
+#endif
 
 ghcVersion :: String
 ghcVersion = GHC.cProjectVersion
