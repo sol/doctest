@@ -13,8 +13,10 @@ import           System.Process
 import           Paths_doctest (version)
 
 main :: IO ()
-main = do
-  args <- getArgs
+main = getArgs >>= externalCommand
+
+externalCommand :: [String] -> IO ()
+externalCommand args = do
   lookupEnv "CABAL" >>= \ case
     Nothing -> run "cabal" args
     Just cabal -> run cabal (drop 1 args)
