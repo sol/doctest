@@ -41,18 +41,27 @@ Install it with:
 
 Make sure that Cabal's `bindir` is on your `PATH`.
 
-On Linux:
+On Linux / macOS / BSD:
 
-    export PATH="$(cabal -v0 path --installdir):$PATH"
-
-On Mac OS X:
-
-    export PATH="$(cabal -v0 path --installdir):$PATH"
+```bash
+ # requires cabal-install 1.12, or later
+export PATH="$(cabal -v0 path --installdir):$PATH"
+```
+or
+```bash
+export PATH=$HOME/.local/bin:$PATH"
+```
 
 On Windows:
 
-    set PATH="%AppData%\cabal\bin\;%PATH%"
-
+```batch
+: requires cabal-install 1.12, or later
+for /f %i in ('cabal path -v0 --installdir') do set PATH=%i;%PATH%
+```
+or
+```batch
+set PATH="%AppData%\cabal\bin\;%PATH%"
+```
 ## A basic example
 
 Below is a small Haskell module.
