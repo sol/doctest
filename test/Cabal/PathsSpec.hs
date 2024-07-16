@@ -16,3 +16,6 @@ spec = do
 
     it "returns the path to 'ghc-pkg'" $ do
       (paths "cabal" >>= doesFileExist . ghcPkg) `shouldReturn` True
+
+    it "returns the path to Cabal's cache directory" $ do
+      (paths "cabal" >>= doesDirectoryExist . cache) `shouldReturn` True
