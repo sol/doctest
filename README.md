@@ -39,19 +39,25 @@ Install it with:
 
     cabal update && cabal install --ignore-project doctest
 
-Make sure that Cabal's `bindir` is on your `PATH`.
+Make sure that Cabal's `installdir` is on your `PATH`.
 
-On Linux:
+On Linux / macOS / BSD:
 
-    export PATH="$(cabal -v0 path --installdir):$PATH"
+```bash
+ # requires cabal-install version 3.12, or later
+export PATH="$(cabal -v0 path --installdir):$PATH"
+```
+or
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
 
-On Mac OS X:
+On Windows with PowerShell:
 
-    export PATH="$(cabal -v0 path --installdir):$PATH"
-
-On Windows:
-
-    set PATH="%AppData%\cabal\bin\;%PATH%"
+```pwsh
+# requires cabal-install version 3.12, or later
+$Env:PATH = "$(cabal -v0 path --installdir)" + ";" + $Env:PATH
+```
 
 ## A basic example
 
