@@ -52,11 +52,11 @@ or
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
-On Windows:
+On Windows with PowerShell:
 
-```batch
-: requires cabal-install 1.12, or later
-for /f %i in ('cabal path -v0 --installdir') do set PATH=%i;%PATH%
+```pwsh
+# requires cabal-install 1.12, or later
+$Env:PATH = "$(cabal -v0 path --installdir)" + ";" + $Env:PATH
 ```
 or
 ```batch
