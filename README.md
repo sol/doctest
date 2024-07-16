@@ -44,7 +44,7 @@ Make sure that Cabal's `installdir` is on your `PATH`.
 On Linux / macOS / BSD:
 
 ```bash
- # requires cabal-install 3.12, or later
+ # requires cabal-install version 3.12, or later
 export PATH="$(cabal -v0 path --installdir):$PATH"
 ```
 or
@@ -55,7 +55,7 @@ export PATH="$HOME/.local/bin:$PATH"
 On Windows with PowerShell:
 
 ```pwsh
-# requires cabal-install 3.12, or later
+# requires cabal-install version 3.12, or later
 $Env:PATH = "$(cabal -v0 path --installdir)" + ";" + $Env:PATH
 ```
 or
