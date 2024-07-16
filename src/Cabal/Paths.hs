@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE LambdaCase #-}
 module Cabal.Paths (
   Paths(..)
 , paths
@@ -6,7 +8,6 @@ module Cabal.Paths (
 import           Imports
 
 import           Data.Char
-import qualified Data.List as List
 import           Data.Tuple
 import           Data.Version hiding (parseVersion)
 import qualified Data.Version as Version
@@ -16,12 +17,6 @@ import           System.FilePath
 import           System.IO
 import           System.Process
 import           Text.ParserCombinators.ReadP
-
-import qualified Distribution.Simple.GHC as GHC
-import           Distribution.Verbosity
-import           Distribution.Simple.Program.Db
-import           Distribution.Simple.Program.Types
-import           Distribution.Simple.Compiler
 
 data Paths = Paths {
   ghc  :: FilePath
@@ -50,17 +45,23 @@ paths cabal = do
 
   ghc <- getPath "'ghc'" "compiler-path"
 
-  (compiler, _, programs) <- GHC.configure silent (Just ghc) Nothing emptyProgramDb
+  ghcVersion <- strip <$> readProcess ghc ["--numeric-version"] ""
 
+  let
+    ghcPkg :: FilePath
+    ghcPkg = takeDirectory ghc </> "ghc-pkg-" <> ghcVersion
+#ifdef mingw32_HOST_OS
+      <.> "exe"
+#endif
 
-  ghcPkg <- case programPath <$> List.find (programId >>> (== "ghc-pkg")) (configuredPrograms programs) of
-    Nothing -> die $ "Cannot determine the path to 'ghc-pkg' from '" <> ghc <> "'."
-    Just path -> return path
+  doesFileExist ghcPkg >>= \ case
+    True -> pass
+    False -> die $ "Cannot determine the path to 'ghc-pkg' from '" <> ghc <> "'. File '" <> ghcPkg <> "' does not exist."
 
   abi <- strip <$> readProcess ghcPkg ["--no-user-package-db", "field", "base", "abi", "--simple-output"] ""
 
   cache_home <- getPath "Cabal's cache directory" "cache-home"
-  let cache = cache_home </> "doctest" </> showCompilerId compiler <> "-" <> abi
+  let cache = cache_home </> "doctest" </> "ghc-" <> ghcVersion <> "-" <> abi
 
   createDirectoryIfMissing True cache
 

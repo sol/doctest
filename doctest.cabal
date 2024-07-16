@@ -148,8 +148,7 @@ library
       Util
       Paths_doctest
   build-depends:
-      Cabal
-    , base >=4.7 && <5
+      base >=4.7 && <5
     , code-page >=0.1
     , deepseq
     , directory
@@ -266,8 +265,7 @@ test-suite spec
   build-tool-depends:
       hspec-discover:hspec-discover
   build-depends:
-      Cabal
-    , HUnit
+      HUnit
     , QuickCheck >=2.13.1
     , base >=4.7 && <5
     , code-page >=0.1
