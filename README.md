@@ -39,7 +39,7 @@ Install it with:
 
     cabal update && cabal install --ignore-project doctest
 
-Make sure that Cabal's `bindir` is on your `PATH`.
+Make sure that Cabal's `installdir` is on your `PATH`.
 
 On Linux / macOS / BSD:
 
@@ -49,7 +49,7 @@ export PATH="$(cabal -v0 path --installdir):$PATH"
 ```
 or
 ```bash
-export PATH=$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
 On Windows:
