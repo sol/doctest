@@ -130,6 +130,7 @@ library
       Test.DocTest.Internal.Cabal
   other-modules:
       Cabal
+      Cabal.Options
       Cabal.Paths
       Extract
       GhcUtil
@@ -150,6 +151,7 @@ library
   build-depends:
       base >=4.7 && <5
     , code-page >=0.1
+    , containers
     , deepseq
     , directory
     , exceptions
@@ -210,6 +212,7 @@ executable doctest
 test-suite spec
   main-is: Spec.hs
   other-modules:
+      Cabal.OptionsSpec
       Cabal.PathsSpec
       ExtractSpec
       InfoSpec
@@ -226,6 +229,7 @@ test-suite spec
       RunSpec
       UtilSpec
       Cabal
+      Cabal.Options
       Cabal.Paths
       Extract
       GhcUtil
@@ -269,6 +273,7 @@ test-suite spec
     , QuickCheck >=2.13.1
     , base >=4.7 && <5
     , code-page >=0.1
+    , containers
     , deepseq
     , directory
     , exceptions

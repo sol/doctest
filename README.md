@@ -198,6 +198,32 @@ $ cabal doctest
 Examples: 2  Tried: 2  Errors: 0  Failures: 0
 ```
 
+```bash
+$ cabal doctest -w ghc-8.6.5
+Examples: 2  Tried: 2  Errors: 0  Failures: 0
+```
+
+```bash
+$ cabal doctest --repl-options=--verbose
+### Started execution at src/Fib.hs:7.
+### example:
+fib 10
+### Successful!
+
+### Started execution at src/Fib.hs:10.
+### example:
+fib 5
+### Successful!
+
+# Final summary:
+Examples: 2  Tried: 2  Errors: 0  Failures: 0
+```
+
+```bash
+$ cabal doctest --build-depends transformers
+Examples: 2  Tried: 2  Errors: 0  Failures: 0
+```
+
 # Writing examples and properties
 
 ## Example groups
