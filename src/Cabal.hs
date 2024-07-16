@@ -12,6 +12,7 @@ import           System.Process
 
 import qualified Info
 import           Cabal.Paths
+import           Cabal.Options
 
 externalCommand :: [String] -> IO ()
 externalCommand args = do
@@ -21,8 +22,9 @@ externalCommand args = do
 
 run :: String -> [String] -> IO ()
 run cabal args = do
+  rejectUnsupportedOptions args
 
-  Paths{..} <- paths cabal
+  Paths{..} <- paths cabal (discardReplOptions args)
 
   let
     doctest = cache </> "doctest" <> "-" <> Info.version
@@ -47,15 +49,16 @@ run cabal args = do
 
   callProcess doctest ["--version"]
 
-  callProcess cabal ("build" : "--only-dependencies" : args)
+  callProcess cabal ("build" : "--only-dependencies" : discardReplOptions args)
 
-  spawnProcess cabal ("repl"
+  rawSystem cabal ("repl"
     : "--build-depends=QuickCheck"
     : "--build-depends=template-haskell"
     : ("--repl-options=-ghci-script=" <> script)
-    : "--with-compiler" : doctest
-    : "--with-hc-pkg" : ghcPkg
-    : args) >>= waitForProcess >>= exitWith
+    : args ++ [
+      "--with-compiler", doctest
+    , "--with-hc-pkg", ghcPkg
+    ]) >>= exitWith
 
 writeFileAtomically :: FilePath -> String -> IO ()
 writeFileAtomically name contents = do

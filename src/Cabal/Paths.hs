@@ -24,8 +24,8 @@ data Paths = Paths {
 , cache :: FilePath
 } deriving (Eq, Show)
 
-paths :: FilePath -> IO Paths
-paths cabal = do
+paths :: FilePath -> [String] -> IO Paths
+paths cabal args = do
   cabalVersion <- strip <$> readProcess cabal ["--numeric-version"] ""
 
   let
@@ -35,7 +35,7 @@ paths cabal = do
   when (parseVersion cabalVersion < Just required) $ do
     die $ "'cabal-install' version " <> showVersion required <> " or later is required, but 'cabal --numeric-version' returned " <> cabalVersion <> "."
 
-  values <- parseFields <$> readProcess cabal ["path", "-v0"] ""
+  values <- parseFields <$> readProcess cabal ("path" : args ++ ["-v0"]) ""
 
   let
     getPath :: String -> String -> IO FilePath
