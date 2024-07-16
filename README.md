@@ -58,10 +58,7 @@ On Windows with PowerShell:
 # requires cabal-install version 3.12, or later
 $Env:PATH = "$(cabal -v0 path --installdir)" + ";" + $Env:PATH
 ```
-or
-```batch
-set PATH="%AppData%\cabal\bin\;%PATH%"
-```
+
 ## A basic example
 
 Below is a small Haskell module.
