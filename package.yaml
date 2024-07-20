@@ -65,6 +65,7 @@ library:
     ghc-paths: ">= 0.1.0.9"
     transformers:
     containers:
+    temporary:
 
 flags:
   cabal-doctest:

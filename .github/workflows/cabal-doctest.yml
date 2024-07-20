@@ -35,6 +35,7 @@ jobs:
       - run: cabal path -v0 --installdir >> $GITHUB_PATH
         if: matrix.os == 'macos-12'
 
+      - run: ghcup install ghc 9.6 --no-set
       - run: ghcup install ghc 8.6.5 --no-set
 
       - run: cabal --version
@@ -43,6 +44,7 @@ jobs:
       - run: cabal install -f cabal-doctest
       - run: cabal doctest
 
+      - run: cabal doctest -w ghc-9.6
       - run: cabal doctest -w ghc-8.6.5
 
   cabal-doctest-success:

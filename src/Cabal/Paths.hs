@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE StrictData #-}
 module Cabal.Paths (
   Paths(..)
 , paths
@@ -19,7 +20,8 @@ import           System.Process
 import           Text.ParserCombinators.ReadP
 
 data Paths = Paths {
-  ghc  :: FilePath
+  ghcVersion :: Version
+, ghc  :: FilePath
 , ghcPkg :: FilePath
 , cache :: FilePath
 } deriving (Eq, Show)
@@ -45,11 +47,15 @@ paths cabal args = do
 
   ghc <- getPath "'ghc'" "compiler-path"
 
-  ghcVersion <- strip <$> readProcess ghc ["--numeric-version"] ""
+  ghcVersionString <- strip <$> readProcess ghc ["--numeric-version"] ""
+
+  ghcVersion <- case parseVersion ghcVersionString of
+    Nothing -> die $ "Cannot determine GHC version from '" <> ghcVersionString <> "'."
+    Just version -> return version
 
   let
     ghcPkg :: FilePath
-    ghcPkg = takeDirectory ghc </> "ghc-pkg-" <> ghcVersion
+    ghcPkg = takeDirectory ghc </> "ghc-pkg-" <> ghcVersionString
 #ifdef mingw32_HOST_OS
       <.> "exe"
 #endif
@@ -61,12 +67,13 @@ paths cabal args = do
   abi <- strip <$> readProcess ghcPkg ["--no-user-package-db", "field", "base", "abi", "--simple-output"] ""
 
   cache_home <- getPath "Cabal's cache directory" "cache-home"
-  let cache = cache_home </> "doctest" </> "ghc-" <> ghcVersion <> "-" <> abi
+  let cache = cache_home </> "doctest" </> "ghc-" <> ghcVersionString <> "-" <> abi
 
   createDirectoryIfMissing True cache
 
   return Paths {
-    ghc
+    ghcVersion
+  , ghc
   , ghcPkg
   , cache
   }
