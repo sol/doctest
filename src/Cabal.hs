@@ -3,12 +3,15 @@ module Cabal (externalCommand) where
 
 import           Imports
 
+import           Data.List
+import           Data.Version (makeVersion)
 import           System.IO
+import           System.IO.Temp
 import           System.Environment
-import           System.Exit (exitWith)
+import           System.Exit
 import           System.Directory
 import           System.FilePath
-import           System.Process
+import           System.Process hiding (system)
 
 import qualified Info
 import           Cabal.Paths
@@ -40,7 +43,6 @@ run cabal args = do
       , "--program-suffix", "-" <> Info.version
       , "--install-method=copy"
       , "--with-compiler", ghc
-      , "--with-hc-pkg", ghcPkg
       ]
 
   doesFileExist script >>= \ case
@@ -49,16 +51,29 @@ run cabal args = do
 
   callProcess doctest ["--version"]
 
-  callProcess cabal ("build" : "--only-dependencies" : discardReplOptions args)
+  let
+    repl extraArgs = system cabal ("repl"
+      : "--build-depends=QuickCheck"
+      : "--build-depends=template-haskell"
+      : ("--repl-options=-ghci-script=" <> script)
+      : args ++ extraArgs)
 
-  rawSystem cabal ("repl"
-    : "--build-depends=QuickCheck"
-    : "--build-depends=template-haskell"
-    : ("--repl-options=-ghci-script=" <> script)
-    : args ++ [
-      "--with-compiler", doctest
-    , "--with-hc-pkg", ghcPkg
-    ]) >>= exitWith
+  case ghcVersion < makeVersion [9,4] of
+    True -> do
+      callProcess cabal ("build" : "--only-dependencies" : discardReplOptions args)
+      repl ["--with-compiler", doctest, "--with-hc-pkg", ghcPkg]
+
+    False -> do
+      withSystemTempDirectory "cabal-doctest" $ \ dir -> do
+        repl ["--keep-temp-files", "--repl-multi-file", dir]
+        files <- filter (isSuffixOf "-inplace") <$> listDirectory dir
+        options <- concat <$> mapM (fmap lines . readFile . combine dir) files
+        system doctest ("--no-magic" : options)
+
+system :: FilePath -> [FilePath] -> IO ()
+system name args = rawSystem name args >>= \ case
+  ExitSuccess -> pass
+  err -> exitWith err
 
 writeFileAtomically :: FilePath -> String -> IO ()
 writeFileAtomically name contents = do
