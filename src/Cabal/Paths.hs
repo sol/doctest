@@ -92,8 +92,5 @@ die message = do
   hPutStrLn stderr message
   exitFailure
 
-strip :: String -> String
-strip = reverse . dropWhile isSpace . reverse . dropWhile isSpace
-
 parseVersion :: String -> Maybe Version
 parseVersion = lookup "" . map swap . readP_to_S Version.parseVersion

@@ -18,7 +18,6 @@ import           Imports
 import           System.Process
 import           System.Directory (getPermissions, executable)
 import           Control.Exception hiding (handle)
-import           Data.Char
 import           GHC.Paths (ghc)
 
 import           Language.Haskell.GhciWrapper
@@ -78,9 +77,6 @@ filterExpression e =
         firstLine = strip $ head l
         lastLine  = strip $ last l
         err = Left "unterminated multi-line command"
-  where
-    strip :: String -> String
-    strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
 
 filterXTemplateHaskell :: String -> String
 filterXTemplateHaskell input = case words input of

@@ -15,17 +15,11 @@ import           Cabal.Options
 
 spec :: Spec
 spec = do
-  describe "pathOptions" $ do
-    it "is the set of options that are unique to 'cabal path'" $ do
-      build <- Set.fromList . lines <$> readProcess "cabal" ["build", "--list-options"] ""
-      path <- Set.fromList . lines <$> readProcess "cabal" ["path", "--list-options"] ""
-      map optionName pathOptions `shouldMatchList` Set.toList (Set.difference path build)
-
-  describe "replOptions" $ do
+  describe "replOnlyOptions" $ do
     it "is the set of options that are unique to 'cabal repl'" $ do
       build <- Set.fromList . lines <$> readProcess "cabal" ["build", "--list-options"] ""
       repl <- Set.fromList . lines <$> readProcess "cabal" ["repl", "--list-options"] ""
-      map optionName replOptions `shouldMatchList` Set.toList (Set.difference repl build)
+      Set.toList replOnlyOptions `shouldMatchList` Set.toList (Set.difference repl build)
 
   describe "rejectUnsupportedOptions" $ do
     it "produces error messages that are consistent with 'cabal repl'" $ do
@@ -36,65 +30,21 @@ spec = do
             `shouldReturn` "Error: cabal: unrecognized '" <> command <> "' option `--installdir'\n"
 
 #ifndef mingw32_HOST_OS
-      shouldFail "repl" $ rawSystem "cabal" ["repl", "--installdir"] >>= exitWith
+      shouldFail "repl" $ call "cabal" ["repl", "--installdir"]
 #endif
       shouldFail "doctest" $ rejectUnsupportedOptions ["--installdir"]
-
-  describe "shouldReject" $ do
-    it "accepts --foo" $ do
-      shouldReject "--foo" `shouldBe` False
-
-    it "rejects --ignore-project" $ do
-      shouldReject "--ignore-project" `shouldBe` True
-
-    it "rejects -z" $ do
-      shouldReject "-z" `shouldBe` True
-
-    it "rejects --output-format" $ do
-      shouldReject "--output-format" `shouldBe` True
-
-    it "rejects --output-format=" $ do
-      shouldReject "--output-format=json" `shouldBe` True
-
-    it "rejects --installdir" $ do
-      shouldReject "--installdir" `shouldBe` True
 
   describe "discardReplOptions" $ do
     it "discards 'cabal repl'-only options" $ do
       discardReplOptions [
-          "--foo"
+          "-w", "ghc-9.10"
         , "--build-depends=foo"
         , "--build-depends", "foo"
         , "-bfoo"
         , "-b", "foo"
-        , "--bar"
+        , "--disable-optimization"
         , "--enable-multi-repl"
         , "--repl-options", "foo"
         , "--repl-options=foo"
-        , "--baz"
-        ] `shouldBe` ["--foo", "--bar", "--baz"]
-
-  describe "shouldDiscard" $ do
-    it "keeps --foo" $ do
-      shouldDiscard "--foo" `shouldBe` Keep
-
-    it "discards --build-depends" $ do
-      shouldDiscard "--build-depends" `shouldBe` DiscardWithArgument
-
-    it "discards --build-depends=" $ do
-      shouldDiscard "--build-depends=foo" `shouldBe` Discard
-
-    it "discards -b" $ do
-      shouldDiscard "-b" `shouldBe` DiscardWithArgument
-
-    it "discards -bfoo" $ do
-      shouldDiscard "-bfoo" `shouldBe` Discard
-
-    it "discards --repl-options" $ do
-      shouldDiscard "--repl-options" `shouldBe` DiscardWithArgument
-
-    it "discards --repl-options=" $ do
-      shouldDiscard "--repl-options=foo" `shouldBe` Discard
-
-    it "discards --enable-multi-repl" $ do
-      shouldDiscard "--enable-multi-repl" `shouldBe` Discard
+        , "--allow-newer"
+        ] `shouldBe` ["--with-compiler", "ghc-9.10", "--disable-optimization", "--allow-newer"]

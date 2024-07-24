@@ -27,7 +27,6 @@ import           System.Exit (exitFailure, exitSuccess)
 import           System.FilePath ((</>), takeExtension)
 import           System.IO
 import           System.IO.CodePage (withCP65001)
-import           System.Process (rawSystem)
 
 import qualified Control.Exception as E
 
@@ -63,7 +62,7 @@ doctest = doctestWithRepl (repl defaultConfig)
 
 doctestWithRepl :: (String, [String]) -> [String] -> IO ()
 doctestWithRepl repl args0 = case parseOptions args0 of
-  Options.ProxyToGhc args -> rawSystem Interpreter.ghc args >>= E.throwIO
+  Options.ProxyToGhc args -> exec Interpreter.ghc args
   Options.Output s -> putStr s
   Options.Result (Run warnings magicMode config) -> do
     mapM_ (hPutStrLn stderr) warnings

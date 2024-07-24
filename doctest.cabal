@@ -132,6 +132,7 @@ library
       Cabal
       Cabal.Options
       Cabal.Paths
+      Cabal.ReplOptions
       Extract
       GhcUtil
       Imports
@@ -215,6 +216,7 @@ test-suite spec
   other-modules:
       Cabal.OptionsSpec
       Cabal.PathsSpec
+      Cabal.ReplOptionsSpec
       ExtractSpec
       InfoSpec
       InterpreterSpec
@@ -232,6 +234,7 @@ test-suite spec
       Cabal
       Cabal.Options
       Cabal.Paths
+      Cabal.ReplOptions
       Extract
       GhcUtil
       Imports
