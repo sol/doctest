@@ -8,10 +8,9 @@ import           Data.Version (makeVersion)
 import           System.IO
 import           System.IO.Temp
 import           System.Environment
-import           System.Exit
 import           System.Directory
 import           System.FilePath
-import           System.Process hiding (system)
+import           System.Process
 
 import qualified Info
 import           Cabal.Paths
@@ -52,7 +51,7 @@ run cabal args = do
   callProcess doctest ["--version"]
 
   let
-    repl extraArgs = system cabal ("repl"
+    repl extraArgs = call cabal ("repl"
       : "--build-depends=QuickCheck"
       : "--build-depends=template-haskell"
       : ("--repl-options=-ghci-script=" <> script)
@@ -68,12 +67,7 @@ run cabal args = do
         repl ["--keep-temp-files", "--repl-multi-file", dir]
         files <- filter (isSuffixOf "-inplace") <$> listDirectory dir
         options <- concat <$> mapM (fmap lines . readFile . combine dir) files
-        system doctest ("--no-magic" : options)
-
-system :: FilePath -> [FilePath] -> IO ()
-system name args = rawSystem name args >>= \ case
-  ExitSuccess -> pass
-  err -> exitWith err
+        call doctest ("--no-magic" : options)
 
 writeFileAtomically :: FilePath -> String -> IO ()
 writeFileAtomically name contents = do

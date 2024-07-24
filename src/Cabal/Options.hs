@@ -5,105 +5,69 @@ module Cabal.Options (
 , discardReplOptions
 
 #ifdef TEST
-, Option(..)
-, pathOptions
-, replOptions
-, shouldReject
-, Discard(..)
-, shouldDiscard
+, replOnlyOptions
 #endif
 ) where
 
 import           Imports
 
-import           Data.List
 import           System.Exit
+import           System.Console.GetOpt
 
 import           Data.Set (Set)
 import qualified Data.Set as Set
 
-data Option = Option {
-  optionName :: String
-, _optionArgument :: OptionArgument
-}
+import qualified Cabal.ReplOptions as Repl
 
-data OptionArgument = Argument | NoArgument
-
-pathOptions :: [Option]
-pathOptions = [
-    Option "-z" NoArgument
-  , Option "--ignore-project" NoArgument
-  , Option "--output-format" Argument
-  , Option "--compiler-info" NoArgument
-  , Option "--cache-home" NoArgument
-  , Option "--remote-repo-cache" NoArgument
-  , Option "--logs-dir" NoArgument
-  , Option "--store-dir" NoArgument
-  , Option "--config-file" NoArgument
-  , Option "--installdir" NoArgument
-  ]
-
-replOptions :: [Option]
-replOptions = [
-    Option "-z" NoArgument
-  , Option "--ignore-project" NoArgument
-  , Option "--repl-no-load" NoArgument
-  , Option "--repl-options" Argument
-  , Option "--repl-multi-file" Argument
-  , Option "-b" Argument
-  , Option "--build-depends" Argument
-  , Option "--no-transitive-deps" NoArgument
-  , Option "--enable-multi-repl" NoArgument
-  , Option "--disable-multi-repl" NoArgument
-  , Option "--keep-temp-files" NoArgument
+replOnlyOptions :: Set String
+replOnlyOptions = Set.fromList [
+    "-z"
+  , "--ignore-project"
+  , "--repl-no-load"
+  , "--repl-options"
+  , "--repl-multi-file"
+  , "-b"
+  , "--build-depends"
+  , "--no-transitive-deps"
+  , "--enable-multi-repl"
+  , "--disable-multi-repl"
+  , "--keep-temp-files"
   ]
 
 rejectUnsupportedOptions :: [String] -> IO ()
-rejectUnsupportedOptions = mapM_ $ \ arg -> when (shouldReject arg) $ do
-  die "Error: cabal: unrecognized 'doctest' option `--installdir'"
+rejectUnsupportedOptions args = case getOpt' Permute options args of
+  (_, _, unsupported : _, _) -> die $ "Error: cabal: unrecognized 'doctest' option `" <> unsupported <> "'"
+  _ -> pass
 
-shouldReject :: String -> Bool
-shouldReject arg =
-     Set.member arg rejectNames
-  || (`any` longOptionsWithArgument) (`isPrefixOf` arg)
+data Argument = Argument {
+  argumentName :: String
+, argumentValue :: Maybe String
+}
+
+options :: [OptDescr Argument]
+options = map toOptDescr Repl.options
   where
-    rejectNames :: Set String
-    rejectNames = Set.fromList (map optionName pathOptions)
+    toOptDescr :: Repl.Option -> OptDescr Argument
+    toOptDescr (Repl.Option long short arg help) = Option (maybeToList short) [long] (toArgDescr long arg) help
 
-    longOptionsWithArgument :: [String]
-    longOptionsWithArgument = [name <> "=" | Option name@('-':'-':_) Argument <- pathOptions]
+    toArgDescr :: String -> Repl.Argument -> ArgDescr Argument
+    toArgDescr long = \ case
+      Repl.Argument name -> ReqArg (argument . Just) name
+      Repl.NoArgument -> NoArg (argument Nothing)
+      Repl.OptionalArgument name -> OptArg argument name
+      where
+        argument :: Maybe String -> Argument
+        argument argumentValue = Argument {
+          argumentName = "--" <> long
+        , argumentValue
+        }
 
 discardReplOptions :: [String] -> [String]
-discardReplOptions = go
+discardReplOptions args = case getOpt Permute options args of
+  (xs, _, _) -> concatMap values (filter (not . isReplOnlyOption) xs)
   where
-    go = \ case
-      [] -> []
-      arg : args -> case shouldDiscard arg of
-        Keep -> arg : go args
-        Discard -> go args
-        DiscardWithArgument -> go (drop 1 args)
+    isReplOnlyOption :: Argument -> Bool
+    isReplOnlyOption arg = Set.member (argumentName arg) replOnlyOptions
 
-data Discard = Keep | Discard | DiscardWithArgument
-  deriving (Eq, Show)
-
-shouldDiscard :: String -> Discard
-shouldDiscard arg
-  | Set.member arg flags = Discard
-  | Set.member arg options = DiscardWithArgument
-  | isOptionWithArgument = Discard
-  | otherwise = Keep
-  where
-    flags :: Set String
-    flags = Set.fromList [name | Option name NoArgument <- replOptions]
-
-    options :: Set String
-    options = Set.fromList (longOptions <> shortOptions)
-
-    longOptions :: [String]
-    longOptions = [name | Option name@('-':'-':_) Argument <- replOptions]
-
-    shortOptions :: [String]
-    shortOptions = [name | Option name@['-', _] Argument <- replOptions]
-
-    isOptionWithArgument :: Bool
-    isOptionWithArgument = any (`isPrefixOf` arg) (map (<> "=") longOptions <> shortOptions)
+    values :: Argument -> [String]
+    values (Argument name value) = name : maybeToList value

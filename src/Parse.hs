@@ -174,8 +174,3 @@ mkLineChunks = finish . foldr go (0, [], [])
           then (0, c : replicate count '.' ++ acc, res)
           else (0, c : acc, res)
     finish (count, acc, res) = mkChunk (replicate count '.' ++ acc) ++ res
-
-
--- | Remove leading and trailing whitespace.
-strip :: String -> String
-strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
