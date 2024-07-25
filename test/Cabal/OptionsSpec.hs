@@ -9,7 +9,10 @@ import           System.IO
 import           System.IO.Silently
 import           System.Exit
 import           System.Process
+import           Data.Set ((\\))
 import qualified Data.Set as Set
+
+import qualified Cabal.ReplOptionsSpec as Repl
 
 import           Cabal.Options
 
@@ -19,7 +22,7 @@ spec = do
     it "is the set of options that are unique to 'cabal repl'" $ do
       build <- Set.fromList . lines <$> readProcess "cabal" ["build", "--list-options"] ""
       repl <- Set.fromList . lines <$> readProcess "cabal" ["repl", "--list-options"] ""
-      Set.toList replOnlyOptions `shouldMatchList` Set.toList (Set.difference repl build)
+      Set.toList replOnlyOptions `shouldMatchList` Set.toList (repl \\ build)
 
   describe "rejectUnsupportedOptions" $ do
     it "produces error messages that are consistent with 'cabal repl'" $ do
@@ -33,6 +36,13 @@ spec = do
       shouldFail "repl" $ call "cabal" ["repl", "--installdir"]
 #endif
       shouldFail "doctest" $ rejectUnsupportedOptions ["--installdir"]
+
+    context "with --list-options" $ do
+      it "lists supported command-line options" $ do
+        repl <- Set.fromList . lines <$> readProcess "cabal" ["repl", "--list-options"] ""
+        doctest <- Set.fromList . lines <$> capture_ (rejectUnsupportedOptions ["--list-options"] `shouldThrow` (== ExitSuccess))
+        Set.toList (doctest \\ repl) `shouldMatchList` []
+        Set.toList (repl \\ doctest) `shouldMatchList` Set.toList Repl.unsupported
 
   describe "discardReplOptions" $ do
     it "discards 'cabal repl'-only options" $ do

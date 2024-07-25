@@ -36,16 +36,26 @@ replOnlyOptions = Set.fromList [
 
 rejectUnsupportedOptions :: [String] -> IO ()
 rejectUnsupportedOptions args = case getOpt' Permute options args of
-  (_, _, unsupported : _, _) -> die $ "Error: cabal: unrecognized 'doctest' option `" <> unsupported <> "'"
+  (xs, _, _, _) | ListOptions `elem` xs -> do
+    let
+      names :: [String]
+      names = concat [map (\ c -> ['-', c]) short ++ map ("--" <> ) long | Option short long _ _ <- documentedOptions]
+    putStr (unlines names)
+    exitSuccess
+  (_, _, unsupported : _, _) -> do
+    die $ "Error: cabal: unrecognized 'doctest' option `" <> unsupported <> "'"
   _ -> pass
 
-data Argument = Argument {
-  argumentName :: String
-, argumentValue :: Maybe String
-}
+data Argument = Argument String (Maybe String) | ListOptions
+  deriving (Eq, Show)
 
 options :: [OptDescr Argument]
-options = map toOptDescr Repl.options
+options =
+    Option [] ["list-options"] (NoArg ListOptions) ""
+  : documentedOptions
+
+documentedOptions :: [OptDescr Argument]
+documentedOptions = map toOptDescr Repl.options
   where
     toOptDescr :: Repl.Option -> OptDescr Argument
     toOptDescr (Repl.Option long short arg help) = Option (maybeToList short) [long] (toArgDescr long arg) help
@@ -57,17 +67,8 @@ options = map toOptDescr Repl.options
       Repl.OptionalArgument name -> OptArg argument name
       where
         argument :: Maybe String -> Argument
-        argument argumentValue = Argument {
-          argumentName = "--" <> long
-        , argumentValue
-        }
+        argument value = Argument ("--" <> long) value
 
 discardReplOptions :: [String] -> [String]
 discardReplOptions args = case getOpt Permute options args of
-  (xs, _, _) -> concatMap values (filter (not . isReplOnlyOption) xs)
-  where
-    isReplOnlyOption :: Argument -> Bool
-    isReplOnlyOption arg = Set.member (argumentName arg) replOnlyOptions
-
-    values :: Argument -> [String]
-    values (Argument name value) = name : maybeToList value
+  (xs, _, _) -> concat [name : maybeToList value | Argument name value <- xs, Set.notMember name replOnlyOptions]
