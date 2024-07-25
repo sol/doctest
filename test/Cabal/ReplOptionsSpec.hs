@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ViewPatterns #-}
-module Cabal.ReplOptionsSpec (spec) where
+module Cabal.ReplOptionsSpec (spec, unsupported) where
 
 import           Imports
 
@@ -28,6 +28,9 @@ undocumented = Set.fromList [
   , "--haddock-hyperlinked-source"
   ]
 
+unsupported :: Set String
+unsupported = undocumented <> Set.fromList (map ("--" <>) phony)
+
 spec :: Spec
 spec = do
   describe "options" $ do
@@ -37,15 +40,12 @@ spec = do
 
     it "is consistent with 'cabal repl --list-options'" $ do
       let
-        exclude :: Set String
-        exclude = undocumented <> Set.fromList (map ("--" <>) phony)
-
         optionNames :: Option -> [String]
         optionNames option = reverse $ "--" <> optionName option : case optionShortName option of
           Nothing -> []
           Just c -> [['-', c]]
   
-      repl <- filter (`Set.notMember` exclude) . lines <$> readProcess "cabal" ["repl", "--list-options"] ""
+      repl <- filter (`Set.notMember` unsupported) . lines <$> readProcess "cabal" ["repl", "--list-options"] ""
       concatMap optionNames options `shouldBe` repl
 
 parseOptions :: String -> [Option]
