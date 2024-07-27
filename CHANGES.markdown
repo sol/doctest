@@ -1,3 +1,14 @@
+Changes in 0.22.7
+  - cabal-doctest: Accept component
+  - cabal-doctest: Get rid of separate `cabal build` step
+  - cabal-doctest: Add support for `--list-options`
+
+Changes in 0.22.6
+  - cabal-doctest: Take `with-compiler:` from `cabal-project` into account
+  - cabal-doctest: Add support for `--with-compiler`
+  - cabal-doctest: Fix `ghc-pkg` discovery logic
+  - cabal-doctest: Cache `doctest` executables
+
 Changes in 0.22.5
   - Add (experimental) `cabal-doctest` executable.  This is guarded behind a
     flag for now, use `cabal install doctest -f cabal-doctest` to install it.
