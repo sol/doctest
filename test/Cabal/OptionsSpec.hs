@@ -57,4 +57,4 @@ spec = do
         , "--repl-options", "foo"
         , "--repl-options=foo"
         , "--allow-newer"
-        ] `shouldBe` ["--with-compiler", "ghc-9.10", "--disable-optimization", "--allow-newer"]
+        ] `shouldBe` ["--with-compiler=ghc-9.10", "--disable-optimization", "--allow-newer"]
