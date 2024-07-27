@@ -101,3 +101,7 @@ jobs:
     steps:
       - run: false
         if: needs.build.result != 'success'
+
+      - uses: actions/checkout@v3
+      - run: curl -sSL https://raw.githubusercontent.com/sol/hpack/main/get-hpack.sh | bash
+      - run: hpack && git diff --color --exit-code
