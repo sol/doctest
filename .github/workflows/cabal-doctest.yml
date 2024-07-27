@@ -42,7 +42,7 @@ jobs:
       - run: cabal path
       - run: cabal update
       - run: cabal install -f cabal-doctest
-      - run: cabal doctest
+      - run: cabal doctest --allow-newer=False
 
       - run: cabal doctest -w ghc-9.6
       - run: cabal doctest -w ghc-8.6.5

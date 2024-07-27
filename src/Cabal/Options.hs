@@ -71,4 +71,8 @@ documentedOptions = map toOptDescr Repl.options
 
 discardReplOptions :: [String] -> [String]
 discardReplOptions args = case getOpt Permute options args of
-  (xs, _, _) -> concat [name : maybeToList value | Argument name value <- xs, Set.notMember name replOnlyOptions]
+  (xs, _, _) -> [renderArgument name value | Argument name value <- xs, Set.notMember name replOnlyOptions]
+  where
+    renderArgument name = \ case
+      Nothing -> name
+      Just value -> name <> "=" <> value

@@ -1,3 +1,6 @@
+Changes in 0.22.8
+  - cabal-doctest: Fix handling of options with optional arguments
+
 Changes in 0.22.7
   - cabal-doctest: Accept component
   - cabal-doctest: Get rid of separate `cabal build` step
