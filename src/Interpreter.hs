@@ -53,6 +53,9 @@ withInterpreter (command, flags) action = do
 #if __GLASGOW_HASKELL__ >= 810 && __GLASGOW_HASKELL__ < 904
       , "-Wno-unused-packages"
 #endif
+#if __GLASGOW_HASKELL__ >= 910
+      , "-fprint-error-index-links=never"
+#endif
       ]
   bracket (new defaultConfig{configGhci = command} args) close action
 
