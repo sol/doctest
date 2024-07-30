@@ -1,3 +1,6 @@
+Changes in 0.22.9
+  - Use `-fprint-error-index-links=never` for GHC `>=9.10`
+
 Changes in 0.22.8
   - cabal-doctest: Fix handling of options with optional arguments
 
