@@ -2,11 +2,14 @@
 {-# LANGUAGE LambdaCase #-}
 module Runner (
   runModules
+, Verbose(..)
 , Summary(..)
+, formatSummary
 
 #ifdef TEST
 , Report
-, ReportState (..)
+, ReportState(..)
+, Interactive(..)
 , report
 , reportTransient
 #endif
@@ -16,10 +19,11 @@ import           Prelude ()
 import           Imports hiding (putStr, putStrLn, error)
 
 import           Text.Printf (printf)
-import           System.IO (hGetBuffering, hSetBuffering, BufferMode(..), hFlush, hPutStrLn, hPutStr, stderr, hIsTerminalDevice)
+import           System.IO hiding (putStr, putStrLn)
 
 import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
+import           Data.IORef
 
 import           Interpreter (Interpreter)
 import qualified Interpreter
@@ -36,10 +40,12 @@ data Summary = Summary {
 , sFailures :: !Int
 } deriving Eq
 
--- | Format a summary.
 instance Show Summary where
-  show (Summary examples tried errors failures) =
-    printf "Examples: %d  Tried: %d  Errors: %d  Failures: %d" examples tried errors failures
+  show = formatSummary
+
+formatSummary :: Summary -> String
+formatSummary (Summary examples tried errors failures) =
+  printf "Examples: %d  Tried: %d  Errors: %d  Failures: %d" examples tried errors failures
 
 -- | Sum up summaries.
 instance Monoid Summary where
@@ -52,34 +58,58 @@ instance Semigroup Summary where
 #endif
     (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
+withLineBuffering :: Handle -> IO c -> IO c
+withLineBuffering h action = bracket (hGetBuffering h) (hSetBuffering h) $ \ _ -> do
+  hSetBuffering h LineBuffering
+  action
+
 -- | Run all examples from a list of modules.
-runModules :: Bool -> Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt verbose repl modules = bracket (hGetBuffering stderr) (hSetBuffering stderr) $ \ _ -> do
-  hSetBuffering stderr LineBuffering
+runModules :: Bool -> Bool -> Verbose -> Interpreter -> [Module [Located DocTest]] -> IO Summary
+runModules fastMode preserveIt verbose repl modules = withLineBuffering stderr $ do
 
-  isInteractive <- hIsTerminalDevice stderr
-  ReportState _ _ s <- (`execStateT` ReportState isInteractive verbose mempty {sExamples = c}) $ do
-    forM_ modules $ runModule fastMode preserveIt repl
+  interactive <- hIsTerminalDevice stderr <&> \ case
+    False -> NonInteractive
+    True -> Interactive
 
-    verboseReport "# Final summary:"
-    gets (show . reportStateSummary) >>= report
+  summary <- newIORef mempty {sExamples = n}
 
-  return s
+  let
+    reportFinalResult :: IO ()
+    reportFinalResult = do
+      final <- readIORef summary
+      hPutStrLn stderr (formatSummary final)
+
+    run :: IO ()
+    run = flip evalStateT (ReportState interactive verbose summary) $ do
+      reportProgress
+      forM_ modules $ runModule fastMode preserveIt repl
+      verboseReport "# Final summary:"
+
+  run `finally` reportFinalResult
+
+  readIORef summary
   where
-    c = (sum . map count) modules
+    n :: Int
+    n = sum (map countExpressions modules)
 
--- | Count number of expressions in given module.
-count :: Module [Located DocTest] -> Int
-count (Module _ setup tests) = sum (map length tests) + maybe 0 length setup
+countExpressions :: Module [Located DocTest] -> Int
+countExpressions (Module _ setup tests) = sum (map length tests) + maybe 0 length setup
 
--- | A monad for generating test reports.
 type Report = StateT ReportState IO
 
+data Interactive = NonInteractive | Interactive
+
+data Verbose = NonVerbose | Verbose
+  deriving (Eq, Show)
+
 data ReportState = ReportState {
-  reportStateInteractive :: Bool -- ^ should intermediate results be printed?
-, reportStateVerbose :: Bool
-, reportStateSummary :: !Summary -- ^ test summary
+  reportStateInteractive :: Interactive
+, reportStateVerbose :: Verbose
+, reportStateSummary :: IORef Summary
 }
+
+getSummary :: Report Summary
+getSummary = gets reportStateSummary >>= liftIO . readIORef
 
 -- | Add output to the report.
 report :: String -> Report ()
@@ -90,24 +120,23 @@ report = liftIO . hPutStrLn stderr
 -- This will be overwritten by subsequent calls to `report`/`report_`.
 -- Intermediate out may not contain any newlines.
 reportTransient :: String -> Report ()
-reportTransient msg = do
-  gets reportStateInteractive >>= \ case
-    False -> pass
-    True -> liftIO $ do
-      hPutStr stderr msg
-      hFlush stderr
-      hPutStr stderr $ '\r' : (replicate (length msg) ' ') ++ "\r"
+reportTransient msg = gets reportStateInteractive >>= \ case
+  NonInteractive -> pass
+  Interactive -> liftIO $ do
+    hPutStr stderr msg
+    hFlush stderr
+    hPutStr stderr $ '\r' : (replicate (length msg) ' ') ++ "\r"
 
 -- | Run all examples from given module.
 runModule :: Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
 runModule fastMode preserveIt repl (Module module_ setup examples) = do
 
-  Summary _ _ e0 f0 <- gets reportStateSummary
+  Summary _ _ e0 f0 <- getSummary
 
   forM_ setup $
     runTestGroup preserveIt repl reload
 
-  Summary _ _ e1 f1 <- gets reportStateSummary
+  Summary _ _ e1 f1 <- getSummary
 
   -- only run tests, if setup does not produce any errors/failures
   when (e0 == e1 && f0 == f1) $
@@ -160,20 +189,22 @@ reportSuccess = do
   updateSummary (Summary 0 1 0 0)
 
 verboseReport :: String -> Report ()
-verboseReport xs = do
-  verbose <- gets reportStateVerbose
-  when verbose $ report xs
+verboseReport msg = gets reportStateVerbose >>= \ case
+  NonVerbose -> pass
+  Verbose -> report msg
 
 updateSummary :: Summary -> Report ()
 updateSummary summary = do
-  ReportState f v s <- get
-  put (ReportState f v $ s `mappend` summary)
+  ref <- gets reportStateSummary
+  liftIO $ modifyIORef' ref $ mappend summary
   reportProgress
 
 reportProgress :: Report ()
-reportProgress = do
-  verbose <- gets reportStateVerbose
-  when (not verbose) $ gets (show . reportStateSummary) >>= reportTransient
+reportProgress = gets reportStateVerbose >>= \ case
+  NonVerbose -> do
+    summary <- getSummary
+    reportTransient (formatSummary summary)
+  Verbose -> pass
 
 -- | Run given test group.
 --

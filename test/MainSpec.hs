@@ -26,7 +26,7 @@ doctest = doctestWithPreserveIt False
 doctestWithPreserveIt :: HasCallStack => Bool -> FilePath -> [String] -> Summary -> Assertion
 doctestWithPreserveIt preserveIt workingDir ghcOptions expected = do
   actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithResult defaultConfig {ghcOptions, preserveIt})
-  assertEqual label expected actual
+  assertEqual label (formatSummary expected) (formatSummary actual)
   where
     label = workingDir ++ " " ++ show ghcOptions
 

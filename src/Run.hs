@@ -9,6 +9,7 @@ module Run (
 
 , Result
 , Summary(..)
+, formatSummary
 , isSuccess
 , evaluateResult
 , doctestWithResult
@@ -154,4 +155,6 @@ doctestWithResult config = do
 runDocTests :: Config -> [Module [Located DocTest]] -> IO Result
 runDocTests Config{..} modules = do
   Interpreter.withInterpreter ((<> ghcOptions) <$> repl) $ \ interpreter -> withCP65001 $ do
-    runModules fastMode preserveIt verbose interpreter modules
+    let
+      v = if verbose then Verbose else NonVerbose
+    runModules fastMode preserveIt v interpreter modules
