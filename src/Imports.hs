@@ -4,7 +4,9 @@ module Imports (module Imports) where
 import           Prelude as Imports
 import           Data.Monoid as Imports
 import           Data.Maybe as Imports
-import           Control.Monad as Imports
+import           Control.Monad as Imports hiding (forM_)
+import           Control.Exception as Imports
+import           Data.Foldable as Imports (forM_)
 import           Control.Arrow as Imports
 
 import           Data.Char

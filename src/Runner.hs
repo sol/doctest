@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE LambdaCase #-}
 module Runner (
   runModules
 , Summary(..)
@@ -7,16 +8,15 @@ module Runner (
 , Report
 , ReportState (..)
 , report
-, report_
+, reportTransient
 #endif
 ) where
 
-import           Prelude hiding (putStr, putStrLn, error)
+import           Prelude ()
+import           Imports hiding (putStr, putStrLn, error)
 
-import           Control.Monad hiding (forM_)
 import           Text.Printf (printf)
-import           System.IO (hPutStrLn, hPutStr, stderr, hIsTerminalDevice)
-import           Data.Foldable (forM_)
+import           System.IO (hGetBuffering, hSetBuffering, BufferMode(..), hFlush, hPutStrLn, hPutStr, stderr, hIsTerminalDevice)
 
 import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
@@ -30,17 +30,16 @@ import           Runner.Example
 
 -- | Summary of a test run.
 data Summary = Summary {
-  sExamples :: Int
-, sTried    :: Int
-, sErrors   :: Int
-, sFailures :: Int
+  sExamples :: !Int
+, sTried    :: !Int
+, sErrors   :: !Int
+, sFailures :: !Int
 } deriving Eq
 
 -- | Format a summary.
 instance Show Summary where
   show (Summary examples tried errors failures) =
     printf "Examples: %d  Tried: %d  Errors: %d  Failures: %d" examples tried errors failures
-
 
 -- | Sum up summaries.
 instance Monoid Summary where
@@ -55,9 +54,11 @@ instance Semigroup Summary where
 
 -- | Run all examples from a list of modules.
 runModules :: Bool -> Bool -> Bool -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt verbose repl modules = do
+runModules fastMode preserveIt verbose repl modules = bracket (hGetBuffering stderr) (hSetBuffering stderr) $ \ _ -> do
+  hSetBuffering stderr LineBuffering
+
   isInteractive <- hIsTerminalDevice stderr
-  ReportState _ _ _ s <- (`execStateT` ReportState 0 isInteractive verbose mempty {sExamples = c}) $ do
+  ReportState _ _ s <- (`execStateT` ReportState isInteractive verbose mempty {sExamples = c}) $ do
     forM_ modules $ runModule fastMode preserveIt repl
 
     verboseReport "# Final summary:"
@@ -75,39 +76,27 @@ count (Module _ setup tests) = sum (map length tests) + maybe 0 length setup
 type Report = StateT ReportState IO
 
 data ReportState = ReportState {
-  reportStateCount        :: Int     -- ^ characters on the current line
-, reportStateInteractive  :: Bool    -- ^ should intermediate results be printed?
-, reportStateVerbose      :: Bool
-, reportStateSummary      :: Summary -- ^ test summary
+  reportStateInteractive :: Bool -- ^ should intermediate results be printed?
+, reportStateVerbose :: Bool
+, reportStateSummary :: !Summary -- ^ test summary
 }
 
 -- | Add output to the report.
 report :: String -> Report ()
-report msg = do
-  overwrite msg
-
-  -- add a newline, this makes the output permanent
-  liftIO $ hPutStrLn stderr ""
-  modify (\st -> st {reportStateCount = 0})
+report = liftIO . hPutStrLn stderr
 
 -- | Add intermediate output to the report.
 --
 -- This will be overwritten by subsequent calls to `report`/`report_`.
 -- Intermediate out may not contain any newlines.
-report_ :: String -> Report ()
-report_ msg = do
-  f <- gets reportStateInteractive
-  when f $ do
-    overwrite msg
-    modify (\st -> st {reportStateCount = length msg})
-
--- | Add output to the report, overwrite any intermediate out.
-overwrite :: String -> Report ()
-overwrite msg = do
-  n <- gets reportStateCount
-  let str | 0 < n     = "\r" ++ msg ++ replicate (n - length msg) ' '
-          | otherwise = msg
-  liftIO (hPutStr stderr str)
+reportTransient :: String -> Report ()
+reportTransient msg = do
+  gets reportStateInteractive >>= \ case
+    False -> pass
+    True -> liftIO $ do
+      hPutStr stderr msg
+      hFlush stderr
+      hPutStr stderr $ '\r' : (replicate (length msg) ' ') ++ "\r"
 
 -- | Run all examples from given module.
 runModule :: Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
@@ -177,13 +166,14 @@ verboseReport xs = do
 
 updateSummary :: Summary -> Report ()
 updateSummary summary = do
-  ReportState n f v s <- get
-  put (ReportState n f v $ s `mappend` summary)
+  ReportState f v s <- get
+  put (ReportState f v $ s `mappend` summary)
+  reportProgress
 
 reportProgress :: Report ()
 reportProgress = do
   verbose <- gets reportStateVerbose
-  when (not verbose) $ gets (show . reportStateSummary) >>= report_
+  when (not verbose) $ gets (show . reportStateSummary) >>= reportTransient
 
 -- | Run given test group.
 --
@@ -191,9 +181,6 @@ reportProgress = do
 -- can reuse the same 'Interpreter' for several test groups.
 runTestGroup :: Bool -> Interpreter -> IO () -> [Located DocTest] -> Report ()
 runTestGroup preserveIt repl setup tests = do
-
-  reportProgress
-
   liftIO setup
   runExampleGroup preserveIt repl examples
 
