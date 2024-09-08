@@ -7,7 +7,6 @@ import           Imports
 import           Test.Hspec
 import           Test.HUnit (assertEqual, Assertion)
 
-import           Control.Exception
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           System.FilePath
 import           Run hiding (doctest)

@@ -14,7 +14,6 @@ import           Imports
 import           System.IO hiding (stdin, stdout, stderr)
 import           System.Process
 import           System.Exit
-import           Control.Exception
 import           Data.List (isSuffixOf)
 
 data Config = Config {

@@ -17,7 +17,6 @@ import           Imports
 
 import           System.Process
 import           System.Directory (getPermissions, executable)
-import           Control.Exception hiding (handle)
 import           GHC.Paths (ghc)
 
 import           Language.Haskell.GhciWrapper

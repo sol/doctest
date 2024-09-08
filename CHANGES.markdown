@@ -1,3 +1,6 @@
+Changes in 0.22.10
+  - Make progress reporting more robust
+
 Changes in 0.22.9
   - Use `-fprint-error-index-links=never` for GHC `>=9.10`
 

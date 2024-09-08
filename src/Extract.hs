@@ -2,7 +2,6 @@
 module Extract (Module(..), extract) where
 
 import           Imports hiding (mod, concat)
-import           Control.Exception
 import           Data.List (partition, isSuffixOf)
 
 import           Control.DeepSeq (deepseq, NFData(rnf))
