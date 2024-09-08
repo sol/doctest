@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 module Imports (module Imports) where
 
@@ -12,6 +13,14 @@ import           Control.Arrow as Imports
 import           Data.Char
 import           System.Exit
 import           System.Process
+
+#if __GLASGOW_HASKELL__ >= 804
+import           Data.Functor as Imports ((<&>))
+#else
+infixl 1 <&>
+(<&>) :: Functor f => f a -> (a -> b) -> f b
+(<&>) = flip fmap
+#endif
 
 pass :: Monad m => m ()
 pass = return ()
