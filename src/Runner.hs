@@ -3,6 +3,7 @@
 module Runner (
   runModules
 , Verbose(..)
+, OutputTo(..)
 , Summary(..)
 , formatSummary
 
@@ -31,6 +32,7 @@ import           Parse
 import           Location
 import           Property
 import           Runner.Example
+-- import Debug.Trace
 
 -- | Summary of a test run.
 data Summary = Summary {
@@ -64,8 +66,8 @@ withLineBuffering h action = bracket (hGetBuffering h) (hSetBuffering h) $ \ _ -
   action
 
 -- | Run all examples from a list of modules.
-runModules :: Bool -> Bool -> Verbose -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt verbose repl modules = withLineBuffering stderr $ do
+runModules :: Bool -> Bool -> Verbose -> Interpreter -> OutputTo -> [Module [Located DocTest]] -> IO Summary
+runModules fastMode preserveIt verbose repl outputTo modules = withLineBuffering stderr $ do
 
   interactive <- hIsTerminalDevice stderr <&> \ case
     False -> NonInteractive
@@ -80,10 +82,15 @@ runModules fastMode preserveIt verbose repl modules = withLineBuffering stderr $
       hPutStrLn stderr (formatSummary final)
 
     run :: IO ()
-    run = flip evalStateT (ReportState interactive verbose summary) $ do
-      reportProgress
-      forM_ modules $ runModule fastMode preserveIt repl
-      verboseReport "# Final summary:"
+    run = do
+      file <- case outputTo of
+            StdErr -> pure stderr
+            File path -> liftIO $ openFile path WriteMode
+      flip evalStateT (ReportState interactive verbose summary file) $ do
+        reportProgress
+        forM_ modules $ runModule fastMode preserveIt repl
+        verboseReport "# Final summary:"
+      hClose file
 
   run `finally` reportFinalResult
 
@@ -102,10 +109,13 @@ data Interactive = NonInteractive | Interactive
 data Verbose = NonVerbose | Verbose
   deriving (Eq, Show)
 
+data OutputTo = StdErr | File String
+
 data ReportState = ReportState {
   reportStateInteractive :: Interactive
 , reportStateVerbose :: Verbose
 , reportStateSummary :: IORef Summary
+, outputFile :: Handle
 }
 
 getSummary :: Report Summary
@@ -113,7 +123,9 @@ getSummary = gets reportStateSummary >>= liftIO . readIORef
 
 -- | Add output to the report.
 report :: String -> Report ()
-report = liftIO . hPutStrLn stderr
+report s = do
+  file <- gets outputFile
+  (liftIO . hPutStrLn file) s
 
 -- | Add intermediate output to the report.
 --

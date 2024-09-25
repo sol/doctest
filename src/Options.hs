@@ -34,12 +34,13 @@ usage = unlines [
   , "  doctest --info"
   , ""
   , "Options:"
-  , "  --fast         disable :reload between example groups"
-  , "  --preserve-it  preserve the `it` variable between examples"
-  , "  --verbose      print each test as it is run"
-  , "  --help         display this help and exit"
-  , "  --version      output version information and exit"
-  , "  --info         output machine-readable version information and exit"
+  , "  --fast              disable :reload between example groups"
+  , "  --preserve-it       preserve the `it` variable between examples"
+  , "  --verbose           print each test as it is run"
+  , "  --help              display this help and exit"
+  , "  --version           output version information and exit"
+  , "  --info              output machine-readable version information and exit"
+  , "  --output-file=FILE  write the test results to FILE instead of stderr"
   ]
 
 data Result a = ProxyToGhc [String] | Output String | Result a
@@ -59,6 +60,7 @@ data Config = Config {
 , preserveIt :: Bool
 , verbose :: Bool
 , repl :: (String, [String])
+, outputFile :: Maybe FilePath
 } deriving (Eq, Show)
 
 defaultConfig :: Config
@@ -68,6 +70,7 @@ defaultConfig = Config {
 , preserveIt = False
 , verbose = False
 , repl = (ghc, ["--interactive"])
+, outputFile = Nothing
 }
 
 nonInteractiveGhcOptions :: [String]
@@ -108,6 +111,9 @@ setPreserveIt preserveIt run@Run{..} = run { runConfig = runConfig { preserveIt 
 setVerbose :: Bool -> Run -> Run
 setVerbose verbose run@Run{..} = run { runConfig = runConfig { verbose } }
 
+setOutputFile :: FilePath -> Run -> Run
+setOutputFile filePath run@Run{..} = run { runConfig = runConfig { outputFile = Just filePath } }
+
 parseOptions :: [String] -> Result Run
 parseOptions args
   | on "--info" = Output info
@@ -119,9 +125,27 @@ parseOptions args
   | otherwise = runRunOptionsParser args defaultRun {runMagicMode = True} $ do
       commonRunOptions
       parseFlag "--no-magic" (setMagicMode False)
+      parseOptionWithArgument "--output-file" setOutputFile
       parseOptGhc
   where
     on option = option `elem` args
+
+parseOptionWithArgument :: String -> (String -> Run -> Run) -> RunOptionsParser
+parseOptionWithArgument optionName setter = do
+  args <- RWS.get
+  case extractOptionValue optionName args of
+    Just (value, remainingArgs) -> do
+      RWS.tell (Endo (setter value))
+      RWS.put remainingArgs
+    Nothing -> return ()
+
+extractOptionValue :: String -> [String] -> Maybe (String, [String])
+extractOptionValue optionName args = go args []
+  where
+    go [] _ = Nothing
+    go (arg:rest) acc
+      | Just value <- stripPrefix (optionName ++ "=") arg = Just (value, reverse acc ++ rest)
+      | otherwise = go rest (arg:acc)
 
 type RunOptionsParser = RWS () (Endo Run) [String] ()
 
