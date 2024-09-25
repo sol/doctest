@@ -157,4 +157,5 @@ runDocTests Config{..} modules = do
   Interpreter.withInterpreter ((<> ghcOptions) <$> repl) $ \ interpreter -> withCP65001 $ do
     let
       v = if verbose then Verbose else NonVerbose
-    runModules fastMode preserveIt v interpreter modules
+      outputFile' = maybe StdErr File outputFile
+    runModules fastMode preserveIt v interpreter outputFile' modules
