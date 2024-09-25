@@ -90,7 +90,9 @@ runModules fastMode preserveIt verbose repl outputTo modules = withLineBuffering
         reportProgress
         forM_ modules $ runModule fastMode preserveIt repl
         verboseReport "# Final summary:"
-      hClose file
+      case outputTo of
+        File _ -> hClose file
+        StdErr -> pass
 
   run `finally` reportFinalResult
 
