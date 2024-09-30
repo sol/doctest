@@ -28,7 +28,7 @@ import           Info
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --preserve-it | --no-magic | --stop-on-fail | --verbose | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
@@ -36,6 +36,8 @@ usage = unlines [
   , "Options:"
   , "  --fast         disable :reload between example groups"
   , "  --preserve-it  preserve the `it` variable between examples"
+  , "  --no-magic     disable magic mode"
+  , "  --stop-on-fail stop testing after the first failure"
   , "  --verbose      print each test as it is run"
   , "  --help         display this help and exit"
   , "  --version      output version information and exit"
@@ -55,6 +57,7 @@ data Run = Run {
 
 data Config = Config {
   ghcOptions :: [String]
+, stopOnFail :: Bool
 , fastMode :: Bool
 , preserveIt :: Bool
 , verbose :: Bool
@@ -64,6 +67,7 @@ data Config = Config {
 defaultConfig :: Config
 defaultConfig = Config {
   ghcOptions = []
+, stopOnFail = False
 , fastMode = False
 , preserveIt = False
 , verbose = False
@@ -99,6 +103,9 @@ setOptions ghcOptions run@Run{..} = run { runConfig = runConfig { ghcOptions } }
 setMagicMode :: Bool -> Run -> Run
 setMagicMode magic run = run { runMagicMode = magic }
 
+setStopOnFailMode :: Bool -> Run -> Run
+setStopOnFailMode stopOnFail run@Run{..} = run { runConfig = runConfig { stopOnFail } }
+
 setFastMode :: Bool -> Run -> Run
 setFastMode fastMode run@Run{..} = run { runConfig = runConfig { fastMode } }
 
@@ -119,6 +126,7 @@ parseOptions args
   | otherwise = runRunOptionsParser args defaultRun {runMagicMode = True} $ do
       commonRunOptions
       parseFlag "--no-magic" (setMagicMode False)
+      parseFlag "--stop-on-fail" (setStopOnFailMode True)
       parseOptGhc
   where
     on option = option `elem` args

@@ -21,11 +21,11 @@ withCurrentDirectory workingDir action = do
 
 -- | Construct a doctest specific 'Assertion'.
 doctest :: HasCallStack => FilePath -> [String] -> Summary -> Assertion
-doctest = doctestWithPreserveIt False
+doctest = doctestWithPreserveIt False False
 
-doctestWithPreserveIt :: HasCallStack => Bool -> FilePath -> [String] -> Summary -> Assertion
-doctestWithPreserveIt preserveIt workingDir ghcOptions expected = do
-  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithResult defaultConfig {ghcOptions, preserveIt})
+doctestWithPreserveIt :: HasCallStack => Bool -> Bool -> FilePath -> [String] -> Summary -> Assertion
+doctestWithPreserveIt preserveIt stopOnFail workingDir ghcOptions expected = do
+  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithResult defaultConfig {ghcOptions, preserveIt, stopOnFail})
   assertEqual label (formatSummary expected) (formatSummary actual)
   where
     label = workingDir ++ " " ++ show ghcOptions
@@ -44,11 +44,11 @@ spec = do
         (cases 1)
 
     it "it-variable" $ do
-      doctestWithPreserveIt True "." ["it/Foo.hs"]
+      doctestWithPreserveIt True False "." ["it/Foo.hs"]
         (cases 5)
 
     it "it-variable in $setup" $ do
-      doctestWithPreserveIt True "." ["it/Setup.hs"]
+      doctestWithPreserveIt True False "." ["it/Setup.hs"]
         (cases 5)
 
     it "failing" $ do
@@ -58,6 +58,14 @@ spec = do
     it "skips subsequent examples from the same group if an example fails" $
       doctest "." ["failing-multiple/Foo.hs"]
         (cases 4) {sTried = 2, sFailures = 1}
+
+    it "runs subsequent groups after an example in earlier group fails" $
+      doctest "." ["failing-multiple-groups/Foo.hs"]
+        (cases 3) {sTried = 3, sFailures = 1}
+
+    it "in --stop-on-fail mode, does not run subsequent groups after an example in earlier group fails" $
+      doctestWithPreserveIt False True "." ["failing-multiple-groups/Foo.hs"]
+        (cases 3) {sTried = 2, sFailures = 1}
 
     it "testImport" $ do
       doctest "testImport" ["ModuleA.hs"]

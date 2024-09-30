@@ -64,8 +64,8 @@ withLineBuffering h action = bracket (hGetBuffering h) (hSetBuffering h) $ \ _ -
   action
 
 -- | Run all examples from a list of modules.
-runModules :: Bool -> Bool -> Verbose -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt verbose repl modules = withLineBuffering stderr $ do
+runModules :: Bool -> Bool -> Bool -> Verbose -> Interpreter -> [Module [Located DocTest]] -> IO Summary
+runModules fastMode preserveIt stopOnFail verbose repl modules = withLineBuffering stderr $ do
 
   interactive <- hIsTerminalDevice stderr <&> \ case
     False -> NonInteractive
@@ -82,7 +82,7 @@ runModules fastMode preserveIt verbose repl modules = withLineBuffering stderr $
     run :: IO ()
     run = flip evalStateT (ReportState interactive verbose summary) $ do
       reportProgress
-      forM_ modules $ runModule fastMode preserveIt repl
+      forM_ modules $ runModule fastMode preserveIt stopOnFail repl
       verboseReport "# Final summary:"
 
   run `finally` reportFinalResult
@@ -128,8 +128,8 @@ reportTransient msg = gets reportStateInteractive >>= \ case
     hPutStr stderr $ '\r' : (replicate (length msg) ' ') ++ "\r"
 
 -- | Run all examples from given module.
-runModule :: Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
-runModule fastMode preserveIt repl (Module module_ setup examples) = do
+runModule :: Bool -> Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
+runModule fastMode preserveIt stopOnFail repl (Module module_ setup examples) = do
 
   Summary _ _ e0 f0 <- getSummary
 
@@ -140,8 +140,7 @@ runModule fastMode preserveIt repl (Module module_ setup examples) = do
 
   -- only run tests, if setup does not produce any errors/failures
   when (e0 == e1 && f0 == f1) $
-    forM_ examples $
-      runTestGroup preserveIt repl setup_
+    runExamples examples
   where
     reload :: IO ()
     reload = do
@@ -164,6 +163,17 @@ runModule fastMode preserveIt repl (Module module_ setup examples) = do
       forM_ setup $ \l -> forM_ l $ \(Located _ x) -> case x of
         Property _  -> return ()
         Example e _ -> void $ safeEvalWith preserveIt repl e
+
+    -- run examples - optionally aborting if in stopOnFail mode and a failure occurs
+    runExamples :: [[Located DocTest]] -> Report ()
+    runExamples [] = return ()
+    runExamples (testGroup:moreGroups) = do
+      fBefore <- sFailures <$> getSummary
+      runTestGroup preserveIt repl setup_ testGroup
+      fAfter <- sFailures <$> getSummary
+      if stopOnFail && fAfter > fBefore
+        then return ()  -- Stop processing further examples
+        else runExamples moreGroups
 
 reportStart :: Location -> Expression -> String -> Report ()
 reportStart loc expression testType = do
