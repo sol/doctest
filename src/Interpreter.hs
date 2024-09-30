@@ -1,8 +1,9 @@
 {-# LANGUAGE CPP #-}
 module Interpreter (
   Interpreter
+, PreserveIt(..)
 , safeEval
-, safeEvalIt
+, safeEvalWith
 , withInterpreter
 , ghc
 , interpreterSupported
@@ -65,10 +66,10 @@ xTemplateHaskell = "-XTemplateHaskell"
 --
 -- An exception may e.g. be caused on unterminated multiline expressions.
 safeEval :: Interpreter -> String -> IO (Either String String)
-safeEval repl = either (return . Left) (fmap Right . eval repl) . filterExpression
+safeEval = safeEvalWith NoPreserveIt
 
-safeEvalIt :: Interpreter -> String -> IO (Either String String)
-safeEvalIt repl = either (return . Left) (fmap Right . evalIt repl) . filterExpression
+safeEvalWith :: PreserveIt -> Interpreter -> String -> IO (Either String String)
+safeEvalWith preserveIt repl = either (return . Left) (fmap Right . evalWith preserveIt repl) . filterExpression
 
 filterExpression :: String -> Either String String
 filterExpression e =

@@ -8,7 +8,7 @@ import           System.IO.Silently
 
 import           Data.List
 
-import           Language.Haskell.GhciWrapper (Interpreter, Config(..), defaultConfig)
+import           Language.Haskell.GhciWrapper (Interpreter, Config(..), defaultConfig, PreserveIt(..))
 import qualified Language.Haskell.GhciWrapper as Interpreter
 
 main :: IO ()
@@ -30,11 +30,12 @@ spec = do
       withInterpreterConfig defaultConfig [] $ \ghci -> do
         (capture $ Interpreter.evalEcho ghci ("putStr" ++ show "foo\nbar")) `shouldReturn` ("foo\nbar", "foo\nbar")
 
-  describe "evalIt" $ do
-    it "preserves it" $ do
-      withInterpreterConfig defaultConfig [] $ \ghci -> do
-        Interpreter.evalIt ghci "23" `shouldReturn` "23\n"
-        Interpreter.eval ghci "it" `shouldReturn` "23\n"
+  describe "evalWith" $ do
+    context "with PreserveIt" $ do
+      it "preserves it" $ do
+        withInterpreterConfig defaultConfig [] $ \ghci -> do
+          Interpreter.evalWith PreserveIt ghci "23" `shouldReturn` "23\n"
+          Interpreter.eval ghci "it" `shouldReturn` "23\n"
 
   describe "eval" $ do
     it "shows literals" $ withInterpreter $ \ghci -> do
