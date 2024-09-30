@@ -1,11 +1,13 @@
+{-# LANGUAGE ViewPatterns #-}
 module Language.Haskell.GhciWrapper (
   Interpreter
 , Config(..)
 , defaultConfig
+, PreserveIt(..)
 , new
 , close
 , eval
-, evalIt
+, evalWith
 , evalEcho
 ) where
 
@@ -28,6 +30,9 @@ defaultConfig = Config {
 , configVerbose = False
 , configIgnoreDotGhci = True
 }
+
+data PreserveIt = NoPreserveIt | PreserveIt
+  deriving Eq
 
 -- | Truly random marker, used to separate expressions.
 --
@@ -109,8 +114,8 @@ close repl = do
   when (e /= ExitSuccess) $ do
     throwIO (userError $ "Language.Haskell.GhciWrapper.close: Interpreter exited with an error (" ++ show e ++ ")")
 
-putExpression :: Interpreter -> Bool -> String -> IO ()
-putExpression Interpreter{hIn = stdin} preserveIt e = do
+putExpression :: Interpreter -> PreserveIt -> String -> IO ()
+putExpression Interpreter{hIn = stdin} (equals PreserveIt -> preserveIt) e = do
   hPutStrLn stdin e
   when preserveIt $ hPutStrLn stdin $ "let " ++ itMarker ++ " = it"
   hPutStrLn stdin (marker ++ " :: Data.String.String")
@@ -140,18 +145,16 @@ getResult echoMode Interpreter{hOut = stdout} = go
 
 -- | Evaluate an expression
 eval :: Interpreter -> String -> IO String
-eval repl expr = do
-  putExpression repl False expr
-  getResult False repl
+eval = evalWith NoPreserveIt
 
 -- | Like 'eval', but try to preserve the @it@ variable
-evalIt :: Interpreter -> String -> IO String
-evalIt repl expr = do
-  putExpression repl True expr
+evalWith :: PreserveIt -> Interpreter -> String -> IO String
+evalWith preserveIt repl expr = do
+  putExpression repl preserveIt expr
   getResult False repl
 
 -- | Evaluate an expression
 evalEcho :: Interpreter -> String -> IO String
 evalEcho repl expr = do
-  putExpression repl False expr
+  putExpression repl NoPreserveIt expr
   getResult True repl

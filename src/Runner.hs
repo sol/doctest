@@ -2,6 +2,8 @@
 {-# LANGUAGE LambdaCase #-}
 module Runner (
   runModules
+, FastMode(..)
+, PreserveIt(..)
 , Verbose(..)
 , Summary(..)
 , formatSummary
@@ -25,7 +27,7 @@ import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
 import           Data.IORef
 
-import           Interpreter (Interpreter)
+import           Interpreter (Interpreter, PreserveIt(..), safeEvalWith)
 import qualified Interpreter
 import           Parse
 import           Location
@@ -64,7 +66,7 @@ withLineBuffering h action = bracket (hGetBuffering h) (hSetBuffering h) $ \ _ -
   action
 
 -- | Run all examples from a list of modules.
-runModules :: Bool -> Bool -> Verbose -> Interpreter -> [Module [Located DocTest]] -> IO Summary
+runModules :: FastMode -> PreserveIt -> Verbose -> Interpreter -> [Module [Located DocTest]] -> IO Summary
 runModules fastMode preserveIt verbose repl modules = withLineBuffering stderr $ do
 
   interactive <- hIsTerminalDevice stderr <&> \ case
@@ -99,8 +101,9 @@ type Report = StateT ReportState IO
 
 data Interactive = NonInteractive | Interactive
 
+data FastMode = NoFastMode | FastMode
+
 data Verbose = NonVerbose | Verbose
-  deriving (Eq, Show)
 
 data ReportState = ReportState {
   reportStateInteractive :: Interactive
@@ -128,7 +131,7 @@ reportTransient msg = gets reportStateInteractive >>= \ case
     hPutStr stderr $ '\r' : (replicate (length msg) ' ') ++ "\r"
 
 -- | Run all examples from given module.
-runModule :: Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
+runModule :: FastMode -> PreserveIt -> Interpreter -> Module [Located DocTest] -> Report ()
 runModule fastMode preserveIt repl (Module module_ setup examples) = do
 
   Summary _ _ e0 f0 <- getSummary
@@ -145,18 +148,19 @@ runModule fastMode preserveIt repl (Module module_ setup examples) = do
   where
     reload :: IO ()
     reload = do
-      unless fastMode $
-        -- NOTE: It is important to do the :reload first! See
-        -- https://gitlab.haskell.org/ghc/ghc/-/issues/5904, which results in a
-        -- panic on GHC 7.4.1 if you do the :reload second.
-        void $ Interpreter.safeEval repl ":reload"
+      case fastMode of
+        NoFastMode -> void $ Interpreter.safeEval repl ":reload"
+        FastMode -> pass
       void $ Interpreter.safeEval repl $ ":m *" ++ module_
 
-      when preserveIt $
-        -- Evaluate a dumb expression to populate the 'it' variable NOTE: This is
-        -- one reason why we cannot have safeEval = safeEvalIt: 'it' isn't set in
-        -- a fresh GHCi session.
-        void $ Interpreter.safeEval repl $ "()"
+      case preserveIt of
+        NoPreserveIt -> pass
+        PreserveIt -> do
+          -- Evaluate a dumb expression to populate the 'it' variable.
+          --
+          -- NOTE: This is one reason why we cannot just always use PreserveIt:
+          -- 'it' isn't set in a fresh GHCi session.
+          void $ Interpreter.safeEval repl $ "()"
 
     setup_ :: IO ()
     setup_ = do
@@ -210,7 +214,7 @@ reportProgress = gets reportStateVerbose >>= \ case
 --
 -- The interpreter state is zeroed with @:reload@ first.  This means that you
 -- can reuse the same 'Interpreter' for several test groups.
-runTestGroup :: Bool -> Interpreter -> IO () -> [Located DocTest] -> Report ()
+runTestGroup :: PreserveIt -> Interpreter -> IO () -> [Located DocTest] -> Report ()
 runTestGroup preserveIt repl setup tests = do
   liftIO setup
   runExampleGroup preserveIt repl examples
@@ -238,7 +242,7 @@ type Interaction = (Expression, ExpectedResult)
 -- |
 -- Execute all expressions from given example in given 'Interpreter' and verify
 -- the output.
-runExampleGroup :: Bool -> Interpreter -> [Located Interaction] -> Report ()
+runExampleGroup :: PreserveIt -> Interpreter -> [Located Interaction] -> Report ()
 runExampleGroup preserveIt repl = go
   where
     go ((Located loc (expression, expected)) : xs) = do
@@ -254,8 +258,3 @@ runExampleGroup preserveIt repl = go
             reportSuccess
             go xs
     go [] = return ()
-
-safeEvalWith :: Bool -> Interpreter -> String -> IO (Either String String)
-safeEvalWith preserveIt
-  | preserveIt = Interpreter.safeEvalIt
-  | otherwise  = Interpreter.safeEval

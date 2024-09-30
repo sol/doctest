@@ -25,6 +25,9 @@ infixl 1 <&>
 pass :: Monad m => m ()
 pass = return ()
 
+equals :: Eq a => a -> a -> Bool
+equals = (==)
+
 strip :: String -> String
 strip = reverse . dropWhile isSpace . reverse . dropWhile isSpace
 
