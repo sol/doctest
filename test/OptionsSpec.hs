@@ -65,12 +65,12 @@ spec = do
           fastMode . runConfig <$> parseOptions [] `shouldBe` Result False
 
       context "with --fast" $ do
-        it "enabled fast mode" $ do
+        it "enable fast mode" $ do
           fastMode . runConfig <$> parseOptions ["--fast"] `shouldBe` Result True
 
     describe "--fail-fast" $ do
       context "without --fail-fast" $ do
-        it "disable fail-fast mode" $ do
+        it "disables fail-fast mode" $ do
           failFast . runConfig <$> parseOptions [] `shouldBe` Result False
 
       context "with --fail-fast" $ do
