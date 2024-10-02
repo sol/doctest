@@ -36,7 +36,7 @@ usage = unlines [
   , "Options:"
   , "  --fast         disable :reload between example groups"
   , "  --preserve-it  preserve the `it` variable between examples"
-  , "  --fail-fast    stop testing after the first failure"
+  , "  --fail-fast    abort on first failure"
   , "  --no-magic     disable magic mode"
   , "  --verbose      print each test as it is run"
   , "  --help         display this help and exit"
