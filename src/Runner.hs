@@ -180,8 +180,7 @@ runModule fastMode preserveIt failFast repl (Module module_ setup examples) = do
       fAfter <- sFailures <$> getSummary
       case failFast of
         FailFast | fAfter > fBefore -> return ()  -- Stop processing further examples
-                 | otherwise -> runExamples moreGroups
-        NoFailFast -> runExamples moreGroups
+        _ -> runExamples moreGroups
 
 reportStart :: Location -> Expression -> String -> Report ()
 reportStart loc expression testType = do
