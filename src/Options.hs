@@ -126,7 +126,7 @@ parseOptions args
   | otherwise = runRunOptionsParser args defaultRun {runMagicMode = True} $ do
       commonRunOptions
       parseFlag "--no-magic" (setMagicMode False)
-      parseFlag "--failFast" (setFailFastMode True)
+      parseFlag "--fail-fast" (setFailFastMode True)
       parseOptGhc
   where
     on option = option `elem` args
