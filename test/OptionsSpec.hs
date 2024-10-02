@@ -68,14 +68,14 @@ spec = do
         it "enabled fast mode" $ do
           fastMode . runConfig <$> parseOptions ["--fast"] `shouldBe` Result True
 
-    describe "--stop-on-fail" $ do
-      context "without --stop-on-fail" $ do
-        it "disables stopOnFail mode" $ do
-          stopOnFail . runConfig <$> parseOptions [] `shouldBe` Result False
+    describe "--fail-fast" $ do
+      context "without --fail-fast" $ do
+        it "disables fail-fast mode" $ do
+          failFast . runConfig <$> parseOptions [] `shouldBe` Result False
 
-      context "with --stop-on-fail" $ do
+      context "with --fail-fast" $ do
         it "enabled stopOnFail mode" $ do
-          stopOnFail . runConfig <$> parseOptions ["--stop-on-fail"] `shouldBe` Result True
+          failFast . runConfig <$> parseOptions ["--fail-fast"] `shouldBe` Result True
 
     describe "--preserve-it" $ do
       context "without --preserve-it" $ do

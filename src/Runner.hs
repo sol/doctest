@@ -4,6 +4,7 @@ module Runner (
   runModules
 , FastMode(..)
 , PreserveIt(..)
+, FailFast(..)
 , Verbose(..)
 , Summary(..)
 , formatSummary
@@ -66,8 +67,8 @@ withLineBuffering h action = bracket (hGetBuffering h) (hSetBuffering h) $ \ _ -
   action
 
 -- | Run all examples from a list of modules.
-runModules :: Bool -> FastMode -> PreserveIt -> Verbose -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt stopOnFail verbose repl modules = withLineBuffering stderr $ do
+runModules :: FastMode -> PreserveIt -> FailFast -> Verbose -> Interpreter -> [Module [Located DocTest]] -> IO Summary
+runModules fastMode preserveIt failFast verbose repl modules = withLineBuffering stderr $ do
 
   interactive <- hIsTerminalDevice stderr <&> \ case
     False -> NonInteractive
@@ -84,7 +85,7 @@ runModules fastMode preserveIt stopOnFail verbose repl modules = withLineBufferi
     run :: IO ()
     run = flip evalStateT (ReportState interactive verbose summary) $ do
       reportProgress
-      forM_ modules $ runModule fastMode preserveIt stopOnFail repl
+      forM_ modules $ runModule fastMode preserveIt failFast repl
       verboseReport "# Final summary:"
 
   run `finally` reportFinalResult
@@ -104,6 +105,8 @@ data Interactive = NonInteractive | Interactive
 data FastMode = NoFastMode | FastMode
 
 data Verbose = NonVerbose | Verbose
+
+data FailFast = NoFailFast | FailFast
 
 data ReportState = ReportState {
   reportStateInteractive :: Interactive
@@ -131,8 +134,8 @@ reportTransient msg = gets reportStateInteractive >>= \ case
     hPutStr stderr $ '\r' : (replicate (length msg) ' ') ++ "\r"
 
 -- | Run all examples from given module.
-runModule :: Bool -> Bool -> Interpreter -> Module [Located DocTest] -> Report ()
-runModule fastMode preserveIt repl (Module module_ setup examples) = do
+runModule :: FastMode -> PreserveIt -> FailFast -> Interpreter -> Module [Located DocTest] -> Report ()
+runModule fastMode preserveIt failFast repl (Module module_ setup examples) = do
 
   Summary _ _ e0 f0 <- getSummary
 
@@ -175,9 +178,10 @@ runModule fastMode preserveIt repl (Module module_ setup examples) = do
       fBefore <- sFailures <$> getSummary
       runTestGroup preserveIt repl setup_ testGroup
       fAfter <- sFailures <$> getSummary
-      if stopOnFail && fAfter > fBefore
-        then return ()  -- Stop processing further examples
-        else runExamples moreGroups
+      case failFast of
+        FailFast | fAfter > fBefore -> return ()  -- Stop processing further examples
+                 | otherwise -> runExamples moreGroups
+        NoFailFast -> runExamples moreGroups
 
 reportStart :: Location -> Expression -> String -> Report ()
 reportStart loc expression testType = do

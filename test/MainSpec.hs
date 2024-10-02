@@ -24,8 +24,8 @@ doctest :: HasCallStack => FilePath -> [String] -> Summary -> Assertion
 doctest = doctestWithPreserveIt False False
 
 doctestWithPreserveIt :: HasCallStack => Bool -> Bool -> FilePath -> [String] -> Summary -> Assertion
-doctestWithPreserveIt preserveIt stopOnFail workingDir ghcOptions expected = do
-  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithResult defaultConfig {ghcOptions, preserveIt, stopOnFail})
+doctestWithPreserveIt preserveIt failFast workingDir ghcOptions expected = do
+  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithResult defaultConfig {ghcOptions, preserveIt, failFast})
   assertEqual label (formatSummary expected) (formatSummary actual)
   where
     label = workingDir ++ " " ++ show ghcOptions
@@ -63,7 +63,7 @@ spec = do
       doctest "." ["failing-multiple-groups/Foo.hs"]
         (cases 3) {sTried = 3, sFailures = 1}
 
-    it "in --stop-on-fail mode, does not run subsequent groups after an example in earlier group fails" $
+    it "in --fail-fast mode, does not run subsequent groups after an example in earlier group fails" $
       doctestWithPreserveIt False True "." ["failing-multiple-groups/Foo.hs"]
         (cases 3) {sTried = 2, sFailures = 1}
 
