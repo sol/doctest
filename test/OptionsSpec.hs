@@ -70,11 +70,11 @@ spec = do
 
     describe "--fail-fast" $ do
       context "without --fail-fast" $ do
-        it "disables fail-fast mode" $ do
+        it "disable fail-fast mode" $ do
           failFast . runConfig <$> parseOptions [] `shouldBe` Result False
 
       context "with --fail-fast" $ do
-        it "enabled stopOnFail mode" $ do
+        it "enable fail-fast mode" $ do
           failFast . runConfig <$> parseOptions ["--fail-fast"] `shouldBe` Result True
 
     describe "--preserve-it" $ do
