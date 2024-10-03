@@ -67,6 +67,7 @@ extra-source-files:
     test/integration/custom-package-conf/foo/doctest-foo.cabal
     test/integration/custom-package-conf/foo/Foo.hs
     test/integration/dos-line-endings/Fib.hs
+    test/integration/fail-fast/Foo.hs
     test/integration/failing-multiple/Foo.hs
     test/integration/failing/Foo.hs
     test/integration/it/Foo.hs
