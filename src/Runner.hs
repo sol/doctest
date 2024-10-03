@@ -175,12 +175,14 @@ runModule fastMode preserveIt failFast repl (Module module_ setup examples) = do
     runExamples :: [[Located DocTest]] -> Report ()
     runExamples [] = return ()
     runExamples (testGroup:moreGroups) = do
-      fBefore <- sFailures <$> getSummary
-      runTestGroup preserveIt repl setup_ testGroup
-      fAfter <- sFailures <$> getSummary
+      failures <- sFailures <$> getSummary
       case failFast of
-        FailFast | fAfter > fBefore -> return ()  -- Stop processing further examples
-        _ -> runExamples moreGroups
+        FailFast    -> when (failures == 0) runAndContinue
+        NoFailFast  -> runAndContinue
+      where
+        runAndContinue = do
+          runTestGroup preserveIt repl setup_ testGroup
+          runExamples moreGroups
 
 reportStart :: Location -> Expression -> String -> Report ()
 reportStart loc expression testType = do

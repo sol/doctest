@@ -64,8 +64,8 @@ spec = do
         (cases 3) {sTried = 3, sFailures = 1}
 
     it "in --fail-fast mode, does not run subsequent groups after an example in earlier group fails" $
-      doctestWithPreserveIt False True "." ["fail-fast/Foo.hs"]
-        (cases 3) {sTried = 2, sFailures = 1}
+      doctestWithPreserveIt False True "." ["fail-fast/Foo.hs","fail-fast/Bar.hs"]
+        (cases 4) {sTried = 2, sFailures = 1}
 
     it "testImport" $ do
       doctest "testImport" ["ModuleA.hs"]
