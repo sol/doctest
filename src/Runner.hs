@@ -171,7 +171,7 @@ runModule fastMode preserveIt failFast repl (Module module_ setup examples) = do
         Property _  -> return ()
         Example e _ -> void $ safeEvalWith preserveIt repl e
 
-    -- run examples - optionally aborting if in stopOnFail mode and a failure occurs
+    -- run examples - optionally aborting if in failFast mode and a failure occurs
     runExamples :: [[Located DocTest]] -> Report ()
     runExamples [] = return ()
     runExamples (testGroup:moreGroups) = do
