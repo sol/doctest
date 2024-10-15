@@ -9,7 +9,7 @@ import           Test.HUnit (assertEqual, Assertion)
 
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           System.FilePath
-import           Run hiding (doctest)
+import           Run hiding (doctest, doctestWith)
 import           System.IO.Silently
 import           System.IO
 
@@ -19,12 +19,17 @@ withCurrentDirectory workingDir action = do
     setCurrentDirectory workingDir
     action
 
--- | Construct a doctest specific 'Assertion'.
 doctest :: HasCallStack => FilePath -> [String] -> Summary -> Assertion
-doctest = doctestWithPreserveIt False False
+doctest = doctestWith False False
 
-doctestWithPreserveIt :: HasCallStack => Bool -> Bool -> FilePath -> [String] -> Summary -> Assertion
-doctestWithPreserveIt preserveIt failFast workingDir ghcOptions expected = do
+doctestWithPreserveIt :: HasCallStack => FilePath -> [String] -> Summary -> Assertion
+doctestWithPreserveIt = doctestWith True False
+
+doctestWithFailFast :: HasCallStack => FilePath -> [String] -> Summary -> Assertion
+doctestWithFailFast = doctestWith False True
+
+doctestWith :: HasCallStack => Bool -> Bool -> FilePath -> [String] -> Summary -> Assertion
+doctestWith preserveIt failFast workingDir ghcOptions expected = do
   actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithResult defaultConfig {ghcOptions, preserveIt, failFast})
   assertEqual label (formatSummary expected) (formatSummary actual)
   where
@@ -44,11 +49,11 @@ spec = do
         (cases 1)
 
     it "it-variable" $ do
-      doctestWithPreserveIt True False "." ["it/Foo.hs"]
+      doctestWithPreserveIt "." ["it/Foo.hs"]
         (cases 5)
 
     it "it-variable in $setup" $ do
-      doctestWithPreserveIt True False "." ["it/Setup.hs"]
+      doctestWithPreserveIt "." ["it/Setup.hs"]
         (cases 5)
 
     it "failing" $ do
@@ -64,11 +69,11 @@ spec = do
         (cases 3) {sTried = 3, sFailures = 1}
 
     it "in --fail-fast mode, does not run subsequent groups after fail" $
-      doctestWithPreserveIt False True "." ["fail-fast/Foo.hs"]
+      doctestWithFailFast "." ["fail-fast/Foo.hs"]
         (cases 3) {sTried = 2, sFailures = 1}
 
     it "in --fail-fast mode, does not run subsequent modules after fail" $
-      doctestWithPreserveIt False True "." ["fail-fast/Foo.hs","fail-fast/Bar.hs"]
+      doctestWithFailFast "fail-fast" ["Foo.hs"]
         (cases 4) {sTried = 2, sFailures = 1}
 
     it "testImport" $ do

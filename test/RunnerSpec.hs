@@ -8,13 +8,12 @@ import           Test.Hspec
 import           Data.IORef
 import           System.IO
 import           System.IO.Silently (hCapture_)
-import           Control.Monad.Trans.State
 import           Runner
 
-capture :: Interactive -> Report a -> IO String
+capture :: Interactive -> Report () -> IO String
 capture interactive action = do
   ref <- newIORef mempty
-  hCapture_ [stderr] (evalStateT action (ReportState interactive NonVerbose ref))
+  hCapture_ [stderr] (runReport (ReportState interactive NonVerbose ref) action)
 
 spec :: Spec
 spec = do

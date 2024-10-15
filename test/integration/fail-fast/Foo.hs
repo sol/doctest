@@ -1,5 +1,6 @@
 module Foo where
-import Bar -- force testing Foo before Bar
+
+import Bar
 
 -- | A passing example
 --

@@ -12,6 +12,7 @@ module Runner (
 #ifdef TEST
 , Report
 , ReportState(..)
+, runReport
 , Interactive(..)
 , report
 , reportTransient
@@ -24,7 +25,10 @@ import           Imports hiding (putStr, putStrLn, error)
 import           Text.Printf (printf)
 import           System.IO hiding (putStr, putStrLn)
 
-import           Control.Monad.Trans.State
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Maybe
+import           Control.Monad.Trans.State (StateT, evalStateT)
+import qualified Control.Monad.Trans.State as State
 import           Control.Monad.IO.Class
 import           Data.IORef
 
@@ -83,7 +87,7 @@ runModules fastMode preserveIt failFast verbose repl modules = withLineBuffering
       hPutStrLn stderr (formatSummary final)
 
     run :: IO ()
-    run = flip evalStateT (ReportState interactive verbose summary) $ do
+    run = runReport (ReportState interactive verbose summary) $ do
       reportProgress
       forM_ modules $ runModule fastMode preserveIt failFast repl
       verboseReport "# Final summary:"
@@ -98,15 +102,15 @@ runModules fastMode preserveIt failFast verbose repl modules = withLineBuffering
 countExpressions :: Module [Located DocTest] -> Int
 countExpressions (Module _ setup tests) = sum (map length tests) + maybe 0 length setup
 
-type Report = StateT ReportState IO
+type Report = MaybeT (StateT ReportState IO)
 
 data Interactive = NonInteractive | Interactive
 
 data FastMode = NoFastMode | FastMode
 
-data Verbose = NonVerbose | Verbose
-
 data FailFast = NoFailFast | FailFast
+
+data Verbose = NonVerbose | Verbose
 
 data ReportState = ReportState {
   reportStateInteractive :: Interactive
@@ -114,8 +118,14 @@ data ReportState = ReportState {
 , reportStateSummary :: IORef Summary
 }
 
+runReport :: ReportState -> Report () -> IO ()
+runReport st = void . flip evalStateT st . runMaybeT
+
 getSummary :: Report Summary
 getSummary = gets reportStateSummary >>= liftIO . readIORef
+
+gets :: (ReportState -> a) -> Report a
+gets = lift . State.gets
 
 -- | Add output to the report.
 report :: String -> Report ()
@@ -194,6 +204,7 @@ reportFailure loc expression err = do
   mapM_ report err
   report ""
   updateSummary (Summary 0 1 0 1)
+  abort
 
 reportError :: Location -> Expression -> String -> Report ()
 reportError loc expression err = do
@@ -201,6 +212,10 @@ reportError loc expression err = do
   report err
   report ""
   updateSummary (Summary 0 1 1 0)
+  abort
+
+abort :: Report ()
+abort = MaybeT $ return Nothing
 
 reportSuccess :: Report ()
 reportSuccess = do
