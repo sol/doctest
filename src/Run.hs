@@ -136,9 +136,6 @@ doctestWith = doctestWithResult >=> evaluateResult
 
 type Result = Summary
 
-isSuccess :: Result -> Bool
-isSuccess s = sErrors s == 0 && sFailures s == 0
-
 evaluateResult :: Result -> IO ()
 evaluateResult r = unless (isSuccess r) exitFailure
 

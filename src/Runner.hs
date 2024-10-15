@@ -7,6 +7,7 @@ module Runner (
 , FailFast(..)
 , Verbose(..)
 , Summary(..)
+, isSuccess
 , formatSummary
 
 #ifdef TEST
@@ -50,6 +51,9 @@ data Summary = Summary {
 instance Show Summary where
   show = formatSummary
 
+isSuccess :: Summary -> Bool
+isSuccess s = sErrors s == 0 && sFailures s == 0
+
 formatSummary :: Summary -> String
 formatSummary (Summary examples tried errors failures) =
   printf "Examples: %d  Tried: %d  Errors: %d  Failures: %d" examples tried errors failures
@@ -87,7 +91,7 @@ runModules fastMode preserveIt failFast verbose repl modules = withLineBuffering
       hPutStrLn stderr (formatSummary final)
 
     run :: IO ()
-    run = runReport (ReportState interactive verbose summary) $ do
+    run = runReport (ReportState interactive failFast verbose summary) $ do
       reportProgress
       forM_ modules $ runModule fastMode preserveIt failFast repl
       verboseReport "# Final summary:"
@@ -114,6 +118,7 @@ data Verbose = NonVerbose | Verbose
 
 data ReportState = ReportState {
   reportStateInteractive :: Interactive
+, reportStateFailFast :: FailFast
 , reportStateVerbose :: Verbose
 , reportStateSummary :: IORef Summary
 }
@@ -204,7 +209,6 @@ reportFailure loc expression err = do
   mapM_ report err
   report ""
   updateSummary (Summary 0 1 0 1)
-  abort
 
 reportError :: Location -> Expression -> String -> Report ()
 reportError loc expression err = do
@@ -212,10 +216,6 @@ reportError loc expression err = do
   report err
   report ""
   updateSummary (Summary 0 1 1 0)
-  abort
-
-abort :: Report ()
-abort = MaybeT $ return Nothing
 
 reportSuccess :: Report ()
 reportSuccess = do
@@ -232,6 +232,12 @@ updateSummary summary = do
   ref <- gets reportStateSummary
   liftIO $ modifyIORef' ref $ mappend summary
   reportProgress
+  gets reportStateFailFast >>= \ case
+    NoFailFast -> pass
+    FailFast -> unless (isSuccess summary) abort
+
+abort :: Report ()
+abort = MaybeT $ return Nothing
 
 reportProgress :: Report ()
 reportProgress = gets reportStateVerbose >>= \ case

@@ -13,7 +13,7 @@ import           Runner
 capture :: Interactive -> Report () -> IO String
 capture interactive action = do
   ref <- newIORef mempty
-  hCapture_ [stderr] (runReport (ReportState interactive NonVerbose ref) action)
+  hCapture_ [stderr] (runReport (ReportState interactive NoFailFast NonVerbose ref) action)
 
 spec :: Spec
 spec = do
