@@ -64,21 +64,25 @@ spec = do
       doctest "." ["failing-multiple/Foo.hs"]
         (cases 4) {sTried = 2, sFailures = 1}
 
-    it "runs subsequent groups after an example in earlier group fails" $
-      doctest "." ["fail-fast/Foo.hs"]
-        (cases 3) {sTried = 3, sFailures = 1}
+    context "without --fail-fast" $
+      it "runs subsequent groups after an example in earlier group fails" $
+        doctest "fail-fast" ["Foo.hs"]
+          (cases 4) {sTried = 4, sFailures = 1}
 
-    it "in --fail-fast mode, does not run subsequent groups after fail" $
-      doctestWithFailFast "." ["fail-fast/Foo.hs"]
-        (cases 3) {sTried = 2, sFailures = 1}
+    context "with --fail-fast" $
+      it "does not run subsequent groups after fail" $
+        doctestWithFailFast "fail-fast" ["Foo.hs"]
+          (cases 4) {sTried = 2, sFailures = 1}
 
-    it "in --fail-fast mode, does not run subsequent modules after fail" $
-      doctestWithFailFast "fail-fast" ["Foo.hs"]
-        (cases 4) {sTried = 2, sFailures = 1}
+    context "with --fail-fast" $
+      it "does not run subsequent modules after fail" $
+        doctestWithFailFast "fail-fast" ["Foo.hs"]
+          (cases 4) {sTried = 2, sFailures = 1}
 
-    it "in --fail-fast mode, does not run subsequent modules after fail in setup" $
-      doctestWithFailFast "fail-fast" ["SetupFoo.hs"]
-        (cases 6) {sTried = 1, sFailures = 1}
+    context "with --fail-fast" $
+      it "does not run subsequent modules after fail in setup" $
+        doctestWithFailFast "fail-fast" ["SetupFoo.hs"]
+          (cases 6) {sTried = 1, sFailures = 1}
 
     it "testImport" $ do
       doctest "testImport" ["ModuleA.hs"]

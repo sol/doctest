@@ -83,7 +83,7 @@ spec = do
           failFast . runConfig <$> parseOptions [] `shouldBe` Result False
 
       context "with --fail-fast" $ do
-        it "enable fail-fast mode" $ do
+        it "enables fail-fast mode" $ do
           failFast . runConfig <$> parseOptions ["--fail-fast"] `shouldBe` Result True
 
     context "with --help" $ do

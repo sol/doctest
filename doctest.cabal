@@ -69,6 +69,8 @@ extra-source-files:
     test/integration/dos-line-endings/Fib.hs
     test/integration/fail-fast/Bar.hs
     test/integration/fail-fast/Foo.hs
+    test/integration/fail-fast/SetupFoo.hs
+    test/integration/fail-fast/SetupBar.hs
     test/integration/failing-multiple/Foo.hs
     test/integration/failing/Foo.hs
     test/integration/it/Foo.hs
