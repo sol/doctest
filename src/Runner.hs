@@ -93,7 +93,7 @@ runModules fastMode preserveIt failFast verbose repl modules = withLineBuffering
     run :: IO ()
     run = runReport (ReportState interactive failFast verbose summary) $ do
       reportProgress
-      forM_ modules $ runModule fastMode preserveIt failFast repl
+      forM_ modules $ runModule fastMode preserveIt repl
       verboseReport "# Final summary:"
 
   run `finally` reportFinalResult
@@ -149,8 +149,8 @@ reportTransient msg = gets reportStateInteractive >>= \ case
     hPutStr stderr $ '\r' : (replicate (length msg) ' ') ++ "\r"
 
 -- | Run all examples from given module.
-runModule :: FastMode -> PreserveIt -> FailFast -> Interpreter -> Module [Located DocTest] -> Report ()
-runModule fastMode preserveIt failFast repl (Module module_ setup examples) = do
+runModule :: FastMode -> PreserveIt -> Interpreter -> Module [Located DocTest] -> Report ()
+runModule fastMode preserveIt repl (Module module_ setup examples) = do
 
   Summary _ _ e0 f0 <- getSummary
 
@@ -161,7 +161,7 @@ runModule fastMode preserveIt failFast repl (Module module_ setup examples) = do
 
   -- only run tests, if setup does not produce any errors/failures
   when (e0 == e1 && f0 == f1) $
-    runExamples examples
+    forM_ examples $ runTestGroup preserveIt repl setup_
   where
     reload :: IO ()
     reload = do
@@ -185,19 +185,6 @@ runModule fastMode preserveIt failFast repl (Module module_ setup examples) = do
       forM_ setup $ \l -> forM_ l $ \(Located _ x) -> case x of
         Property _  -> return ()
         Example e _ -> void $ safeEvalWith preserveIt repl e
-
-    -- run examples - optionally aborting if in failFast mode and a failure occurs
-    runExamples :: [[Located DocTest]] -> Report ()
-    runExamples [] = return ()
-    runExamples (testGroup:moreGroups) = do
-      failures <- sFailures <$> getSummary
-      case failFast of
-        FailFast    -> when (failures == 0) runAndContinue
-        NoFailFast  -> runAndContinue
-      where
-        runAndContinue = do
-          runTestGroup preserveIt repl setup_ testGroup
-          runExamples moreGroups
 
 reportStart :: Location -> Expression -> String -> Report ()
 reportStart loc expression testType = do
