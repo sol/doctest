@@ -28,7 +28,7 @@ import           Info
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --fast | --preserve-it | --no-magic | --fail-fast | --verbose | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --preserve-it | --fail-fast | --no-magic | --verbose | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
