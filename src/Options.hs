@@ -103,14 +103,14 @@ setOptions ghcOptions run@Run{..} = run { runConfig = runConfig { ghcOptions } }
 setMagicMode :: Bool -> Run -> Run
 setMagicMode magic run = run { runMagicMode = magic }
 
-setFailFastMode :: Bool -> Run -> Run
-setFailFastMode failFast run@Run{..} = run { runConfig = runConfig { failFast } }
-
 setFastMode :: Bool -> Run -> Run
 setFastMode fastMode run@Run{..} = run { runConfig = runConfig { fastMode } }
 
 setPreserveIt :: Bool -> Run -> Run
 setPreserveIt preserveIt run@Run{..} = run { runConfig = runConfig { preserveIt } }
+
+setFailFastMode :: Bool -> Run -> Run
+setFailFastMode failFast run@Run{..} = run { runConfig = runConfig { failFast } }
 
 setVerbose :: Bool -> Run -> Run
 setVerbose verbose run@Run{..} = run { runConfig = runConfig { verbose } }
@@ -126,7 +126,6 @@ parseOptions args
   | otherwise = runRunOptionsParser args defaultRun {runMagicMode = True} $ do
       commonRunOptions
       parseFlag "--no-magic" (setMagicMode False)
-      parseFlag "--fail-fast" (setFailFastMode True)
       parseOptGhc
   where
     on option = option `elem` args
@@ -142,6 +141,7 @@ commonRunOptions :: RunOptionsParser
 commonRunOptions = do
   parseFlag "--fast" (setFastMode True)
   parseFlag "--preserve-it" (setPreserveIt True)
+  parseFlag "--fail-fast" (setFailFastMode True)
   parseFlag "--verbose" (setVerbose True)
 
 parseFlag :: String -> (Run -> Run) -> RunOptionsParser

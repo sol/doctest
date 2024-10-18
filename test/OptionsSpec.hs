@@ -68,15 +68,6 @@ spec = do
         it "enable fast mode" $ do
           fastMode . runConfig <$> parseOptions ["--fast"] `shouldBe` Result True
 
-    describe "--fail-fast" $ do
-      context "without --fail-fast" $ do
-        it "disables fail-fast mode" $ do
-          failFast . runConfig <$> parseOptions [] `shouldBe` Result False
-
-      context "with --fail-fast" $ do
-        it "enable fail-fast mode" $ do
-          failFast . runConfig <$> parseOptions ["--fail-fast"] `shouldBe` Result True
-
     describe "--preserve-it" $ do
       context "without --preserve-it" $ do
         it "does not preserve the `it` variable" $ do
@@ -85,6 +76,15 @@ spec = do
       context "with --preserve-it" $ do
         it "preserves the `it` variable" $ do
           preserveIt . runConfig <$> parseOptions ["--preserve-it"] `shouldBe` Result True
+
+    describe "--fail-fast" $ do
+      context "without --fail-fast" $ do
+        it "disables fail-fast mode" $ do
+          failFast . runConfig <$> parseOptions [] `shouldBe` Result False
+
+      context "with --fail-fast" $ do
+        it "enable fail-fast mode" $ do
+          failFast . runConfig <$> parseOptions ["--fail-fast"] `shouldBe` Result True
 
     context "with --help" $ do
       it "outputs usage information" $ do
