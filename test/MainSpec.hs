@@ -65,20 +65,16 @@ spec = do
         (cases 4) {sTried = 2, sFailures = 1}
 
     context "without --fail-fast" $ do
-      it "runs subsequent groups after an example in earlier group fails" $ do
+      it "continuous even if some tests fail" $ do
         doctest "fail-fast" ["Foo.hs"]
           (cases 4) {sTried = 4, sFailures = 1}
 
     context "with --fail-fast" $ do
-      it "does not run subsequent groups after fail" $ do
+      it "stops after the first failure" $ do
         doctestWithFailFast "fail-fast" ["Foo.hs"]
           (cases 4) {sTried = 2, sFailures = 1}
 
-      it "does not run subsequent modules after fail" $ do
-        doctestWithFailFast "fail-fast" ["Foo.hs"]
-          (cases 4) {sTried = 2, sFailures = 1}
-
-      it "does not run subsequent modules after fail in setup" $ do
+      it "stops after failures in $setup" $ do
         doctestWithFailFast "fail-fast" ["SetupFoo.hs"]
           (cases 6) {sTried = 1, sFailures = 1}
 
