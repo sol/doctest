@@ -1,3 +1,6 @@
+Changes in 0.23.0
+  - Add `--fail-fast`
+
 Changes in 0.22.10
   - Make progress reporting more robust
 
