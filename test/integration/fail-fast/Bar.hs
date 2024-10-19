@@ -1,7 +1,8 @@
 module Bar where
 
--- |
+-- | bar
+-- a passing test
 -- >>> bar
--- 23
+-- 42
 bar :: Int
-bar = 23
+bar = 42
