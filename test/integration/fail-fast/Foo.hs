@@ -4,13 +4,13 @@ import Bar
 
 -- |
 -- >>> 23
--- 42
+-- 23
 test1 :: a
 test1 = undefined
 
 -- |
 -- >>> 23
--- 23
+-- 42
 test2 :: a
 test2 = undefined
 
