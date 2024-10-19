@@ -60,25 +60,25 @@ spec = do
       doctest "." ["failing/Foo.hs"]
         (cases 1) {sFailures = 1}
 
-    it "skips subsequent examples from the same group if an example fails" $
+    it "skips subsequent examples from the same group if an example fails" $ do
       doctest "." ["failing-multiple/Foo.hs"]
         (cases 4) {sTried = 2, sFailures = 1}
 
-    context "without --fail-fast" $
-      it "runs subsequent groups after an example in earlier group fails" $
+    context "without --fail-fast" $ do
+      it "runs subsequent groups after an example in earlier group fails" $ do
         doctest "fail-fast" ["Foo.hs"]
           (cases 4) {sTried = 4, sFailures = 1}
 
     context "with --fail-fast" $
-      it "does not run subsequent groups after fail" $
+      it "does not run subsequent groups after fail" $ do
         doctestWithFailFast "fail-fast" ["Foo.hs"]
           (cases 4) {sTried = 2, sFailures = 1}
 
-      it "does not run subsequent modules after fail" $
+      it "does not run subsequent modules after fail" $ do
         doctestWithFailFast "fail-fast" ["Foo.hs"]
           (cases 4) {sTried = 2, sFailures = 1}
 
-      it "does not run subsequent modules after fail in setup" $
+      it "does not run subsequent modules after fail in setup" $ do
         doctestWithFailFast "fail-fast" ["SetupFoo.hs"]
           (cases 6) {sTried = 1, sFailures = 1}
 
