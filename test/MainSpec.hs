@@ -9,7 +9,7 @@ import           Test.HUnit (assertEqual, Assertion)
 
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           System.FilePath
-import           Run hiding (doctest)
+import           Run hiding (doctest, doctestWith)
 import           System.IO.Silently
 import           System.IO
 
@@ -19,13 +19,18 @@ withCurrentDirectory workingDir action = do
     setCurrentDirectory workingDir
     action
 
--- | Construct a doctest specific 'Assertion'.
 doctest :: HasCallStack => FilePath -> [String] -> Summary -> Assertion
-doctest = doctestWithPreserveIt False
+doctest = doctestWith False False
 
-doctestWithPreserveIt :: HasCallStack => Bool -> FilePath -> [String] -> Summary -> Assertion
-doctestWithPreserveIt preserveIt workingDir ghcOptions expected = do
-  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithResult defaultConfig {ghcOptions, preserveIt})
+doctestWithPreserveIt :: HasCallStack => FilePath -> [String] -> Summary -> Assertion
+doctestWithPreserveIt = doctestWith True False
+
+doctestWithFailFast :: HasCallStack => FilePath -> [String] -> Summary -> Assertion
+doctestWithFailFast = doctestWith False True
+
+doctestWith :: HasCallStack => Bool -> Bool -> FilePath -> [String] -> Summary -> Assertion
+doctestWith preserveIt failFast workingDir ghcOptions expected = do
+  actual <- withCurrentDirectory ("test/integration" </> workingDir) (hSilence [stderr] $ doctestWithResult defaultConfig {ghcOptions, preserveIt, failFast})
   assertEqual label (formatSummary expected) (formatSummary actual)
   where
     label = workingDir ++ " " ++ show ghcOptions
@@ -44,20 +49,34 @@ spec = do
         (cases 1)
 
     it "it-variable" $ do
-      doctestWithPreserveIt True "." ["it/Foo.hs"]
+      doctestWithPreserveIt "." ["it/Foo.hs"]
         (cases 5)
 
     it "it-variable in $setup" $ do
-      doctestWithPreserveIt True "." ["it/Setup.hs"]
+      doctestWithPreserveIt "." ["it/Setup.hs"]
         (cases 5)
 
     it "failing" $ do
       doctest "." ["failing/Foo.hs"]
         (cases 1) {sFailures = 1}
 
-    it "skips subsequent examples from the same group if an example fails" $
+    it "skips subsequent examples from the same group if an example fails" $ do
       doctest "." ["failing-multiple/Foo.hs"]
         (cases 4) {sTried = 2, sFailures = 1}
+
+    context "without --fail-fast" $ do
+      it "continuous even if some tests fail" $ do
+        doctest "fail-fast" ["Foo.hs"]
+          (cases 4) {sTried = 4, sFailures = 1}
+
+    context "with --fail-fast" $ do
+      it "stops after the first failure" $ do
+        doctestWithFailFast "fail-fast" ["Foo.hs"]
+          (cases 4) {sTried = 2, sFailures = 1}
+
+      it "stops after failures in $setup" $ do
+        doctestWithFailFast "fail-fast" ["SetupFoo.hs"]
+          (cases 6) {sTried = 1, sFailures = 1}
 
     it "testImport" $ do
       doctest "testImport" ["ModuleA.hs"]

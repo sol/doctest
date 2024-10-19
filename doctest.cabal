@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           doctest
-version:        0.22.10
+version:        0.23.0
 synopsis:       Test interactive Haskell examples
 description:    `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
                 and [properties](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810771856)
@@ -67,6 +67,10 @@ extra-source-files:
     test/integration/custom-package-conf/foo/doctest-foo.cabal
     test/integration/custom-package-conf/foo/Foo.hs
     test/integration/dos-line-endings/Fib.hs
+    test/integration/fail-fast/Bar.hs
+    test/integration/fail-fast/Foo.hs
+    test/integration/fail-fast/SetupBar.hs
+    test/integration/fail-fast/SetupFoo.hs
     test/integration/failing-multiple/Foo.hs
     test/integration/failing/Foo.hs
     test/integration/it/Foo.hs

@@ -136,9 +136,6 @@ doctestWith = doctestWithResult >=> evaluateResult
 
 type Result = Summary
 
-isSuccess :: Result -> Bool
-isSuccess s = sErrors s == 0 && sFailures s == 0
-
 evaluateResult :: Result -> IO ()
 evaluateResult r = unless (isSuccess r) exitFailure
 
@@ -158,5 +155,6 @@ runDocTests Config{..} modules = do
     runModules
       (if fastMode then FastMode else NoFastMode)
       (if preserveIt then PreserveIt else NoPreserveIt)
+      (if failFast then FailFast else NoFailFast)
       (if verbose then Verbose else NonVerbose)
       interpreter modules

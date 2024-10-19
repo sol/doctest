@@ -4,13 +4,16 @@ module Runner (
   runModules
 , FastMode(..)
 , PreserveIt(..)
+, FailFast(..)
 , Verbose(..)
 , Summary(..)
+, isSuccess
 , formatSummary
 
 #ifdef TEST
 , Report
 , ReportState(..)
+, runReport
 , Interactive(..)
 , report
 , reportTransient
@@ -23,7 +26,10 @@ import           Imports hiding (putStr, putStrLn, error)
 import           Text.Printf (printf)
 import           System.IO hiding (putStr, putStrLn)
 
-import           Control.Monad.Trans.State
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Maybe
+import           Control.Monad.Trans.State (StateT, evalStateT)
+import qualified Control.Monad.Trans.State as State
 import           Control.Monad.IO.Class
 import           Data.IORef
 
@@ -44,6 +50,9 @@ data Summary = Summary {
 
 instance Show Summary where
   show = formatSummary
+
+isSuccess :: Summary -> Bool
+isSuccess s = sErrors s == 0 && sFailures s == 0
 
 formatSummary :: Summary -> String
 formatSummary (Summary examples tried errors failures) =
@@ -66,8 +75,8 @@ withLineBuffering h action = bracket (hGetBuffering h) (hSetBuffering h) $ \ _ -
   action
 
 -- | Run all examples from a list of modules.
-runModules :: FastMode -> PreserveIt -> Verbose -> Interpreter -> [Module [Located DocTest]] -> IO Summary
-runModules fastMode preserveIt verbose repl modules = withLineBuffering stderr $ do
+runModules :: FastMode -> PreserveIt -> FailFast -> Verbose -> Interpreter -> [Module [Located DocTest]] -> IO Summary
+runModules fastMode preserveIt failFast verbose repl modules = withLineBuffering stderr $ do
 
   interactive <- hIsTerminalDevice stderr <&> \ case
     False -> NonInteractive
@@ -82,7 +91,7 @@ runModules fastMode preserveIt verbose repl modules = withLineBuffering stderr $
       hPutStrLn stderr (formatSummary final)
 
     run :: IO ()
-    run = flip evalStateT (ReportState interactive verbose summary) $ do
+    run = runReport (ReportState interactive failFast verbose summary) $ do
       reportProgress
       forM_ modules $ runModule fastMode preserveIt repl
       verboseReport "# Final summary:"
@@ -97,22 +106,31 @@ runModules fastMode preserveIt verbose repl modules = withLineBuffering stderr $
 countExpressions :: Module [Located DocTest] -> Int
 countExpressions (Module _ setup tests) = sum (map length tests) + maybe 0 length setup
 
-type Report = StateT ReportState IO
+type Report = MaybeT (StateT ReportState IO)
 
 data Interactive = NonInteractive | Interactive
 
 data FastMode = NoFastMode | FastMode
 
+data FailFast = NoFailFast | FailFast
+
 data Verbose = NonVerbose | Verbose
 
 data ReportState = ReportState {
   reportStateInteractive :: Interactive
+, reportStateFailFast :: FailFast
 , reportStateVerbose :: Verbose
 , reportStateSummary :: IORef Summary
 }
 
+runReport :: ReportState -> Report () -> IO ()
+runReport st = void . flip evalStateT st . runMaybeT
+
 getSummary :: Report Summary
 getSummary = gets reportStateSummary >>= liftIO . readIORef
+
+gets :: (ReportState -> a) -> Report a
+gets = lift . State.gets
 
 -- | Add output to the report.
 report :: String -> Report ()
@@ -143,8 +161,7 @@ runModule fastMode preserveIt repl (Module module_ setup examples) = do
 
   -- only run tests, if setup does not produce any errors/failures
   when (e0 == e1 && f0 == f1) $
-    forM_ examples $
-      runTestGroup preserveIt repl setup_
+    forM_ examples $ runTestGroup preserveIt repl setup_
   where
     reload :: IO ()
     reload = do
@@ -202,6 +219,12 @@ updateSummary summary = do
   ref <- gets reportStateSummary
   liftIO $ modifyIORef' ref $ mappend summary
   reportProgress
+  gets reportStateFailFast >>= \ case
+    NoFailFast -> pass
+    FailFast -> unless (isSuccess summary) abort
+
+abort :: Report ()
+abort = MaybeT $ return Nothing
 
 reportProgress :: Report ()
 reportProgress = gets reportStateVerbose >>= \ case

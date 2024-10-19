@@ -28,7 +28,7 @@ import           Info
 usage :: String
 usage = unlines [
     "Usage:"
-  , "  doctest [ --fast | --preserve-it | --no-magic | --verbose | GHC OPTION | MODULE ]..."
+  , "  doctest [ --fast | --preserve-it | --fail-fast | --no-magic | --verbose | GHC OPTION | MODULE ]..."
   , "  doctest --help"
   , "  doctest --version"
   , "  doctest --info"
@@ -36,6 +36,8 @@ usage = unlines [
   , "Options:"
   , "  --fast         disable :reload between example groups"
   , "  --preserve-it  preserve the `it` variable between examples"
+  , "  --fail-fast    abort on first failure"
+  , "  --no-magic     disable magic mode"
   , "  --verbose      print each test as it is run"
   , "  --help         display this help and exit"
   , "  --version      output version information and exit"
@@ -57,6 +59,7 @@ data Config = Config {
   ghcOptions :: [String]
 , fastMode :: Bool
 , preserveIt :: Bool
+, failFast :: Bool
 , verbose :: Bool
 , repl :: (String, [String])
 } deriving (Eq, Show)
@@ -66,6 +69,7 @@ defaultConfig = Config {
   ghcOptions = []
 , fastMode = False
 , preserveIt = False
+, failFast = False
 , verbose = False
 , repl = (ghc, ["--interactive"])
 }
@@ -105,6 +109,9 @@ setFastMode fastMode run@Run{..} = run { runConfig = runConfig { fastMode } }
 setPreserveIt :: Bool -> Run -> Run
 setPreserveIt preserveIt run@Run{..} = run { runConfig = runConfig { preserveIt } }
 
+setFailFastMode :: Bool -> Run -> Run
+setFailFastMode failFast run@Run{..} = run { runConfig = runConfig { failFast } }
+
 setVerbose :: Bool -> Run -> Run
 setVerbose verbose run@Run{..} = run { runConfig = runConfig { verbose } }
 
@@ -134,6 +141,7 @@ commonRunOptions :: RunOptionsParser
 commonRunOptions = do
   parseFlag "--fast" (setFastMode True)
   parseFlag "--preserve-it" (setPreserveIt True)
+  parseFlag "--fail-fast" (setFailFastMode True)
   parseFlag "--verbose" (setVerbose True)
 
 parseFlag :: String -> (Run -> Run) -> RunOptionsParser
