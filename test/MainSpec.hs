@@ -69,7 +69,7 @@ spec = do
         doctest "fail-fast" ["Foo.hs"]
           (cases 4) {sTried = 4, sFailures = 1}
 
-    context "with --fail-fast" $
+    context "with --fail-fast" $ do
       it "does not run subsequent groups after fail" $ do
         doctestWithFailFast "fail-fast" ["Foo.hs"]
           (cases 4) {sTried = 2, sFailures = 1}
