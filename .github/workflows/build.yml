@@ -69,12 +69,14 @@ jobs:
           - 9.6.3
           - 9.6.4
           - 9.6.5
+          - 9.6.6
           - 9.8.1
           - 9.8.2
+          - 9.8.4
           - 9.10.1
         include:
-          - os: macos-12
-            ghc: system
+          - os: macos-latest
+            ghc: 9.10.1
           - os: windows-latest
             # ghc: system
             ghc: 9.6.2
@@ -83,9 +85,6 @@ jobs:
       - uses: hspec/setup-haskell@v1
         with:
           ghc-version: ${{ matrix.ghc }}
-
-      - run: ghcup install cabal latest --set
-        if: matrix.os == 'macos-12'
 
       - run: cabal update
       - run: cabal build

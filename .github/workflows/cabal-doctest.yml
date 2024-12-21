@@ -23,17 +23,16 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-12
+          - macos-13
           - windows-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - run: ghcup install cabal latest --set
-        if: matrix.os == 'macos-12'
-
-      - run: cabal path -v0 --installdir >> $GITHUB_PATH
-        if: matrix.os == 'macos-12'
+      - uses: hspec/setup-haskell@v1
+        with:
+          ghc-version: 9.10.1
+        if: matrix.os == 'macos-13'
 
       - run: ghcup install ghc 9.6 --no-set
       - run: ghcup install ghc 8.6.5 --no-set
