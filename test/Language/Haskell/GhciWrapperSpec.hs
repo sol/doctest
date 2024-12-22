@@ -78,7 +78,11 @@ spec = do
 
     it "shows exceptions" $ withInterpreter $ \ghci -> do
       ghci "import Control.Exception" `shouldReturn` ""
+#if __GLASGOW_HASKELL__ >= 912
+      ghci "throwIO DivideByZero" `shouldReturn` "*** Exception: divide by zero\n\nHasCallStack backtrace:\n  throwIO, called at <interactive>:25:1 in interactive:Ghci22\n\n"
+#else
       ghci "throwIO DivideByZero" `shouldReturn` "*** Exception: divide by zero\n"
+#endif
 
     it "shows exceptions (ExitCode)" $ withInterpreter $ \ghci -> do
       ghci "import System.Exit" `shouldReturn` ""
