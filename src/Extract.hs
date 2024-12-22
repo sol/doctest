@@ -55,7 +55,9 @@ import           GHC.Unit.Module.Graph
 
 -- | A wrapper around `SomeException`, to allow for a custom `Show` instance.
 newtype ExtractError = ExtractError SomeException
+#if __GLASGOW_HASKELL__ < 912
   deriving Typeable
+#endif
 
 instance Show ExtractError where
   show (ExtractError e) =
