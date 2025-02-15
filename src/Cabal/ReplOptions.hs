@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Cabal.ReplOptions (
   Option(..)
 , Argument(..)
@@ -56,6 +57,11 @@ options = [
   , Option "disable-executable-static" Nothing NoArgument "Disable Executable fully static linking"
   , Option "enable-profiling" Nothing NoArgument "Enable Executable and library profiling"
   , Option "disable-profiling" Nothing NoArgument "Disable Executable and library profiling"
+#if __GLASGOW_HASKELL__ >= 912
+  , Option "enable-profiling-shared" Nothing NoArgument "Enable Build profiling shared libraries"
+  , Option "disable-profiling-shared" Nothing NoArgument "Disable Build profiling shared libraries"
+#else
+#endif
   , Option "enable-executable-profiling" Nothing NoArgument "Enable Executable profiling (DEPRECATED)"
   , Option "disable-executable-profiling" Nothing NoArgument "Disable Executable profiling (DEPRECATED)"
   , Option "profiling-detail" Nothing (Argument "level") "Profiling detail level for executable and library (default, none, exported-functions, toplevel-functions, all-functions, late)."
@@ -104,6 +110,10 @@ options = [
   , Option "disable-response-files" Nothing NoArgument "enable workaround for old versions of programs like \"ar\" that do not support @file arguments"
   , Option "allow-depending-on-private-libs" Nothing NoArgument "Allow depending on private libraries. If set, the library visibility check MUST be done externally."
   , Option "coverage-for" Nothing (Argument "UNITID") "A list of unit-ids of libraries to include in the Haskell Program Coverage report."
+#if __GLASGOW_HASKELL__ >= 912
+  , Option "ignore-build-tools" Nothing NoArgument "Ignore build tool dependencies. If set, declared build tools needn't be found for compilation to proceed."
+#else
+#endif
   , Option "cabal-lib-version" Nothing (Argument "VERSION") "Select which version of the Cabal lib to use to build packages (useful for testing)."
   , Option "enable-append" Nothing NoArgument "Enable appending the new config to the old config file"
   , Option "disable-append" Nothing NoArgument "Disable appending the new config to the old config file"
@@ -165,8 +175,16 @@ options = [
   , Option "haddock-hscolour-css" Nothing (Argument "PATH") "Use PATH as the HsColour stylesheet"
   , Option "haddock-contents-location" Nothing (Argument "URL") "Bake URL in as the location for the contents page"
   , Option "haddock-base-url" Nothing (Argument "URL") "Base URL for static files."
+#if __GLASGOW_HASKELL__ >= 910
+  , Option "haddock-resources-dir" Nothing (Argument "DIR") "location of Haddocks static / auxiliary files"
+#else
   , Option "haddock-lib" Nothing (Argument "DIR") "location of Haddocks static / auxiliary files"
+#endif
   , Option "haddock-output-dir" Nothing (Argument "DIR") "Generate haddock documentation into this directory. This flag is provided as a technology preview and is subject to change in the next releases."
+#if __GLASGOW_HASKELL__ >= 910
+  , Option "haddock-use-unicode" Nothing NoArgument "Pass --use-unicode option to haddock"
+#else
+#endif
   , Option "test-log" Nothing (Argument "TEMPLATE") "Log all test suite results to file (name template can use $pkgid, $compiler, $os, $arch, $test-suite, $result)"
   , Option "test-machine-log" Nothing (Argument "TEMPLATE") "Produce a machine-readable log file (name template can use $pkgid, $compiler, $os, $arch, $result)"
   , Option "test-show-details" Nothing (Argument "FILTER") "'always': always show results of individual test cases. 'never': never show results of individual test cases. 'failures': show results of failing test cases. 'streaming': show results of test cases in real time.'direct': send results of test cases in real time; no log file."
@@ -189,3 +207,4 @@ options = [
   , Option "disable-multi-repl" Nothing NoArgument "Disable multi-component repl sessions"
   , Option "keep-temp-files" Nothing NoArgument "Keep temporary files"
   ]
+

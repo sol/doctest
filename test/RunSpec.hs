@@ -130,7 +130,7 @@ spec = do
 #if __GLASGOW_HASKELL__ < 910
           "" :
 #endif
-#if __GLASGOW_HASKELL__ >= 906
+#if __GLASGOW_HASKELL__ >= 906 
           [ "Foo.hs:6:1: error: [GHC-58481]"
 #else
           [ "Foo.hs:6:1: error:"
