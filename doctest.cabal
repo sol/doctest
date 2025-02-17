@@ -1,11 +1,11 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.38.0.
 --
 -- see: https://github.com/sol/hpack
 
 name:           doctest
-version:        0.23.0
+version:        0.24.0
 synopsis:       Test interactive Haskell examples
 description:    `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
                 and [properties](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810771856)
