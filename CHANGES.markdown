@@ -1,3 +1,6 @@
+Changes in 0.24.0
+  - cabal-doctest: Add support for cabal-install 3.14.*
+
 Changes in 0.23.0
   - Add `--fail-fast`
 

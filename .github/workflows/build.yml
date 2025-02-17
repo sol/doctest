@@ -20,11 +20,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: true
       matrix:
         os:
           - ubuntu-22.04
         ghc:
-          - 8.0.2
           - 8.2.2
           - 8.4.1
           - 8.4.2
