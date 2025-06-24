@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE LambdaCase #-}
 module Run (
   doctest
 , doctestWithRepl
@@ -62,7 +63,7 @@ doctest :: [String] -> IO ()
 doctest = doctestWithRepl (repl defaultConfig)
 
 doctestWithRepl :: (String, [String]) -> [String] -> IO ()
-doctestWithRepl repl args0 = case parseOptions args0 of
+doctestWithRepl repl = interpretResponseFile >=> \ args0 -> case parseOptions args0 of
   Options.ProxyToGhc args -> exec Interpreter.ghc args
   Options.Output s -> putStr s
   Options.Result (Run warnings magicMode config) -> do
@@ -82,6 +83,11 @@ doctestWithRepl repl args0 = case parseOptions args0 of
         addDistArgs <- getAddDistArgs
         return (addDistArgs $ packageDBArgs ++ expandedArgs)
     doctestWith config{repl, ghcOptions = opts}
+
+interpretResponseFile :: [String] -> IO [String]
+interpretResponseFile = \ case
+  ['@':name] -> lines <$> readFile name
+  args -> return args
 
 -- | Expand a reference to a directory to all .hs and .lhs files within it.
 expandDirs :: String -> IO [String]

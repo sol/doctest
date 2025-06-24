@@ -1,3 +1,6 @@
+Changes in 0.24.1
+  - Interpret GHC response files
+
 Changes in 0.24.0
   - cabal-doctest: Add support for cabal-install 3.14.*
 
