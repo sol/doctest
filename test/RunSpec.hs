@@ -9,6 +9,7 @@ import           System.Exit
 import qualified Control.Exception as E
 import           System.FilePath
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
+import           System.IO.Temp (withSystemTempDirectory)
 import           Data.List (isPrefixOf, sort)
 import           Data.Char
 
@@ -34,6 +35,17 @@ removeLoadedPackageEnvironment = unlines . filter (not . isPrefixOf "Loaded pack
 #else
 removeLoadedPackageEnvironment = id
 #endif
+
+verboseFibOutput :: String
+verboseFibOutput = unlines [
+    "### Started execution at test/integration/testSimple/Fib.hs:5."
+  , "### example:"
+  , "fib 10"
+  , "### Successful!"
+  , ""
+  , "# Final summary:"
+  , "Examples: 1  Tried: 1  Errors: 0  Failures: 0"
+  ]
 
 spec :: Spec
 spec = do
@@ -70,17 +82,19 @@ spec = do
         , "Try `doctest --help' for more information."
         ]
 
+    it "interprets GHC response files" $ do
+      withSystemTempDirectory "hspec" $ \ dir -> do
+        let file = dir </> "response-file"
+        writeFile file $ unlines [
+            "--verbose"
+          , "test/integration/testSimple/Fib.hs"
+          ]
+        (r, ()) <- hCapture [stderr] $ doctest ['@':file]
+        removeLoadedPackageEnvironment r `shouldBe` verboseFibOutput
+
     it "prints verbose description of a specification" $ do
       (r, ()) <- hCapture [stderr] $ doctest ["--verbose", "test/integration/testSimple/Fib.hs"]
-      removeLoadedPackageEnvironment r `shouldBe` unlines [
-          "### Started execution at test/integration/testSimple/Fib.hs:5."
-        , "### example:"
-        , "fib 10"
-        , "### Successful!"
-        , ""
-        , "# Final summary:"
-        , "Examples: 1  Tried: 1  Errors: 0  Failures: 0"
-        ]
+      removeLoadedPackageEnvironment r `shouldBe` verboseFibOutput
 
     it "prints verbose description of a property" $ do
       (r, ()) <- hCapture [stderr] $ doctest ["--verbose", "test/integration/property-bool/Foo.hs"]
