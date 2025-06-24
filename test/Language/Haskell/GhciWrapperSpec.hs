@@ -89,13 +89,8 @@ spec = do
       ghci "exitWith $ ExitFailure 10" `shouldReturn` "*** Exception: ExitFailure 10\n"
 
     it "gives an error message for identifiers that are not in scope" $ withInterpreter $ \ghci -> do
-#if __GLASGOW_HASKELL__ >= 800
       ghci "foo" >>= (`shouldSatisfy` isInfixOf "Variable not in scope: foo")
-#elif __GLASGOW_HASKELL__ >= 707
-      ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: \8216foo\8217\n")
-#else
-      ghci "foo" >>= (`shouldSatisfy` isSuffixOf "Not in scope: `foo'\n")
-#endif
+
     context "when configVerbose is True" $ do
       it "prints prompt" $ do
         withInterpreterConfig defaultConfig{configVerbose = True} [] $ \ghci -> do

@@ -25,10 +25,6 @@ import           GHC.Utils.Monad (liftIO)
 
 import           System.Exit (exitFailure)
 
-#if __GLASGOW_HASKELL__ < 801
-import           StaticFlags (discardStaticFlags)
-#endif
-
 -- Catch GHC source errors, print them and exit.
 handleSrcErrors :: Ghc a -> Ghc a
 handleSrcErrors action' = flip handleSourceError action' $ \err -> do
@@ -44,11 +40,7 @@ withGhc flags action = do
     handleDynamicFlags flags_ >>= handleSrcErrors . action
 
 handleStaticFlags :: [String] -> IO [Located String]
-#if __GLASGOW_HASKELL__ < 801
-handleStaticFlags flags = return $ map noLoc $ discardStaticFlags flags
-#else
 handleStaticFlags flags = return $ map noLoc $ flags
-#endif
 
 handleDynamicFlags :: GhcMonad m => [Located String] -> m [String]
 handleDynamicFlags flags = do

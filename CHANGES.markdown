@@ -1,3 +1,6 @@
+Changes in 0.24.2
+  - Use `GHC.ResponseFile.expandResponse`
+
 Changes in 0.24.1
   - Interpret GHC response files
 

@@ -61,13 +61,8 @@ formatSummary (Summary examples tried errors failures) =
 -- | Sum up summaries.
 instance Monoid Summary where
   mempty = Summary 0 0 0 0
-#if __GLASGOW_HASKELL__ < 804
-  mappend
-#else
 instance Semigroup Summary where
-  (<>)
-#endif
-    (Summary x1 x2 x3 x4) (Summary y1 y2 y3 y4) = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
+  Summary x1 x2 x3 x4 <> Summary y1 y2 y3 y4 = Summary (x1 + y1) (x2 + y2) (x3 + y3) (x4 + y4)
 
 withLineBuffering :: Handle -> IO c -> IO c
 withLineBuffering h action = bracket (hGetBuffering h) (hSetBuffering h) $ \ _ -> do
