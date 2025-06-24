@@ -1,11 +1,11 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.38.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
 name:           doctest
-version:        0.24.1
+version:        0.24.2
 synopsis:       Test interactive Haskell examples
 description:    `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
                 and [properties](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810771856)
@@ -18,7 +18,7 @@ bug-reports:    https://github.com/sol/doctest/issues
 homepage:       https://github.com/sol/doctest#readme
 license:        MIT
 license-file:   LICENSE
-copyright:      (c) 2009-2024 Simon Hengel
+copyright:      (c) 2009-2025 Simon Hengel
 author:         Simon Hengel <sol@typeful.net>
 maintainer:     Simon Hengel <sol@typeful.net>
 build-type:     Simple
@@ -154,14 +154,14 @@ library
       Util
       Paths_doctest
   build-depends:
-      base >=4.7 && <5
+      base >=4.12 && <5
     , code-page >=0.1
     , containers
     , deepseq
     , directory
     , exceptions
     , filepath
-    , ghc >=8.0 && <9.14
+    , ghc >=8.6 && <9.14
     , ghc-paths >=0.1.0.9
     , process
     , syb >=0.3
@@ -184,7 +184,7 @@ executable cabal-doctest
       NoImplicitPrelude
   ghc-options: -Wall -threaded
   build-depends:
-      base >=4.7 && <5
+      base >=4.12 && <5
     , doctest
   default-language: Haskell2010
   if impl(ghc >= 9.0)
@@ -207,7 +207,7 @@ executable doctest
       DeriveFunctor
       NoImplicitPrelude
   build-depends:
-      base >=4.7 && <5
+      base >=4.12 && <5
     , doctest
   default-language: Haskell2010
   if impl(ghc >= 9.0)
@@ -279,14 +279,14 @@ test-suite spec
   build-depends:
       HUnit
     , QuickCheck >=2.13.1
-    , base >=4.7 && <5
+    , base >=4.12 && <5
     , code-page >=0.1
     , containers
     , deepseq
     , directory
     , exceptions
     , filepath
-    , ghc >=8.0 && <9.14
+    , ghc >=8.6 && <9.14
     , ghc-paths >=0.1.0.9
     , hspec >=2.3.0
     , hspec-core >=2.3.0

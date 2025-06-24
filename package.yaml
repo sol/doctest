@@ -1,5 +1,5 @@
 name:             doctest
-version:          0.24.1
+version:          0.24.2
 synopsis:         Test interactive Haskell examples
 description: |
   `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
@@ -9,7 +9,7 @@ description: |
 
   Documentation is at <https://github.com/sol/doctest#readme>.
 category:         Testing
-copyright:        (c) 2009-2024 Simon Hengel
+copyright:        (c) 2009-2025 Simon Hengel
 author:           Simon Hengel <sol@typeful.net>
 maintainer:       Simon Hengel <sol@typeful.net>
 
@@ -40,7 +40,7 @@ when:
     ghc-options: -fno-warn-x-partial
 
 dependencies:
-  - base >= 4.7 && < 5
+  - base >= 4.12 && < 5
 
 library:
   source-dirs:
@@ -54,7 +54,7 @@ library:
     - Test.DocTest.Internal.Cabal
 
   dependencies: &dependencies
-    ghc: ">= 8.0 && < 9.14"
+    ghc: ">= 8.6 && < 9.14"
     syb: ">= 0.3"
     code-page: ">= 0.1"
     deepseq:

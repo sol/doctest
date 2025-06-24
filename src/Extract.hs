@@ -29,10 +29,6 @@ import           Control.Monad.Catch (generalBracket)
 import           System.Directory
 import           System.FilePath
 
-#if __GLASGOW_HASKELL__ < 805
-import           FastString (unpackFS)
-#endif
-
 import           System.Posix.Internals (c_getpid)
 
 import           GhcUtil (withGhc)
@@ -41,12 +37,10 @@ import           Location hiding (unLoc)
 import           Util (convertDosLineEndings)
 import           PackageDBs (getPackageDBArgs)
 
-#if __GLASGOW_HASKELL__ >= 806
 #if __GLASGOW_HASKELL__ < 900
 import           DynamicLoading (initializePlugins)
 #else
 import           GHC.Runtime.Loader (initializePlugins)
-#endif
 #endif
 
 #if __GLASGOW_HASKELL__ >= 901
@@ -86,15 +80,6 @@ data Module a = Module {
 
 instance NFData a => NFData (Module a) where
   rnf (Module name setup content) = name `deepseq` setup `deepseq` content `deepseq` ()
-
-#if __GLASGOW_HASKELL__ < 803
-type GhcPs = RdrName
-#endif
-
-#if __GLASGOW_HASKELL__ < 805
-addQuoteInclude :: [String] -> [String] -> [String]
-addQuoteInclude includes new = new ++ includes
-#endif
 
 -- | Parse a list of modules.
 parse :: [String] -> IO [ParsedModule]
@@ -156,7 +141,6 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
       , includePaths = addQuoteInclude (includePaths d) [f]
       }
 
-#if __GLASGOW_HASKELL__ >= 806
     -- Since GHC 8.6, plugins are initialized on a per module basis
     loadModPlugins modsum = do
       _ <- setSessionDynFlags (GHC.ms_hspp_opts modsum)
@@ -170,9 +154,6 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
       dynflags' <- liftIO (initializePlugins hsc_env (GHC.ms_hspp_opts modsum))
       return $ modsum { ms_hspp_opts = dynflags' }
 # endif
-#else
-    loadModPlugins = return
-#endif
 
 -- | Extract all docstrings from given list of files/modules.
 --
@@ -241,11 +222,7 @@ docStringsFromModule mod = map (fmap (toLocated . fmap unpackHDS)) docs
 #else
     exports = [ (Nothing, L (locA loc) doc)
 #endif
-#if __GLASGOW_HASKELL__ < 805
-              | L loc (IEDoc doc) <- maybe [] unLoc (hsmodExports source)
-#else
               | L loc (IEDoc _ doc) <- maybe [] unLoc (hsmodExports source)
-#endif
               ]
     decls :: [(Maybe String, LHsDocString)]
     decls   = extractDocStrings (hsmodDecls source)
@@ -283,11 +260,7 @@ extractDocStrings d =
       -- Top-level documentation has to be treated separately, because it has
       -- no location information attached.  The location information is
       -- attached to HsDecl instead.
-#if __GLASGOW_HASKELL__ < 805
-      DocD x
-#else
       DocD _ x
-#endif
                -> select (fromDocDecl (locA loc) x)
 
       _ -> (extractDocStrings decl, True)
@@ -313,12 +286,6 @@ type Selector a = a -> ([(Maybe String, LHsDocString)], Bool)
 -- | Collect given value and descend into subtree.
 select :: a -> ([a], Bool)
 select x = ([x], False)
-#endif
-
-#if __GLASGOW_HASKELL__ < 805
--- | Convert a docstring to a plain string.
-unpackHDS :: HsDocString -> String
-unpackHDS (HsDocString s) = unpackFS s
 #endif
 
 #if __GLASGOW_HASKELL__ < 901

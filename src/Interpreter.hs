@@ -46,10 +46,8 @@ withInterpreter (command, flags) action = do
   let
     args = flags ++ [
         xTemplateHaskell
-#if __GLASGOW_HASKELL__ >= 802
       , "-fdiagnostics-color=never"
       , "-fno-diagnostics-show-caret"
-#endif
 #if __GLASGOW_HASKELL__ >= 810 && __GLASGOW_HASKELL__ < 904
       , "-Wno-unused-packages"
 #endif

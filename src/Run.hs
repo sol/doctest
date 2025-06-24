@@ -23,6 +23,7 @@ module Run (
 
 import           Imports
 
+import           GHC.ResponseFile (expandResponse)
 import           System.Directory (doesFileExist, doesDirectoryExist, getDirectoryContents)
 import           System.Environment (getEnvironment)
 import           System.Exit (exitFailure, exitSuccess)
@@ -63,7 +64,7 @@ doctest :: [String] -> IO ()
 doctest = doctestWithRepl (repl defaultConfig)
 
 doctestWithRepl :: (String, [String]) -> [String] -> IO ()
-doctestWithRepl repl = interpretResponseFile >=> \ args0 -> case parseOptions args0 of
+doctestWithRepl repl = expandResponse >=> \ args0 -> case parseOptions args0 of
   Options.ProxyToGhc args -> exec Interpreter.ghc args
   Options.Output s -> putStr s
   Options.Result (Run warnings magicMode config) -> do
@@ -83,11 +84,6 @@ doctestWithRepl repl = interpretResponseFile >=> \ args0 -> case parseOptions ar
         addDistArgs <- getAddDistArgs
         return (addDistArgs $ packageDBArgs ++ expandedArgs)
     doctestWith config{repl, ghcOptions = opts}
-
-interpretResponseFile :: [String] -> IO [String]
-interpretResponseFile = \ case
-  ['@':name] -> lines <$> readFile name
-  args -> return args
 
 -- | Expand a reference to a directory to all .hs and .lhs files within it.
 expandDirs :: String -> IO [String]
