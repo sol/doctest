@@ -31,7 +31,7 @@ replOnlyOptions = Set.fromList [
   , "--no-transitive-deps"
   , "--enable-multi-repl"
   , "--disable-multi-repl"
-  , "--keep-temp-files"
+  , "--with-repl"
   ]
 
 rejectUnsupportedOptions :: [String] -> IO ()
