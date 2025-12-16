@@ -80,6 +80,7 @@ jobs:
       - uses: hspec/setup-haskell/fast@nightly
         with:
           ghc-version: ${{ matrix.ghc }}
+        if: runner.os != 'Windows'
 
       - run: cabal update
       - run: cabal build
