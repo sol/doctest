@@ -78,7 +78,7 @@ jobs:
             ghc: 9.6.2
     steps:
       - uses: actions/checkout@v4
-      - uses: hspec/setup-haskell@v1
+      - uses: hspec/setup-haskell/fast@nightly
         with:
           ghc-version: ${{ matrix.ghc }}
 
