@@ -71,11 +71,10 @@ jobs:
           - 9.10.1
           - 9.12.1
         include:
-          - os: macos-latest
-            ghc: 9.10.1
+          - os: macos-15
+            ghc: 9.12.2
           - os: windows-latest
-            # ghc: system
-            ghc: 9.6.2
+            ghc: system
     steps:
       - uses: actions/checkout@v4
       - uses: hspec/setup-haskell/fast@nightly
