@@ -1,3 +1,6 @@
+Changes in 0.24.3
+  - GHC 9.14 compatibility. (#478)
+
 Changes in 0.24.2
   - Use `GHC.ResponseFile.expandResponse`
 
