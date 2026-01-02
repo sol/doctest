@@ -95,7 +95,11 @@ parse args = withGhc args $ \modules_ -> withTempOutputDir $ do
                 Nothing)
   mods <- depanal [] False
 
-  let sortedMods = flattenSCCs
+  let sortedMods =
+#if __GLASGOW_HASKELL__ >= 914
+                   mapMaybe maybeModSummaryFromModuleNodeInfo $
+#endif
+                   flattenSCCs
 #if __GLASGOW_HASKELL__ >= 901
                      $ filterToposortToModules
 #endif
@@ -190,6 +194,13 @@ extractFromModule m = Module name (listToMaybe $ map snd setup) (map snd docs)
     isSetup = (== Just "setup") . fst
     (setup, docs) = partition isSetup (docStringsFromModule m)
     name = (moduleNameString . GHC.moduleName . ms_mod . pm_mod_summary) m
+
+#if __GLASGOW_HASKELL__ >= 914
+maybeModSummaryFromModuleNodeInfo :: ModuleNodeInfo -> Maybe ModSummary
+maybeModSummaryFromModuleNodeInfo i = case i of
+  ModuleNodeCompile summary -> Just summary
+  ModuleNodeFixed _ _ -> Nothing
+#endif
 
 #if __GLASGOW_HASKELL__ >= 904
 unpackHDS :: HsDocString -> String

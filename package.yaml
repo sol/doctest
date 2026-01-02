@@ -1,5 +1,5 @@
 name:             doctest
-version:          0.24.2
+version:          0.24.3
 synopsis:         Test interactive Haskell examples
 description: |
   `doctest` is a tool that checks [examples](https://www.haskell.org/haddock/doc/html/ch03s08.html#idm140354810775744)
@@ -54,7 +54,7 @@ library:
     - Test.DocTest.Internal.Cabal
 
   dependencies: &dependencies
-    ghc: ">= 8.6 && < 9.14"
+    ghc: ">= 8.6 && < 9.16"
     syb: ">= 0.3"
     code-page: ">= 0.1"
     deepseq:
