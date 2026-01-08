@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.38.1.
+-- This file has been generated from package.yaml by hpack version 0.39.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -18,7 +18,7 @@ bug-reports:    https://github.com/sol/doctest/issues
 homepage:       https://github.com/sol/doctest#readme
 license:        MIT
 license-file:   LICENSE
-copyright:      (c) 2009-2025 Simon Hengel
+copyright:      (c) 2009-2026 Simon Hengel
 author:         Simon Hengel <sol@typeful.net>
 maintainer:     Simon Hengel <sol@typeful.net>
 build-type:     Simple
