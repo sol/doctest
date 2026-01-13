@@ -1,8 +1,6 @@
 packages:
   .
 
-allow-newer: base
-
 package doctest
   ghc-options: -Werror
 
