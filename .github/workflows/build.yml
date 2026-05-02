@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os:
           - ubuntu-22.04
@@ -78,7 +78,7 @@ jobs:
             # ghc: system
             ghc: 9.6.2
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: hspec/setup-haskell@v1
         with:
           ghc-version: ${{ matrix.ghc }}
@@ -98,6 +98,6 @@ jobs:
       - run: false
         if: needs.build.result != 'success'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: curl -sSL https://raw.githubusercontent.com/sol/hpack/main/get-hpack.sh | bash
       - run: hpack && git diff --color --exit-code

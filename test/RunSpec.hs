@@ -11,7 +11,6 @@ import           System.FilePath
 import           System.Directory (getCurrentDirectory, setCurrentDirectory)
 import           System.IO.Temp (withSystemTempDirectory)
 import           Data.List (isPrefixOf, sort)
-import           Data.Char
 
 import           System.IO.Silently
 import           System.IO (stderr)
@@ -132,15 +131,33 @@ spec = do
   describe "doctestWithResult" $ do
     context "on parse error" $ do
       let
+        action :: IO Result
         action = withCurrentDirectory "test/integration/parse-error" $ do
-          doctestWithResult defaultConfig { ghcOptions = ["Foo.hs"] }
+          doctestWithResult defaultConfig {
+              ghcOptions = [
+                  "Foo.hs"
+
+                -- This is necessary due to:
+                --
+                -- https://gitlab.haskell.org/ghc/ghc/-/commit/88f38b03025386f0f1e8f5861eed67d80495168a
+                --
+                -- It will be fixed by:
+                --
+                -- https://gitlab.haskell.org/ghc/ghc/-/merge_requests/15995
+                --
+                , "-fdiagnostics-color=never"
+#if __GLASGOW_HASKELL__ >= 910
+                , "-fprint-error-index-links=never"
+#endif
+                ]
+            }
 
       it "aborts with (ExitFailure 1)" $ do
         hSilence [stderr] action `shouldThrow` (== ExitFailure 1)
 
       it "prints a useful error message" $ do
         (r, _) <- hCapture [stderr] (E.try action :: IO (Either ExitCode Summary))
-        stripAnsiColors (removeLoadedPackageEnvironment r) `shouldBe` unlines (
+        removeLoadedPackageEnvironment r `shouldBe` unlines (
 #if __GLASGOW_HASKELL__ < 910
           "" :
 #endif
@@ -169,10 +186,3 @@ spec = do
       let x = "foo bar baz bin"
       res <- expandDirs x
       res `shouldBe` [x]
-
-stripAnsiColors :: String -> String
-stripAnsiColors xs = case xs of
-  '\ESC' : '[' : ';' : ys | 'm' : zs <- dropWhile isNumber ys -> stripAnsiColors zs
-  '\ESC' : '[' : ys | 'm' : zs <- dropWhile isNumber ys -> stripAnsiColors zs
-  y : ys -> y : stripAnsiColors ys
-  [] -> []
