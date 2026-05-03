@@ -1,5 +1,8 @@
+Changes in 0.25.0
+  - Full GHC 9.14 compatibility / `-unit`-support
+
 Changes in 0.24.3
-  - GHC 9.14 compatibility. (#478)
+  - Allow building with GHC 9.14 (#478)
 
 Changes in 0.24.2
   - Use `GHC.ResponseFile.expandResponse`

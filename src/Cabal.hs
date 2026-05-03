@@ -66,7 +66,7 @@ run cabal args = do
       withSystemTempDirectory "cabal-doctest" $ \ dir -> do
         repl ["--keep-temp-files", "--repl-multi-file", dir]
         files <- filter (isSuffixOf "-inplace") <$> listDirectory dir
-        options <- concat <$> mapM (fmap lines . readFile . combine dir) files
+        let options = concatMap (\ file -> ["-unit", '@' : dir </> file]) files
         call doctest ("--no-magic" : options)
 
 writeFileAtomically :: FilePath -> String -> IO ()

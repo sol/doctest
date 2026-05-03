@@ -23,7 +23,6 @@ module Run (
 
 import           Imports
 
-import           GHC.ResponseFile (expandResponse)
 import           System.Directory (doesFileExist, doesDirectoryExist, getDirectoryContents)
 import           System.Environment (getEnvironment)
 import           System.Exit (exitFailure, exitSuccess)
@@ -37,6 +36,10 @@ import qualified Control.Exception as E
 import           Panic
 #else
 import           GHC.Utils.Panic
+#endif
+
+#if __GLASGOW_HASKELL__ < 904
+import           GhcUtil (expandUnits)
 #endif
 
 import           PackageDBs
@@ -64,7 +67,13 @@ doctest :: [String] -> IO ()
 doctest = doctestWithRepl (repl defaultConfig)
 
 doctestWithRepl :: (String, [String]) -> [String] -> IO ()
-doctestWithRepl repl = expandResponse >=> \ args0 -> case parseOptions args0 of
+#if __GLASGOW_HASKELL__ < 904
+-- GHC versions prior to 9.4.1 don't support response files.  For that reason
+-- we want to expand early, so that GHCi gets expanded args.
+doctestWithRepl repl = expandUnits >=> parseOptions >>> \ case
+#else
+doctestWithRepl repl = parseOptions >>> \ case
+#endif
   Options.ProxyToGhc args -> exec Interpreter.ghc args
   Options.Output s -> putStr s
   Options.Result (Run warnings magicMode config) -> do

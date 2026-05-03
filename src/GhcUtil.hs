@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
-module GhcUtil (withGhc) where
+{-# LANGUAGE LambdaCase #-}
+module GhcUtil (withGhc, expandUnits) where
 
 import           Imports
 
@@ -23,6 +24,7 @@ import           MonadUtils (liftIO)
 import           GHC.Utils.Monad (liftIO)
 #endif
 
+import           GHC.ResponseFile (expandResponse)
 import           System.Exit (exitFailure)
 
 -- Catch GHC source errors, print them and exit.
@@ -33,16 +35,17 @@ handleSrcErrors action' = flip handleSourceError action' $ \err -> do
 
 -- | Run a GHC action in Haddock mode
 withGhc :: [String] -> ([String] -> Ghc a) -> IO a
-withGhc flags action = do
-  flags_ <- handleStaticFlags flags
+withGhc flags action = runGhc (Just libdir) $ do
+  liftIO (expandUnits flags) >>= handleDynamicFlags >>= handleSrcErrors . action
 
-  runGhc (Just libdir) $ do
-    handleDynamicFlags flags_ >>= handleSrcErrors . action
+expandUnits :: [String] -> IO [String]
+expandUnits = \ case
+  [] -> return []
+  "-unit" : file@('@' : _) : args -> (++) <$> expandResponse [file] <*> expandUnits args
+  file@('@' : _) : args -> (++) <$> expandResponse [file] <*> expandUnits args
+  x : xs -> (:) x <$> expandUnits xs
 
-handleStaticFlags :: [String] -> IO [Located String]
-handleStaticFlags flags = return $ map noLoc $ flags
-
-handleDynamicFlags :: GhcMonad m => [Located String] -> m [String]
+handleDynamicFlags :: GhcMonad m => [String] -> m [String]
 handleDynamicFlags flags = do
 #if __GLASGOW_HASKELL__ >= 901
   logger <- getLogger
@@ -50,7 +53,7 @@ handleDynamicFlags flags = do
 #else
   let parseDynamicFlags' = parseDynamicFlags
 #endif
-  (dynflags, locSrcs, _) <- (setHaddockMode `fmap` getSessionDynFlags) >>= (`parseDynamicFlags'` flags)
+  (dynflags, locSrcs, _) <- (setHaddockMode `fmap` getSessionDynFlags) >>= (`parseDynamicFlags'` map noLoc flags)
   _ <- setSessionDynFlags dynflags
 
   -- We basically do the same thing as `ghc/Main.hs` to distinguish

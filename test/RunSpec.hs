@@ -85,10 +85,9 @@ spec = do
       withSystemTempDirectory "hspec" $ \ dir -> do
         let file = dir </> "response-file"
         writeFile file $ unlines [
-            "--verbose"
-          , "test/integration/testSimple/Fib.hs"
+            "test/integration/testSimple/Fib.hs"
           ]
-        (r, ()) <- hCapture [stderr] $ doctest ['@':file]
+        (r, ()) <- hCapture [stderr] $ doctest ["--verbose", '@':file]
         removeLoadedPackageEnvironment r `shouldBe` verboseFibOutput
 
     it "prints verbose description of a specification" $ do
