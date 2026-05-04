@@ -23,7 +23,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-13
+          - macos-14
           - windows-latest
 
     steps:
@@ -36,7 +36,7 @@ jobs:
 
       - run: ghcup install ghc 9.6 --no-set
       - run: ghcup install ghc 8.6.5 --no-set
-        if: matrix.os != 'macos-13'
+        if: matrix.os != 'macos-14'
 
       - run: cabal --version
       - run: cabal path
@@ -45,8 +45,12 @@ jobs:
       - run: cabal doctest --allow-newer=False
 
       - run: cabal doctest -w ghc-9.6
-      - run: cabal doctest -w ghc-8.6.5
-        if: matrix.os != 'macos-13'
+
+      # -w for GHC < 9.4 broken due to https://github.com/haskell/cabal/issues/11373
+      - run: ghcup install ghc 8.6.5 -set
+        if: matrix.os != 'macos-14'
+      - run: cabal doctest # -w ghc-8.6.5
+        if: matrix.os != 'macos-14'
 
   cabal-doctest-success:
     needs: build
