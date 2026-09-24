@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE LambdaCase #-}
 module Options (
   Result(..)
 , Run(..)
@@ -124,12 +125,20 @@ parseOptions args
   | on `any` nonInteractiveGhcOptions = ProxyToGhc args
   | on "--help" = Output usage
   | on "--version" = Output versionInfo
+  | any isResponseFile args = runRunOptionsParser args defaultRun $ do
+      commonRunOptions
   | otherwise = runRunOptionsParser args defaultRun {runMagicMode = True} $ do
       commonRunOptions
       parseFlag "--no-magic" (setMagicMode False)
       parseOptGhc
   where
+    on :: String -> Bool
     on option = option `elem` args
+
+    isResponseFile :: String -> Bool
+    isResponseFile = \ case
+      '@' : _ -> True
+      _ -> False
 
 interactiveFlag :: String
 interactiveFlag = "--interactive"

@@ -50,6 +50,12 @@ spec = do
       it "accepts --fast" $ do
         fastMode . runConfig <$> parseOptions ("--fast" : options) `shouldBe` Result True
 
+    context "with a response file" $ do
+      let options = ["--foo", "@args.rsp", "--bar"]
+
+      it "disables magic mode" $ do
+        runMagicMode <$> parseOptions options `shouldBe` Result False
+
     describe "--no-magic" $ do
       context "without --no-magic" $ do
         it "enables magic mode" $ do
