@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> PSA: Never use `:set` in doctests, use `:seti` instead!
+
 # Doctest: Test interactive Haskell examples
 
 `doctest` is a tool that checks
