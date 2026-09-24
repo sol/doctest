@@ -1,4 +1,7 @@
-Changes in 0.25.0.1
+Changes in 0.25.0.2
+  - Fix a bug with `--no-magic` handling which was introduced with `0.25.0.1`.
+
+Changes in 0.25.0.1 (deprecated)
   - Discard `--interactive` from response files.  This fixes a critical bug
     introduced with `0.25.0` (see #487).
 
