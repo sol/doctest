@@ -54,7 +54,7 @@ library:
     - Test.DocTest.Internal.Cabal
 
   dependencies: &dependencies
-    ghc: ">= 8.6 && < 9.16"
+    ghc: ">= 8.6 && < 10.2"
     syb: ">= 0.3"
     code-page: ">= 0.1"
     deepseq:
