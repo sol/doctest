@@ -5,6 +5,7 @@ module Options (
 , Config(..)
 , defaultConfig
 , parseOptions
+, discardInteractiveFlag
 #ifdef TEST
 , defaultRun
 , usage
@@ -71,7 +72,7 @@ defaultConfig = Config {
 , preserveIt = False
 , failFast = False
 , verbose = False
-, repl = (ghc, ["--interactive"])
+, repl = (ghc, [interactiveFlag])
 }
 
 nonInteractiveGhcOptions :: [String]
@@ -118,7 +119,7 @@ setVerbose verbose run@Run{..} = run { runConfig = runConfig { verbose } }
 parseOptions :: [String] -> Result Run
 parseOptions args
   | on "--info" = Output info
-  | on "--interactive" = runRunOptionsParser (discard "--interactive" args) defaultRun $ do
+  | on interactiveFlag = runRunOptionsParser (discardInteractiveFlag args) defaultRun $ do
       commonRunOptions
   | on `any` nonInteractiveGhcOptions = ProxyToGhc args
   | on "--help" = Output usage
@@ -129,6 +130,12 @@ parseOptions args
       parseOptGhc
   where
     on option = option `elem` args
+
+interactiveFlag :: String
+interactiveFlag = "--interactive"
+
+discardInteractiveFlag :: [String] -> [String]
+discardInteractiveFlag = discard interactiveFlag
 
 type RunOptionsParser = RWS () (Endo Run) [String] ()
 

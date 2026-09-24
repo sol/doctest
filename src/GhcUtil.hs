@@ -27,6 +27,8 @@ import           GHC.Utils.Monad (liftIO)
 import           GHC.ResponseFile (expandResponse)
 import           System.Exit (exitFailure)
 
+import           Options (discardInteractiveFlag)
+
 -- Catch GHC source errors, print them and exit.
 handleSrcErrors :: Ghc a -> Ghc a
 handleSrcErrors action' = flip handleSourceError action' $ \err -> do
@@ -36,7 +38,7 @@ handleSrcErrors action' = flip handleSourceError action' $ \err -> do
 -- | Run a GHC action in Haddock mode
 withGhc :: [String] -> ([String] -> Ghc a) -> IO a
 withGhc flags action = runGhc (Just libdir) $ do
-  liftIO (expandUnits flags) >>= handleDynamicFlags >>= handleSrcErrors . action
+  liftIO (expandUnits flags) >>= handleDynamicFlags . discardInteractiveFlag >>= handleSrcErrors . action
 
 expandUnits :: [String] -> IO [String]
 expandUnits = \ case
