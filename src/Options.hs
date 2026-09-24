@@ -122,11 +122,13 @@ parseOptions args
   | on "--info" = Output info
   | on interactiveFlag = runRunOptionsParser (discardInteractiveFlag args) defaultRun $ do
       commonRunOptions
+      parseFlag "--no-magic" (setMagicMode False)
   | on `any` nonInteractiveGhcOptions = ProxyToGhc args
   | on "--help" = Output usage
   | on "--version" = Output versionInfo
   | any isResponseFile args = runRunOptionsParser args defaultRun $ do
       commonRunOptions
+      parseFlag "--no-magic" (setMagicMode False)
   | otherwise = runRunOptionsParser args defaultRun {runMagicMode = True} $ do
       commonRunOptions
       parseFlag "--no-magic" (setMagicMode False)
